@@ -259,7 +259,10 @@ async function loadArtistsData() {
 
     if (selector && data.artists.length > 0) {
       selector.innerHTML = data.artists.map(a => `<option value="${a.artist_name}">${a.artist_name} (${a.total_hours}h)</option>`).join('');
-      if (ddSelector) ddSelector.innerHTML = selector.innerHTML;
+      if (ddSelector) {
+        ddSelector.innerHTML = selector.innerHTML;
+        ddSelector.dispatchEvent(new Event('change'));
+      }
 
       selector.addEventListener('change', (e) => loadSpecificArtist(e.target.value));
       loadSpecificArtist(data.artists[0].artist_name);
