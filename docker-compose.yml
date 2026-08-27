@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  spotify-intelligence:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spotify-personal-intelligence
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - LOCAL_TIMEZONE=Asia/Kolkata
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    restart: unless-stopped

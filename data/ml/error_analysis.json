@@ -1,0 +1,82 @@
+{
+  "false_positive_count": 336,
+  "false_negative_count": 69,
+  "false_positive_examples": [
+    {
+      "track_name": "Say Yes To Heaven",
+      "artist_name": "Lana Del Rey",
+      "seconds_played": 160.663,
+      "skipped": 1,
+      "y_prob": 0.6773
+    },
+    {
+      "track_name": "Sher-E-Panjab",
+      "artist_name": "Arjan Dhillon",
+      "seconds_played": 5.028,
+      "skipped": 1,
+      "y_prob": 0.7085
+    },
+    {
+      "track_name": "Udd Jana",
+      "artist_name": "Rashmeet Kaur",
+      "seconds_played": 23.642,
+      "skipped": 1,
+      "y_prob": 0.7596
+    },
+    {
+      "track_name": "Chalo Chalein",
+      "artist_name": "Ritviz",
+      "seconds_played": 184.371,
+      "skipped": 0,
+      "y_prob": 0.739
+    },
+    {
+      "track_name": "Rani Teri Ek Jhalak - bargad Trending Version",
+      "artist_name": "sufr",
+      "seconds_played": 90.525,
+      "skipped": 1,
+      "y_prob": 0.6773
+    }
+  ],
+  "false_negative_examples": [
+    {
+      "track_name": "Brats",
+      "artist_name": "Arjan Dhillon",
+      "seconds_played": 161.836,
+      "skipped": 0,
+      "y_prob": 0.6738
+    },
+    {
+      "track_name": "Mera Deewanapan",
+      "artist_name": "Amrinder Gill",
+      "seconds_played": 116.684,
+      "skipped": 1,
+      "y_prob": 0.0349
+    },
+    {
+      "track_name": "Kavi",
+      "artist_name": "Arya",
+      "seconds_played": 31.214,
+      "skipped": 1,
+      "y_prob": 0.6452
+    },
+    {
+      "track_name": "Hatasha.",
+      "artist_name": "Hardbone boy",
+      "seconds_played": 166.196,
+      "skipped": 0,
+      "y_prob": 0.0357
+    },
+    {
+      "track_name": "Filmy Freestyle",
+      "artist_name": "Smoke",
+      "seconds_played": 205.0,
+      "skipped": 0,
+      "y_prob": 0.5671
+    }
+  ],
+  "insights": [
+    "False Positives (336 events): Often occur on full-length listens of single-hit tracks from known artists where no further catalog exploration followed.",
+    "False Negatives (69 events): Often occur when an initially skipped or short-played track is part of an unpredicted late-night binge or external playlist session that later triggered exploration."
+  ]
+}

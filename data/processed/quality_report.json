@@ -1,0 +1,12 @@
+{
+  "total_records_ingested": 32696,
+  "null_timestamps": 0,
+  "negative_duration_records": 0,
+  "zero_duration_records": 2415,
+  "excessive_duration_records": 0,
+  "podcast_records": 48,
+  "audiobook_records": 0,
+  "video_records": 399,
+  "duplicate_records_removed": 47,
+  "valid_records_retained": 32649
+}
