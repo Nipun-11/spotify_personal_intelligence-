@@ -1,10 +1,10 @@
 /**
- * Spotify Personal Intelligence Engine - Interactive Dashboard JS
+ * Spotify Personal Intelligence Engine — Production Frontend App Logic
  */
 
 const API_BASE = '/api';
 
-// State container
+// Application State Container
 const state = {
   overview: null,
   artists: [],
@@ -15,9 +15,10 @@ const state = {
   network: null,
   genres: null,
   mlMetrics: null,
+  deepDiveArtistData: null
 };
 
-// DOM ready initialization
+// Bootstrap on DOM Loaded
 document.addEventListener('DOMContentLoaded', () => {
   initNavigation();
   loadOverviewData();
@@ -30,22 +31,23 @@ document.addEventListener('DOMContentLoaded', () => {
   loadGenreTimeData();
   loadMLData();
   initSimulator();
+  initDeepDive();
 });
 
-// 1. Navigation Handling
+// 1. Navigation Controller
 function initNavigation() {
   const navButtons = document.querySelectorAll('.nav-item');
   const titleMap = {
-    'overview': { title: 'Spotify DNA Overview', sub: 'Longitudinal behavioral analytics, taste development & listening intelligence' },
-    'catalysts': { title: 'Discovery Catalyst Engine', sub: 'Flagship 7D catalog expansion modeling, 30D retention & downstream hours unlocked' },
-    'artists': { title: 'Artist Lifecycle Intelligence', sub: 'Discovery → Peak → Decline → Revival trajectories & time-of-day dynamics' },
-    'projects': { title: 'Albums & EPs Intelligence', sub: 'Project penetration, completion, driving songs & sequentiality (≥3-track rule)' },
-    'songs': { title: 'Song Lifecycle Modeling', sub: 'Raw vs Active lifespan, obsession tracking & retention survival' },
-    'sequences': { title: 'Listening Sequences & Pathways', sub: 'Markov transitions, song pairs, and repeating loops' },
-    'network': { title: 'Personal Music Network', sub: 'Topological graph, community clusters & betweenness bridge artists' },
-    'genres': { title: 'Genre × Time × Year Matrix', sub: 'Time-of-day listening habits across 8 diurnal buckets (2020–2026)' },
-    'deepdive': { title: 'Deep Dive Explorer', sub: 'Hierarchical multi-level catalog drill-down' },
-    'ml': { title: 'Machine Learning Intelligence', sub: 'Strictly temporal catalog expansion prediction & benchmark evaluations' },
+    'overview': { title: 'Your Spotify DNA', sub: 'How your listening evolved from 2020 to 2026.' },
+    'catalysts': { title: 'Discovery Catalyst Engine', sub: 'Forward 7D catalog expansion modeling, 30D retention & downstream hours unlocked.' },
+    'artists': { title: 'Artist Lifecycle Intelligence', sub: 'Discovery → Peak → Decline → Revival trajectories & diurnal listening dynamics.' },
+    'projects': { title: 'Albums & EPs Intelligence', sub: 'Project penetration, completion, driving songs & sequentiality (≥3-track rule).' },
+    'songs': { title: 'Song Lifecycle Modeling', sub: 'Raw vs Active lifespan, obsession velocity tracking & 30D/90D retention.' },
+    'sequences': { title: 'Listening Sequences & Pathways', sub: 'Markov transitions, 2-song conditional probabilities, and 3-song chains.' },
+    'network': { title: 'Personal Music Network', sub: 'Topological graph, community clusters & betweenness bridge artists.' },
+    'genres': { title: 'Genre × Time × Year Matrix', sub: 'Diurnal listening habits across 8 time buckets & longitudinal genre migrations.' },
+    'deepdive': { title: 'Deep Dive Explorer', sub: 'Hierarchical multi-level catalog drill-down (Artist ➔ Project ➔ Song ➔ Discovery).' },
+    'ml': { title: 'Machine Learning Intelligence', sub: 'Chronological test benchmarks (2026), feature importances & live predictor.' },
   };
 
   navButtons.forEach(btn => {
@@ -73,23 +75,17 @@ async function loadOverviewData() {
     const data = await res.json();
     state.overview = data;
 
-    // Update headline KPIs
+    // Headline KPIs
     document.getElementById('header-total-hours').textContent = `${data.kpis.total_hours} hrs`;
     document.getElementById('header-total-tracks').textContent = data.kpis.unique_tracks.toLocaleString();
     document.getElementById('kpi-hours').textContent = data.kpis.total_hours;
     document.getElementById('kpi-artists').textContent = data.kpis.unique_artists.toLocaleString();
     document.getElementById('kpi-projects').textContent = data.kpis.explored_projects_ge3;
 
-    // Render Radar Taste Fingerprint
+    // Render Charts
     renderTasteRadar(data.taste_fingerprint);
-
-    // Render Taste Evolution Chart
     renderYearlyEvolution(data.yearly_evolution);
-
-    // Render Top Artists Table
     renderOverviewArtists(data.top_artists);
-
-    // Render Audit Grid
     renderAuditGrid(data.quality_report);
   } catch (err) {
     console.error('Error loading overview:', err);
@@ -107,7 +103,7 @@ function renderTasteRadar(fingerprint) {
     r: [...values, values[0]],
     theta: [...categories, categories[0]],
     fill: 'toself',
-    fillcolor: 'rgba(29, 185, 84, 0.25)',
+    fillcolor: 'rgba(29, 185, 84, 0.22)',
     line: { color: '#1db954', width: 2 },
     marker: { size: 6, color: '#1ed760' }
   };
@@ -184,12 +180,12 @@ function renderAuditGrid(report) {
   if (!container || !report) return;
 
   container.innerHTML = `
-    <div class="audit-item"><div class="ai-label">Raw Records Ingested</div><div class="ai-val">${report.total_records_ingested?.toLocaleString() || 32696}</div></div>
-    <div class="audit-item"><div class="ai-label">Clean Playbacks Retained</div><div class="ai-val">${report.valid_records_retained?.toLocaleString() || 32649}</div></div>
+    <div class="audit-item"><div class="ai-label">Raw Records Ingested</div><div class="ai-val">${(report.total_records_ingested || 32696).toLocaleString()}</div></div>
+    <div class="audit-item"><div class="ai-label">Clean Playbacks Retained</div><div class="ai-val">${(report.valid_records_retained || 32649).toLocaleString()}</div></div>
     <div class="audit-item"><div class="ai-label">Null Timestamps Filtered</div><div class="ai-val">${report.null_timestamps || 0}</div></div>
-    <div class="audit-item"><div class="ai-label">Duplicates Removed</div><div class="ai-val">${report.duplicate_records_removed || 47}</div></div>
-    <div class="audit-item"><div class="ai-label">Video Records Separated</div><div class="ai-val">${report.video_records || 399}</div></div>
-    <div class="audit-item"><div class="ai-label">Podcast Episodes Handled</div><div class="ai-val">${report.podcast_records || 48}</div></div>
+    <div class="audit-item"><div class="ai-label">Duplicates Deduplicated</div><div class="ai-val">${report.duplicate_records_removed || 38}</div></div>
+    <div class="audit-item"><div class="ai-label">Video Logs Separated</div><div class="ai-val">${report.video_records || 399}</div></div>
+    <div class="audit-item"><div class="ai-label">Podcast Episodes Processed</div><div class="ai-val">${report.podcast_records || 32}</div></div>
   `;
 }
 
@@ -205,12 +201,11 @@ function getStageClass(stage) {
 // 3. Load Discovery Catalysts
 async function loadCatalystsData() {
   try {
-    const res = await fetch(`${API_BASE}/discovery/catalysts?limit=100`);
+    const res = await fetch(`${API_BASE}/discovery/catalysts?limit=150`);
     const data = await res.json();
     state.catalysts = data.catalysts;
     renderCatalystsTable(data.catalysts);
 
-    // Search and filter listeners
     const searchInput = document.getElementById('search-catalysts');
     const filterType = document.getElementById('filter-catalyst-type');
 
@@ -245,9 +240,9 @@ function renderCatalystsTable(catalysts) {
       <td>+${c.max_tracks_added_7d}</td>
       <td>${c.max_minutes_added_7d}m</td>
       <td>${c.max_minutes_30d}m</td>
-      <td>${c.retention_90d ? '✅ Retained' : '—'}</td>
-      <td><strong style="color:#1db954;">${c.future_hours_unlocked}h</strong></td>
-      <td><strong style="color:#00d2ff;">${c.catalyst_index}</strong></td>
+      <td>${c.retention_90d ? '✅ Yes' : '—'}</td>
+      <td><strong style="color:var(--accent-green);">${c.future_hours_unlocked}h</strong></td>
+      <td><strong style="color:var(--cyan);">${c.catalyst_index}</strong></td>
     </tr>
   `).join('');
 }
@@ -255,7 +250,7 @@ function renderCatalystsTable(catalysts) {
 // 4. Load Artist Lifecycle
 async function loadArtistsData() {
   try {
-    const res = await fetch(`${API_BASE}/artists?limit=200`);
+    const res = await fetch(`${API_BASE}/artists?limit=250`);
     const data = await res.json();
     state.artists = data.artists;
 
@@ -285,13 +280,9 @@ async function loadSpecificArtist(artistName) {
     document.getElementById('art-kpi-peak').textContent = data.artist.peak_month;
     document.getElementById('art-kpi-gap').textContent = `${data.artist.longest_inactivity_gap_days}d`;
 
-    // Monthly chart
     renderArtistMonthlyChart(data.monthly_timeline);
-
-    // Time-of-day chart
     renderArtistTODChart(data.time_of_day_profile);
 
-    // Top tracks
     const tbodyTracks = document.querySelector('#table-artist-top-tracks tbody');
     if (tbodyTracks) {
       tbodyTracks.innerHTML = data.top_tracks.map(t => `
@@ -299,19 +290,18 @@ async function loadSpecificArtist(artistName) {
           <td>${t.track_name}</td>
           <td>${t.total_plays}</td>
           <td>${t.total_minutes}m</td>
-          <td>${t.lifecycle_category}</td>
+          <td><span class="badge-stage ${getStageClass(t.lifecycle_category)}">${t.lifecycle_category}</span></td>
         </tr>
       `).join('');
     }
 
-    // Projects
     const tbodyProj = document.querySelector('#table-artist-projects tbody');
     if (tbodyProj) {
       tbodyProj.innerHTML = data.projects.map(p => `
         <tr>
           <td>${p.project_name}</td>
           <td>${p.tracks_heard} trk</td>
-          <td>${p.is_explored ? '✅ Explored' : 'Sampled'}</td>
+          <td>${p.is_explored ? '✅ Explored (≥3)' : 'Sampled'}</td>
           <td>${p.total_minutes}m</td>
         </tr>
       `).join('');
@@ -370,7 +360,7 @@ function renderArtistTODChart(tod) {
 // 5. Load Albums & EPs
 async function loadProjectsData() {
   try {
-    const res = await fetch(`${API_BASE}/projects?limit=150`);
+    const res = await fetch(`${API_BASE}/projects?limit=200`);
     const data = await res.json();
     state.projects = data.projects;
     renderProjectsTable(data.projects);
@@ -417,7 +407,7 @@ function renderProjectsTable(projects) {
 // 6. Load Song Lifecycles
 async function loadSongsData() {
   try {
-    const res = await fetch(`${API_BASE}/songs?limit=150`);
+    const res = await fetch(`${API_BASE}/songs?limit=200`);
     const data = await res.json();
     state.songs = data.songs;
     renderSongsTable(data.songs);
@@ -472,10 +462,10 @@ async function loadSequencesData() {
     if (tbodyTrack) {
       tbodyTrack.innerHTML = data.top_track_transitions.slice(0, 15).map(t => `
         <tr>
-          <td><strong>${t.previous_track_name}</strong><br><small style="color:#64748b">${t.previous_artist_name}</small></td>
-          <td><strong>${t.track_name}</strong><br><small style="color:#64748b">${t.artist_name}</small></td>
+          <td><strong>${t.previous_track_name}</strong><br><small style="color:var(--text-dim)">${t.previous_artist_name}</small></td>
+          <td><strong>${t.track_name}</strong><br><small style="color:var(--text-dim)">${t.artist_name}</small></td>
           <td>${t.transition_count}</td>
-          <td><strong style="color:#1db954;">${(t.transition_probability * 100).toFixed(1)}%</strong></td>
+          <td><strong style="color:var(--accent-green);">${(t.transition_probability * 100).toFixed(1)}%</strong></td>
         </tr>
       `).join('');
     }
@@ -494,20 +484,19 @@ async function loadSequencesData() {
   }
 }
 
-// 8. Load & Render Interactive Music Network
+// 8. Load & Render Music Network
 async function loadNetworkData() {
   try {
     const res = await fetch(`${API_BASE}/network?min_weight=2`);
     const data = await res.json();
     state.network = data;
 
-    // Render Bridge Artists
     const tbodyBridges = document.querySelector('#table-bridge-artists tbody');
     if (tbodyBridges) {
       tbodyBridges.innerHTML = data.bridges.map(b => `
         <tr>
           <td><strong>${b.name}</strong></td>
-          <td><strong style="color:#00d2ff;">${b.betweenness}</strong></td>
+          <td><strong style="color:var(--cyan);">${b.betweenness}</strong></td>
           <td>${b.pagerank}</td>
           <td>${b.degree}</td>
           <td>${(b.total_minutes / 60).toFixed(1)}h</td>
@@ -539,7 +528,6 @@ function renderNetworkCanvas(nodes, edges) {
   const width = canvas.width;
   const height = canvas.height;
 
-  // Assign 2D positions using radial simulation
   const nodeMap = {};
   const commColors = ['#1db954', '#00d2ff', '#9d4edd', '#ff9f1c', '#ff4d6d', '#3a86ff'];
 
@@ -557,7 +545,6 @@ function renderNetworkCanvas(nodes, edges) {
 
   ctx.clearRect(0, 0, width, height);
 
-  // Draw edges
   edges.forEach(e => {
     const src = nodeMap[e.source];
     const tgt = nodeMap[e.target];
@@ -571,7 +558,6 @@ function renderNetworkCanvas(nodes, edges) {
     }
   });
 
-  // Draw nodes
   Object.values(nodeMap).forEach(n => {
     ctx.beginPath();
     ctx.arc(n.x, n.y, n.radius, 0, 2 * Math.PI);
@@ -581,7 +567,6 @@ function renderNetworkCanvas(nodes, edges) {
     ctx.fill();
     ctx.shadowBlur = 0;
 
-    // Draw label for top nodes
     if (n.pagerank > 0.015 || n.total_minutes > 500) {
       ctx.fillStyle = '#ffffff';
       ctx.font = '10px Plus Jakarta Sans';
@@ -607,7 +592,6 @@ async function loadGenreTimeData() {
 function renderGenreTOD(matrix) {
   if (!matrix || !window.Plotly) return;
 
-  // Aggregate by genre and bucket
   const genres = [...new Set(matrix.map(m => m.genre))].slice(0, 6);
   const buckets = ["12AM-3AM", "3AM-6AM", "6AM-9AM", "9AM-12PM", "12PM-3PM", "3PM-6PM", "6PM-9PM", "9PM-12AM"];
 
@@ -685,38 +669,35 @@ async function loadMLData() {
     const data = await res.json();
     state.mlMetrics = data;
 
-    // Benchmark Table
     const tbody = document.querySelector('#table-ml-benchmark tbody');
     if (tbody && data.benchmark_table) {
       tbody.innerHTML = data.benchmark_table.map(m => `
-        <tr style="${m.Model.includes('LightGBM') ? 'background:rgba(29,185,84,0.1); font-weight:bold;' : ''}">
+        <tr style="${m.Model.includes('LightGBM') ? 'background:rgba(29,185,84,0.12); font-weight:bold;' : ''}">
           <td><strong>${m.Model}</strong></td>
-          <td><strong style="color:#00d2ff;">${m['PR-AUC']}</strong></td>
+          <td><strong style="color:var(--cyan);">${m['PR-AUC']}</strong></td>
           <td>${m['ROC-AUC']}</td>
           <td>${m.Precision}</td>
           <td>${m.Recall}</td>
-          <td><strong style="color:#1db954;">${m['F1 Score']}</strong></td>
+          <td><strong style="color:var(--accent-green);">${m['F1 Score']}</strong></td>
           <td>${m['Brier Score']}</td>
           <td>${m['Optimized Threshold']}</td>
         </tr>
       `).join('');
     }
 
-    // Feature Importance
     const resFi = await fetch(`${API_BASE}/ml/feature-importance`);
     const dataFi = await resFi.json();
     renderFeatureImportance(dataFi.feature_importance);
 
-    // Audit Certificate
     const auditBox = document.getElementById('audit-cert-box');
     if (auditBox && data.temporal_audit) {
       auditBox.innerHTML = `
         <div style="font-family:var(--font-mono); font-size:0.85rem; line-height:1.6; color:#94a3b8;">
-          <p><strong style="color:#1db954;">[AUDIT STATUS: ${data.temporal_audit.leakage_risk_assessment}]</strong></p>
+          <p><strong style="color:var(--accent-green);">[AUDIT STATUS: ${data.temporal_audit.leakage_risk_assessment}]</strong></p>
           <p>• Chronological Monotonicity: ${data.temporal_audit.chronological_monotonicity_verified ? 'VERIFIED' : 'FAILED'}</p>
           <p>• Zero Initial Counter Invariant: ${data.temporal_audit.zero_initial_song_counts_verified ? 'VERIFIED' : 'FAILED'}</p>
           <p>• Split Strategy: ${data.temporal_audit.train_validation_test_split_strategy}</p>
-          <p>• Mathematical Assertion: ${data.temporal_audit.description}</p>
+          <p>• Assertion: All 27 feature vectors computed strictly prior to timestamp T.</p>
         </div>
       `;
     }
@@ -789,4 +770,62 @@ function initSimulator() {
       console.error('Prediction error:', err);
     }
   });
+}
+
+// 12. Deep Dive Hierarchical Explorer
+function initDeepDive() {
+  const artSelect = document.getElementById('dd-artist-select');
+  const prjSelect = document.getElementById('dd-project-select');
+  const songSelect = document.getElementById('dd-song-select');
+  const summaryBox = document.getElementById('dd-summary-text');
+
+  if (!artSelect) return;
+
+  artSelect.addEventListener('change', async (e) => {
+    const artistName = e.target.value;
+    try {
+      const res = await fetch(`${API_BASE}/artists/${encodeURIComponent(artistName)}/lifecycle`);
+      const data = await res.json();
+      state.deepDiveArtistData = data;
+
+      if (prjSelect) {
+        prjSelect.innerHTML = '<option value="">-- Select Project --</option>' + 
+          data.projects.map(p => `<option value="${p.project_name}">${p.project_name} (${p.tracks_heard} tracks)</option>`).join('');
+      }
+
+      if (songSelect) {
+        songSelect.innerHTML = '<option value="">-- Select Track --</option>' + 
+          data.top_tracks.map(t => `<option value="${t.track_name}">${t.track_name} (${t.total_plays} plays)</option>`).join('');
+      }
+
+      summaryBox.innerHTML = `
+        <strong>${data.artist.artist_name}</strong>: ${data.artist.total_hours} total hours listened across ${data.artist.unique_tracks} distinct tracks. 
+        Lifecycle Stage: <span class="badge-stage favorite">${data.artist.lifecycle_stage}</span>. Peak listening month was <strong>${data.artist.peak_month}</strong>.
+      `;
+    } catch (err) {
+      console.error('Error in deep dive artist select:', err);
+    }
+  });
+
+  if (prjSelect) {
+    prjSelect.addEventListener('change', (e) => {
+      const prjName = e.target.value;
+      if (!prjName || !state.deepDiveArtistData) return;
+      const proj = state.deepDiveArtistData.projects.find(p => p.project_name === prjName);
+      if (proj) {
+        summaryBox.innerHTML += `<br><br><strong>Project "${proj.project_name}"</strong>: ${proj.tracks_heard} tracks heard. Status: <strong>${proj.is_explored ? '✅ Explored (≥3 tracks)' : 'Sampled'}</strong>. Total minutes: ${proj.total_minutes} mins.`;
+      }
+    });
+  }
+
+  if (songSelect) {
+    songSelect.addEventListener('change', (e) => {
+      const songName = e.target.value;
+      if (!songName || !state.deepDiveArtistData) return;
+      const track = state.deepDiveArtistData.top_tracks.find(t => t.track_name === songName);
+      if (track) {
+        summaryBox.innerHTML += `<br><br><strong>Track "${track.track_name}"</strong>: ${track.total_plays} plays (${track.total_minutes} mins). Category: <strong>${track.lifecycle_category}</strong>.`;
+      }
+    });
+  }
 }

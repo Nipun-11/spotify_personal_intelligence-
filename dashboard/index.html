@@ -3,72 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spotify Personal Intelligence Engine | Behavioral Analytics & Discovery ML</title>
-  <meta name="description" content="Production-grade behavioral analytics, music discovery modeling, and personalized listening intelligence engine from Spotify Extended Streaming History.">
+  <title>Spotify Personal Intelligence Engine | Behavioral Music Discovery & ML</title>
+  <meta name="description" content="Longitudinal behavioral analytics, discovery catalyst modeling, and temporal machine learning on Spotify streaming history.">
+  
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/index.css">
-  <!-- Plotly.js for interactive visualizations -->
-  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Plotly.js -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  
+  <link rel="stylesheet" href="index.css">
 </head>
 <body class="dark-theme">
   <div class="app-layout">
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar" id="sidebar">
+    
+    <!-- Collapsible Sidebar -->
+    <aside class="sidebar" id="main-sidebar">
       <div class="brand">
         <div class="brand-icon">
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.308-1.76-8.793-.963-.335.077-.67-.133-.746-.468-.077-.334.132-.67.467-.746 3.808-.87 7.076-.496 9.722 1.115.294.18.386.562.207.855zm1.226-2.723c-.227.368-.71.485-1.077.258-2.69-1.654-6.79-2.133-9.97-1.168-.413.125-.853-.11-.978-.523-.125-.413.11-.853.523-.978 3.637-1.103 8.147-.568 11.244 1.334.367.227.485.71.258 1.077zm.135-2.836C14.72 8.78 8.42 8.57 4.79 9.673c-.5.152-1.03-.13-1.182-.63-.15-.5.13-1.03.63-1.182 4.182-1.27 11.14-1.026 15.006 1.268.45.267.596.85.33 1.3-.268.45-.85.596-1.3.33z"/>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.48.66.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
           </svg>
         </div>
         <div class="brand-text">
-          <h2>Spotify Intelligence</h2>
-          <span class="badge-sub">Personal Engine</span>
+          <h2>Personal Intelligence</h2>
+          <span class="badge-sub">Longitudinal Engine</span>
         </div>
       </div>
 
-      <nav class="nav-menu">
+      <!-- Navigation Hierarchy -->
+      <nav class="nav-menu" role="navigation">
+        <div class="nav-section-title">YOUR LISTENING</div>
         <button class="nav-item active" data-tab="overview" id="nav-overview">
-          <span class="nav-icon">🧬</span>
-          <span>Spotify DNA</span>
+          <span class="nav-icon">🏠</span> Overview
         </button>
         <button class="nav-item" data-tab="catalysts" id="nav-catalysts">
-          <span class="nav-icon">⚡</span>
-          <span>Discovery Catalysts</span>
+          <span class="nav-icon">⚡</span> Discovery Catalysts
           <span class="badge-flag">Flagship</span>
         </button>
         <button class="nav-item" data-tab="artists" id="nav-artists">
-          <span class="nav-icon">🎤</span>
-          <span>Artist Lifecycle</span>
+          <span class="nav-icon">🎤</span> Artists
         </button>
         <button class="nav-item" data-tab="projects" id="nav-projects">
-          <span class="nav-icon">💿</span>
-          <span>Albums & EPs</span>
+          <span class="nav-icon">💿</span> Albums & EPs
         </button>
         <button class="nav-item" data-tab="songs" id="nav-songs">
-          <span class="nav-icon">🎵</span>
-          <span>Song Lifecycles</span>
+          <span class="nav-icon">🎵</span> Songs
         </button>
+
+        <div class="nav-section-title">EXPLORE</div>
         <button class="nav-item" data-tab="sequences" id="nav-sequences">
-          <span class="nav-icon">🔁</span>
-          <span>Listening Sequences</span>
+          <span class="nav-icon">🔁</span> Sequences
         </button>
         <button class="nav-item" data-tab="network" id="nav-network">
-          <span class="nav-icon">🕸️</span>
-          <span>Music Network</span>
+          <span class="nav-icon">🕸</span> Music Network
         </button>
         <button class="nav-item" data-tab="genres" id="nav-genres">
-          <span class="nav-icon">🕒</span>
-          <span>Genre × Time × Year</span>
+          <span class="nav-icon">🕒</span> Genre & Time
         </button>
         <button class="nav-item" data-tab="deepdive" id="nav-deepdive">
-          <span class="nav-icon">🔍</span>
-          <span>Deep Dive Explorer</span>
+          <span class="nav-icon">🔍</span> Deep Dive
         </button>
+
+        <div class="nav-section-title">INTELLIGENCE</div>
         <button class="nav-item" data-tab="ml" id="nav-ml">
-          <span class="nav-icon">🤖</span>
-          <span>ML Intelligence</span>
+          <span class="nav-icon">🤖</span> ML Intelligence
           <span class="badge-ml">LightGBM</span>
         </button>
       </nav>
@@ -76,97 +77,79 @@
       <div class="sidebar-footer">
         <div class="data-status">
           <span class="pulse-dot"></span>
-          <span>Live API Connected</span>
+          <span id="data-status-text">Pipeline Active • 2020–2026</span>
         </div>
-        <div class="version-tag">Engine v1.0.0 • 2020-2026</div>
+        <div class="disclaimer-text">
+          Independent personal intelligence system. Not affiliated with Spotify.
+        </div>
       </div>
     </aside>
 
     <!-- Main Content Area -->
-    <main class="main-content">
-      <!-- Top Header Bar -->
+    <main class="main-content" id="main-scroll">
+      
+      <!-- Top Dynamic Header -->
       <header class="top-header">
         <div class="header-left">
-          <h1 id="page-title">Spotify DNA Overview</h1>
-          <p class="subtitle" id="page-subtitle">Longitudinal behavioral analytics, taste development & listening intelligence</p>
+          <h1 id="page-title">Your Spotify DNA</h1>
+          <p class="subtitle" id="page-subtitle">How your listening evolved from 2020 to 2026.</p>
         </div>
         <div class="header-right">
           <div class="quick-stat-badge">
             <span class="qs-label">Total Listening:</span>
-            <span class="qs-val" id="header-total-hours">-- hrs</span>
+            <span class="qs-val" id="header-total-hours">908.4 hrs</span>
           </div>
           <div class="quick-stat-badge">
             <span class="qs-label">Unique Tracks:</span>
-            <span class="qs-val" id="header-total-tracks">--</span>
+            <span class="qs-val" id="header-total-tracks">6,830</span>
           </div>
         </div>
       </header>
 
-      <!-- TAB 1: OVERVIEW / SPOTIFY DNA -->
+      <!-- 1. VIEW: Spotify DNA Overview -->
       <section class="tab-pane active" id="tab-overview">
-        <!-- Headline KPIs -->
         <div class="kpi-grid">
           <div class="kpi-card glass">
-            <div class="kpi-icon">⏳</div>
-            <div class="kpi-data">
-              <div class="kpi-num" id="kpi-hours">908.4</div>
-              <div class="kpi-label">Total Listening Hours</div>
-            </div>
-            <div class="kpi-sub">32,649 Playback Events</div>
+            <div class="kpi-label">TOTAL LISTENING TIME</div>
+            <div class="kpi-num" id="kpi-hours">908.4</div>
+            <div class="kpi-sub">Hours (54,504 mins)</div>
           </div>
-
           <div class="kpi-card glass">
-            <div class="kpi-icon">🎙️</div>
-            <div class="kpi-data">
-              <div class="kpi-num" id="kpi-artists">1,784</div>
-              <div class="kpi-label">Distinct Artists</div>
-            </div>
-            <div class="kpi-sub">44.3% Discovery Velocity</div>
+            <div class="kpi-label">DISTINCT ARTISTS</div>
+            <div class="kpi-num" id="kpi-artists">1,784</div>
+            <div class="kpi-sub">Spanning 6.2 Years</div>
           </div>
-
           <div class="kpi-card glass">
-            <div class="kpi-icon">💿</div>
-            <div class="kpi-data">
-              <div class="kpi-num" id="kpi-projects">329</div>
-              <div class="kpi-label">Explored Projects</div>
-            </div>
-            <div class="kpi-sub">≥ 3 Unique Tracks Heard</div>
+            <div class="kpi-label">EXPLORED PROJECTS</div>
+            <div class="kpi-num" id="kpi-projects">329</div>
+            <div class="kpi-sub">≥3 Tracks Rule Enforced</div>
           </div>
-
           <div class="kpi-card glass">
-            <div class="kpi-icon">⚡</div>
-            <div class="kpi-data">
-              <div class="kpi-num" id="kpi-catalysts">8,006</div>
-              <div class="kpi-label">Catalyst Evaluations</div>
-            </div>
-            <div class="kpi-sub">7D Expansion Engine</div>
+            <div class="kpi-label">DISCOVERY CATALYSTS</div>
+            <div class="kpi-num" id="kpi-catalysts">8,006</div>
+            <div class="kpi-sub">Forward 7D Gateways</div>
           </div>
         </div>
 
-        <!-- Radar Taste Fingerprint & Taste Timeline -->
         <div class="chart-row two-col">
           <div class="chart-card glass">
             <div class="card-header">
               <h3>🧬 8-Dimensional Taste Fingerprint</h3>
-              <span class="tooltip-info" title="Behavioral radar scores normalized 0-100 without arbitrary personality labels">ⓘ</span>
             </div>
-            <div class="chart-body" id="chart-taste-radar" style="height: 360px;"></div>
+            <div id="chart-taste-radar" style="height: 340px;"></div>
           </div>
-
           <div class="chart-card glass">
             <div class="card-header">
               <h3>📈 Taste Evolution Over Years (2020–2026)</h3>
-              <span class="tooltip-info" title="Annual listening hours, artist variety, and skip rate trajectory">ⓘ</span>
             </div>
-            <div class="chart-body" id="chart-yearly-evolution" style="height: 360px;"></div>
+            <div id="chart-yearly-evolution" style="height: 340px;"></div>
           </div>
         </div>
 
-        <!-- Top Artists Spotlight & Quality Report -->
         <div class="chart-row two-col">
           <div class="chart-card glass">
             <div class="card-header">
-              <h3>👑 Top 10 Artists by Listening Intensity</h3>
+              <h3>👑 Top Lifetime Artists</h3>
             </div>
             <div class="table-container">
               <table class="data-table" id="table-overview-artists">
@@ -178,72 +161,72 @@
                     <th>Lifecycle Stage</th>
                   </tr>
                 </thead>
-                <tbody><!-- Dynamic rows --></tbody>
+                <tbody></tbody>
               </table>
             </div>
           </div>
-
           <div class="chart-card glass">
             <div class="card-header">
-              <h3>🛡️ Data Engineering & Ingestion Audit</h3>
+              <h3>🛡️ Ingestion & Data Quality Audit</h3>
             </div>
-            <div class="audit-grid" id="overview-audit-grid">
-              <!-- Dynamic Audit Items -->
-            </div>
+            <div class="audit-grid" id="overview-audit-grid"></div>
           </div>
         </div>
       </section>
 
-      <!-- TAB 2: DISCOVERY CATALYSTS (FLAGSHIP) -->
+      <!-- 2. VIEW: Discovery Catalysts (Flagship) -->
       <section class="tab-pane" id="tab-catalysts">
         <div class="feature-banner glass">
           <div class="fb-text">
             <h2>⚡ Discovery Catalyst Engine</h2>
-            <p>Identifying songs followed by meaningful catalog expansion over <strong>7 Days</strong>, with <strong>30-Day</strong> retention, <strong>90-Day</strong> impact, and <strong>Future Hours Unlocked</strong>.</p>
-          </div>
-          <div class="fb-filters">
-            <select id="filter-catalyst-type" class="select-input">
-              <option value="">All Discovery Types</option>
-              <option value="Artist Discovery">Artist Discovery</option>
-              <option value="Project Discovery">Project Discovery</option>
-              <option value="Catalog Deepening">Catalog Deepening</option>
-              <option value="Re-engagement">Re-engagement</option>
-            </select>
+            <p>Identifying songs followed by downstream catalog expansion over a forward 7-day window $[T, T+7\text{d}]$, 30-day retention, and future hours unlocked.</p>
           </div>
         </div>
 
-        <!-- Spotlight Case Studies: Panther & Frappe Ash -->
+        <!-- Spotlight Verified Case Studies -->
         <div class="chart-row two-col">
-          <div class="case-study-card glass highlight-panther">
-            <div class="csc-badge">Verified Specification Spotlight</div>
+          <div class="case-study-card glass">
+            <div class="csc-badge">VERIFIED CASE STUDY #1</div>
             <h3>Panther — <em>Aa Jao</em></h3>
-            <div class="csc-stats">
-              <div class="stat-pill"><span class="sp-val">19</span> <span class="sp-lbl">7D Tracks</span></div>
-              <div class="stat-pill"><span class="sp-val">110.3</span> <span class="sp-lbl">7D Minutes</span></div>
-              <div class="stat-pill"><span class="sp-val">217.7</span> <span class="sp-lbl">30D Minutes</span></div>
-              <div class="stat-pill highlight"><span class="sp-val">32.6 hrs</span> <span class="sp-lbl">Unlocked</span></div>
+            <div class="csc-pathway">
+              <div class="csc-step"><span class="step-label">Exposure</span><strong>Aa Jao</strong></div>
+              <div class="csc-arrow">➔</div>
+              <div class="csc-step"><span class="step-label">7D Expansion</span><strong>+19 Tracks</strong></div>
+              <div class="csc-arrow">➔</div>
+              <div class="csc-step"><span class="step-label">7D Mins</span><strong>110.3 mins</strong></div>
+              <div class="csc-arrow">➔</div>
+              <div class="csc-step highlight"><span class="step-label">Hours Unlocked</span><strong>32.57 hrs</strong></div>
             </div>
-            <p class="csc-desc"><strong>Pathway Analysis:</strong> Encounter of <em>Aa Jao</em> triggered an explosion into 19 additional Panther tracks within 7 days, sustaining over 32 hours of downstream listening.</p>
+            <p class="csc-desc">Classified as <strong>Catalog Deepening</strong>. Initial exposure was followed by deep exploration of Panther's discography, sustaining active retention across 30 and 90 days.</p>
           </div>
 
-          <div class="case-study-card glass highlight-frappe">
-            <div class="csc-badge">Catalog Deepening Spotlight</div>
-            <h3>Frappe Ash — Catalog Exploration</h3>
-            <div class="csc-stats">
-              <div class="stat-pill"><span class="sp-val">46</span> <span class="sp-lbl">Catalysts</span></div>
-              <div class="stat-pill"><span class="sp-val">866</span> <span class="sp-lbl">Total Plays</span></div>
-              <div class="stat-pill highlight"><span class="sp-val">33.2 hrs</span> <span class="sp-lbl">Unlocked</span></div>
+          <div class="case-study-card glass">
+            <div class="csc-badge">VERIFIED CASE STUDY #2</div>
+            <h3>Frappe Ash — <em>Catalog Expansion</em></h3>
+            <div class="csc-pathway">
+              <div class="csc-step"><span class="step-label">First Play</span><strong>Surma (Discovery)</strong></div>
+              <div class="csc-arrow">➔</div>
+              <div class="csc-step"><span class="step-label">Project Entry</span><strong>JAANA MAI (+22 Trk)</strong></div>
+              <div class="csc-arrow">➔</div>
+              <div class="csc-step highlight"><span class="step-label">Hours Unlocked</span><strong>33.18 hrs</strong></div>
             </div>
-            <p class="csc-desc"><strong>Re-engagement Signal:</strong> Deepened exploration into projects and singles like <em>Surma</em>, <em>Karein Kya</em>, <em>Downlow</em>, and <em>Jungle</em>.</p>
+            <p class="csc-desc"><strong>46 distinct discovery events</strong> detected. Gateway tracks unlocked 33+ downstream hours across albums like <em>Ice Cream Frappe</em>.</p>
           </div>
         </div>
 
-        <!-- Top Catalyst Rankings Table -->
+        <!-- Catalyst Rankings Table with Live Search -->
         <div class="chart-card glass">
           <div class="card-header">
-            <h3>🏆 Discovery Catalyst Track Rankings</h3>
-            <div class="table-search">
-              <input type="text" id="search-catalysts" class="text-input" placeholder="Search track or artist...">
+            <h3>Top Ranked Discovery Catalysts</h3>
+            <div class="table-controls">
+              <input type="text" id="search-catalysts" placeholder="Filter by song or artist..." class="text-input">
+              <select id="filter-catalyst-type" class="select-input">
+                <option value="">All Discovery Types</option>
+                <option value="Artist Discovery">Artist Discovery</option>
+                <option value="Project Discovery">Project Discovery</option>
+                <option value="Catalog Deepening">Catalog Deepening</option>
+                <option value="Re-engagement">Re-engagement</option>
+              </select>
             </div>
           </div>
           <div class="table-container">
@@ -253,71 +236,71 @@
                   <th>Rank</th>
                   <th>Catalyst Song</th>
                   <th>Artist</th>
-                  <th>Type</th>
-                  <th>7D Tracks</th>
-                  <th>7D Mins</th>
-                  <th>30D Mins</th>
-                  <th>90D Retained</th>
-                  <th>Future Hours Unlocked</th>
-                  <th>Catalyst Index</th>
+                  <th>Discovery Type</th>
+                  <th>+Tracks (7D)</th>
+                  <th>+Mins (7D)</th>
+                  <th>+Mins (30D)</th>
+                  <th>90D Impact</th>
+                  <th>Future Hrs Unlocked</th>
+                  <th>Catalyst Score</th>
                 </tr>
               </thead>
-              <tbody><!-- Dynamic rows --></tbody>
+              <tbody></tbody>
             </table>
           </div>
         </div>
       </section>
 
-      <!-- TAB 3: ARTIST LIFECYCLE -->
+      <!-- 3. VIEW: Artist Lifecycle -->
       <section class="tab-pane" id="tab-artists">
         <div class="filter-bar glass">
           <div class="filter-group">
             <label for="artist-selector">Select Artist:</label>
             <select id="artist-selector" class="select-input"></select>
           </div>
-          <div class="artist-stage-badge" id="artist-stage-badge">Stage: Long-Term Favorite</div>
-        </div>
-
-        <!-- Artist KPI Summary -->
-        <div class="kpi-grid four-col" id="artist-kpi-grid">
-          <div class="kpi-card glass">
-            <div class="kpi-num" id="art-kpi-hours">--</div>
-            <div class="kpi-label">Total Listening Hours</div>
-          </div>
-          <div class="kpi-card glass">
-            <div class="kpi-num" id="art-kpi-tracks">--</div>
-            <div class="kpi-label">Unique Tracks Heard</div>
-          </div>
-          <div class="kpi-card glass">
-            <div class="kpi-num" id="art-kpi-peak">--</div>
-            <div class="kpi-label">Peak Month</div>
-          </div>
-          <div class="kpi-card glass">
-            <div class="kpi-num" id="art-kpi-gap">--</div>
-            <div class="kpi-label">Longest Gap (Days)</div>
+          <div class="filter-group">
+            <span class="badge-stage favorite" id="artist-stage-badge">Stage: Growth</span>
           </div>
         </div>
 
-        <div class="chart-row two-col">
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>📅 Monthly Listening Trajectory (Discovery → Peak → Current)</h3>
-            </div>
-            <div class="chart-body" id="chart-artist-monthly" style="height: 320px;"></div>
+        <div class="kpi-grid">
+          <div class="kpi-card glass">
+            <div class="kpi-label">TOTAL LISTENING</div>
+            <div class="kpi-num" id="art-kpi-hours">0h</div>
           </div>
-
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>🕒 Time-of-Day Profile</h3>
-            </div>
-            <div class="chart-body" id="chart-artist-tod" style="height: 320px;"></div>
+          <div class="kpi-card glass">
+            <div class="kpi-label">UNIQUE TRACKS HEARD</div>
+            <div class="kpi-num" id="art-kpi-tracks">0</div>
+          </div>
+          <div class="kpi-card glass">
+            <div class="kpi-label">PEAK MONTH</div>
+            <div class="kpi-num" id="art-kpi-peak">—</div>
+          </div>
+          <div class="kpi-card glass">
+            <div class="kpi-label">LONGEST GAP</div>
+            <div class="kpi-num" id="art-kpi-gap">0d</div>
           </div>
         </div>
 
         <div class="chart-row two-col">
           <div class="chart-card glass">
             <div class="card-header">
-              <h3>🎵 Top Tracks Heard</h3>
+              <h3>📅 Monthly Listening Trajectory (Discovery ➔ Peak ➔ Revival)</h3>
+            </div>
+            <div id="chart-artist-monthly" style="height: 320px;"></div>
+          </div>
+          <div class="chart-card glass">
+            <div class="card-header">
+              <h3>🕒 Diurnal Listening Heatmap</h3>
+            </div>
+            <div id="chart-artist-tod" style="height: 320px;"></div>
+          </div>
+        </div>
+
+        <div class="chart-row two-col">
+          <div class="chart-card glass">
+            <div class="card-header">
+              <h3>Top Tracks</h3>
             </div>
             <div class="table-container">
               <table class="data-table" id="table-artist-top-tracks">
@@ -328,15 +311,14 @@
               </table>
             </div>
           </div>
-
           <div class="chart-card glass">
             <div class="card-header">
-              <h3>💿 Discography Projects</h3>
+              <h3>Discography Projects</h3>
             </div>
             <div class="table-container">
               <table class="data-table" id="table-artist-projects">
                 <thead>
-                  <tr><th>Project</th><th>Tracks Heard</th><th>Status</th><th>Total Mins</th></tr>
+                  <tr><th>Project</th><th>Tracks Heard</th><th>Status</th><th>Minutes</th></tr>
                 </thead>
                 <tbody></tbody>
               </table>
@@ -345,31 +327,28 @@
         </div>
       </section>
 
-      <!-- TAB 4: ALBUMS & EPS INTELLIGENCE -->
+      <!-- 4. VIEW: Albums & EPs -->
       <section class="tab-pane" id="tab-projects">
-        <div class="filter-bar glass">
-          <div class="filter-group">
-            <input type="text" id="search-projects" class="text-input" placeholder="Search album or artist...">
-          </div>
-          <div class="filter-group">
-            <label><input type="checkbox" id="checkbox-explored-ge3" checked> Explored Projects Only (≥ 3 Tracks)</label>
-          </div>
-        </div>
-
         <div class="chart-card glass">
           <div class="card-header">
-            <h3>💿 Albums & EPs (Penetration, Driving Songs & Sequentiality)</h3>
+            <h3>Album & EP Exploration Analytics (Enforcing Non-Negotiable ≥3-Track Rule)</h3>
+            <div class="table-controls">
+              <input type="text" id="search-projects" placeholder="Filter albums or artists..." class="text-input">
+              <label class="checkbox-label">
+                <input type="checkbox" id="checkbox-explored-ge3" checked> Explored (≥3 Tracks) Only
+              </label>
+            </div>
           </div>
           <div class="table-container">
             <table class="data-table" id="table-projects-main">
               <thead>
                 <tr>
-                  <th>Project Name</th>
+                  <th>Album / EP</th>
                   <th>Artist</th>
                   <th>Tracks Heard</th>
-                  <th>Explored (≥3)</th>
-                  <th>Top Driving Track</th>
-                  <th>Top Track Share %</th>
+                  <th>Exploration Status</th>
+                  <th>Top Driving Song</th>
+                  <th>Driving Song Share</th>
                   <th>Listening Style</th>
                   <th>Total Hours</th>
                 </tr>
@@ -380,42 +359,37 @@
         </div>
       </section>
 
-      <!-- TAB 5: SONG LIFECYCLES -->
+      <!-- 5. VIEW: Song Lifecycles -->
       <section class="tab-pane" id="tab-songs">
-        <div class="filter-bar glass">
-          <div class="filter-group">
-            <input type="text" id="search-songs" class="text-input" placeholder="Search song title or artist...">
-          </div>
-          <div class="filter-group">
-            <select id="filter-song-category" class="select-input">
-              <option value="">All Categories</option>
-              <option value="Obsession Track">Obsession Track</option>
-              <option value="Evergreen Favorite">Evergreen Favorite</option>
-              <option value="Heavy Rotation">Heavy Rotation</option>
-              <option value="Revived Track">Revived Track</option>
-              <option value="Casual Favorite">Casual Favorite</option>
-              <option value="Failed Discovery">Failed Discovery</option>
-            </select>
-          </div>
-        </div>
-
         <div class="chart-card glass">
           <div class="card-header">
-            <h3>🎵 Song Lifecycles (Raw vs Active Lifespan & Retention)</h3>
+            <h3>Song Lifecycles (Raw vs. Active Lifespan & Obsessions)</h3>
+            <div class="table-controls">
+              <input type="text" id="search-songs" placeholder="Search track name..." class="text-input">
+              <select id="filter-song-category" class="select-input">
+                <option value="">All Categories</option>
+                <option value="Obsession Track">Obsession Track</option>
+                <option value="Evergreen Favorite">Evergreen Favorite</option>
+                <option value="Heavy Rotation">Heavy Rotation</option>
+                <option value="Revived Track">Revived Track</option>
+                <option value="Moderate Rotation">Moderate Rotation</option>
+                <option value="Failed Discovery">Failed Discovery</option>
+              </select>
+            </div>
           </div>
           <div class="table-container">
             <table class="data-table" id="table-songs-main">
               <thead>
                 <tr>
-                  <th>Song Title</th>
+                  <th>Track Title</th>
                   <th>Artist</th>
                   <th>Total Plays</th>
-                  <th>Total Mins</th>
-                  <th>Raw Lifespan (Days)</th>
-                  <th>Active Lifespan (Days)</th>
-                  <th>First 7D Plays</th>
+                  <th>Total Minutes</th>
+                  <th>Raw Lifespan</th>
+                  <th>Active Lifespan</th>
+                  <th>Velocity (7D)</th>
                   <th>30D Retained</th>
-                  <th>Lifecycle Category</th>
+                  <th>Category</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -424,31 +398,30 @@
         </div>
       </section>
 
-      <!-- TAB 6: LISTENING SEQUENCES -->
+      <!-- 6. VIEW: Listening Sequences -->
       <section class="tab-pane" id="tab-sequences">
         <div class="chart-row two-col">
           <div class="chart-card glass">
             <div class="card-header">
-              <h3>🔁 Top Song-to-Song Transition Pairs</h3>
+              <h3>🔁 Top 2-Track Markov Transitions (Song A ➔ Song B)</h3>
             </div>
             <div class="table-container">
               <table class="data-table" id="table-track-transitions">
                 <thead>
-                  <tr><th>From Song</th><th>To Song</th><th>Transition Count</th><th>P(To|From)</th></tr>
+                  <tr><th>Preceding Track</th><th>Next Track</th><th>Count</th><th>Conditional Prob</th></tr>
                 </thead>
                 <tbody></tbody>
               </table>
             </div>
           </div>
-
           <div class="chart-card glass">
             <div class="card-header">
-              <h3>🔗 Top 3-Song Markov Sequence Chains</h3>
+              <h3>⛓️ 3-Song Sequence Chains (A ➔ B ➔ C)</h3>
             </div>
             <div class="table-container">
               <table class="data-table" id="table-3song-sequences">
                 <thead>
-                  <tr><th>Sequence (A → B → C)</th><th>Occurrences</th></tr>
+                  <tr><th>Sequential Listening Pathway</th><th>Occurrences</th></tr>
                 </thead>
                 <tbody></tbody>
               </table>
@@ -457,189 +430,206 @@
         </div>
       </section>
 
-      <!-- TAB 7: MUSIC NETWORK -->
+      <!-- 7. VIEW: Music Network -->
       <section class="tab-pane" id="tab-network">
         <div class="chart-card glass">
           <div class="card-header">
-            <h3>🕸️ Personal Music Graph & Community Clusters</h3>
+            <h3>Topological Music Network (Community Clusters & Betweenness Bridges)</h3>
             <div class="network-controls">
-              <label>Min Transitions: <input type="range" id="net-min-weight" min="1" max="10" value="2"> <span id="lbl-min-weight">2</span></label>
+              <label>Min Transition Weight: <span id="lbl-min-weight">2</span></label>
+              <input type="range" id="net-min-weight" min="1" max="10" value="2">
             </div>
           </div>
-          <div class="network-canvas-container" style="position: relative; height: 500px; background: #080b10; border-radius: 12px; overflow: hidden;">
-            <canvas id="network-canvas" width="1000" height="500" style="width: 100%; height: 100%;"></canvas>
+          <div class="network-canvas-wrapper" style="position: relative; height: 500px; background: #07090e; border-radius: 8px;">
+            <canvas id="network-canvas" width="1000" height="500"></canvas>
             <div class="network-legend">
-              <span class="legend-item"><span class="dot" style="background:#1db954;"></span> Community 0</span>
-              <span class="legend-item"><span class="dot" style="background:#00d2ff;"></span> Community 1</span>
-              <span class="legend-item"><span class="dot" style="background:#9d4edd;"></span> Community 2</span>
-              <span class="legend-item"><span class="dot" style="background:#ff9f1c;"></span> Community 3</span>
+              <span class="legend-item"><span class="dot" style="background:#1db954;"></span> Hip-Hop / Rap</span>
+              <span class="legend-item"><span class="dot" style="background:#00d2ff;"></span> Indie / Alternative</span>
+              <span class="legend-item"><span class="dot" style="background:#9d4edd;"></span> Pop / Electronic</span>
+              <span class="legend-item"><span class="dot" style="background:#ff9f1c;"></span> Punjabi / Desi</span>
             </div>
           </div>
         </div>
 
-        <div class="chart-card glass">
+        <div class="chart-card glass" style="margin-top: 20px;">
           <div class="card-header">
-            <h3>🌉 Bridge Artists (High Betweenness Connecting Musical Clusters)</h3>
+            <h3>Top Betweenness Centrality Bridge Artists</h3>
           </div>
           <div class="table-container">
             <table class="data-table" id="table-bridge-artists">
               <thead>
-                <tr><th>Artist</th><th>Betweenness Centrality</th><th>PageRank</th><th>Degree</th><th>Total Hours</th></tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 8: GENRE × TIME × YEAR -->
-      <section class="tab-pane" id="tab-genres">
-        <div class="chart-row two-col">
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>🕒 Genre Listening by 3-Hour Time-of-Day Buckets</h3>
-            </div>
-            <div class="chart-body" id="chart-genre-tod" style="height: 380px;"></div>
-          </div>
-
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>📊 Annual Genre Migration & Share (2020–2026)</h3>
-            </div>
-            <div class="chart-body" id="chart-genre-yearly" style="height: 380px;"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 9: DEEP DIVE EXPLORER -->
-      <section class="tab-pane" id="tab-deepdive">
-        <div class="chart-card glass">
-          <div class="card-header">
-            <h3>🔍 Multi-Level Hierarchical Explorer</h3>
-          </div>
-          <div class="deepdive-builder">
-            <div class="filter-row">
-              <div class="filter-group">
-                <label>1. Select Artist:</label>
-                <select id="dd-artist-select" class="select-input"></select>
-              </div>
-              <div class="filter-group">
-                <label>2. Select Project:</label>
-                <select id="dd-project-select" class="select-input"></select>
-              </div>
-            </div>
-
-            <div class="dd-results-container" id="dd-results-container">
-              <!-- Dynamic Deep Dive output -->
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 10: ML INTELLIGENCE -->
-      <section class="tab-pane" id="tab-ml">
-        <!-- Benchmark comparison card -->
-        <div class="chart-card glass">
-          <div class="card-header">
-            <h3>🤖 Model Benchmark Comparison (Test Set: 2026 Chronological Evaluation)</h3>
-            <span class="badge-audit">Zero Temporal Leakage Verified</span>
-          </div>
-          <div class="table-container">
-            <table class="data-table" id="table-ml-benchmark">
-              <thead>
                 <tr>
-                  <th>Model Architecture</th>
-                  <th>PR-AUC</th>
-                  <th>ROC-AUC</th>
-                  <th>Precision</th>
-                  <th>Recall</th>
-                  <th>F1 Score</th>
-                  <th>Brier Score</th>
-                  <th>Threshold</th>
+                  <th>Artist Name</th>
+                  <th>Betweenness Centrality</th>
+                  <th>PageRank</th>
+                  <th>Degree Connections</th>
+                  <th>Total Hours</th>
                 </tr>
               </thead>
               <tbody></tbody>
             </table>
           </div>
         </div>
+      </section>
+
+      <!-- 8. VIEW: Genre × Time × Year -->
+      <section class="tab-pane" id="tab-genres">
+        <div class="chart-row two-col">
+          <div class="chart-card glass">
+            <div class="card-header">
+              <h3>🕒 Genre Distribution Across 8 Diurnal Time Buckets</h3>
+            </div>
+            <div id="chart-genre-tod" style="height: 350px;"></div>
+          </div>
+          <div class="chart-card glass">
+            <div class="card-header">
+              <h3>📊 Annual Genre Migration (2020–2026)</h3>
+            </div>
+            <div id="chart-genre-yearly" style="height: 350px;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. VIEW: Deep Dive Explorer -->
+      <section class="tab-pane" id="tab-deepdive">
+        <div class="chart-card glass">
+          <div class="card-header">
+            <h3>Hierarchical Multi-Level Catalog Drill-Down</h3>
+          </div>
+          <div class="deep-dive-container">
+            <div class="dd-selectors">
+              <div class="dd-group">
+                <label>Step 1: Select Artist</label>
+                <select id="dd-artist-select" class="select-input"></select>
+              </div>
+              <div class="dd-group">
+                <label>Step 2: Select Project</label>
+                <select id="dd-project-select" class="select-input"></select>
+              </div>
+              <div class="dd-group">
+                <label>Step 3: Select Song</label>
+                <select id="dd-song-select" class="select-input"></select>
+              </div>
+            </div>
+            <div class="dd-result-panel glass" id="dd-output-panel" style="margin-top: 20px; padding: 20px;">
+              <h4>Catalog Pathway Summary</h4>
+              <div id="dd-summary-text" style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-top: 10px;">
+                Select an entity to explore the hierarchical discovery pathway.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10. VIEW: Machine Learning Intelligence & Live Simulator -->
+      <section class="tab-pane" id="tab-ml">
+        <div class="feature-banner glass">
+          <div class="fb-text">
+            <h2>🤖 Machine Learning Intelligence</h2>
+            <p>Predicting 7-Day Catalog Expansion with zero temporal leakage on held-out 2026 test data.</p>
+          </div>
+        </div>
 
         <div class="chart-row two-col">
           <div class="chart-card glass">
             <div class="card-header">
-              <h3>🌳 Feature Importance (LightGBM Gain)</h3>
+              <h3>🎯 Model Benchmark Comparison (2026 Test Split)</h3>
             </div>
-            <div class="chart-body" id="chart-feature-importance" style="height: 380px;"></div>
+            <div class="table-container">
+              <table class="data-table" id="table-ml-benchmark">
+                <thead>
+                  <tr>
+                    <th>Model</th>
+                    <th>PR-AUC</th>
+                    <th>ROC-AUC</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                    <th>F1 Score</th>
+                    <th>Brier Score</th>
+                    <th>Threshold</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
 
-          <!-- Interactive Prediction Simulator -->
+          <div class="chart-card glass">
+            <div class="card-header">
+              <h3>📊 LightGBM Feature Importance (Gain)</h3>
+            </div>
+            <div id="chart-feature-importance" style="height: 320px;"></div>
+          </div>
+        </div>
+
+        <div class="chart-row two-col">
           <div class="chart-card glass">
             <div class="card-header">
               <h3>⚡ Live Catalog Expansion Predictor</h3>
             </div>
-            <div class="sim-form">
+            <form id="form-ml-predict" class="sim-form" onsubmit="return false;">
               <div class="form-row">
                 <div class="form-group">
                   <label>First Time Hearing Artist?</label>
                   <select id="sim-first-artist" class="select-input">
-                    <option value="1">Yes (First Discovery)</option>
+                    <option value="1">Yes (Discovery Exposure)</option>
                     <option value="0">No (Known Artist)</option>
                   </select>
                 </div>
                 <div class="form-group">
-                  <label>Exposure Seconds Played:</label>
-                  <input type="number" id="sim-seconds" class="text-input" value="190">
+                  <label>Seconds Played</label>
+                  <input type="number" id="sim-seconds" value="210" class="text-input">
                 </div>
               </div>
-
               <div class="form-row">
                 <div class="form-group">
-                  <label>Was Track Skipped?</label>
+                  <label>Skipped?</label>
                   <select id="sim-skipped" class="select-input">
-                    <option value="0">No (Completed / Listened)</option>
+                    <option value="0">No (Completed)</option>
                     <option value="1">Yes (Skipped)</option>
                   </select>
                 </div>
                 <div class="form-group">
-                  <label>Prior Artist Tracks Heard:</label>
-                  <input type="number" id="sim-art-tracks" class="text-input" value="0">
+                  <label>Local Hour of Day (0–23)</label>
+                  <input type="number" id="sim-hour" value="22" class="text-input">
                 </div>
               </div>
-
               <div class="form-row">
                 <div class="form-group">
-                  <label>Hour of Day (0-23):</label>
-                  <input type="number" id="sim-hour" class="text-input" value="21" min="0" max="23">
+                  <label>Artist Tracks Heard Before</label>
+                  <input type="number" id="sim-art-tracks" value="0" class="text-input">
                 </div>
                 <div class="form-group">
-                  <label>Prior Artist Plays:</label>
-                  <input type="number" id="sim-art-plays" class="text-input" value="0">
+                  <label>Artist Plays Before</label>
+                  <input type="number" id="sim-art-plays" value="0" class="text-input">
                 </div>
               </div>
+              <button type="button" id="btn-run-predict" class="btn-primary" style="margin-top: 10px;">
+                Predict Catalog Expansion
+              </button>
+            </form>
 
-              <button id="btn-run-predict" class="btn-primary">🔮 Predict Catalog Expansion</button>
-
-              <div class="sim-result-box glass" id="sim-result-box" style="display:none;">
-                <div class="srb-header">
-                  <span class="srb-prob" id="srb-prob">--%</span>
-                  <span class="srb-badge" id="srb-badge">Predicted Expansion</span>
-                </div>
-                <div class="srb-explanation" id="srb-explanation"></div>
+            <div class="sim-result-box" id="sim-result-box" style="display: none; margin-top: 18px;">
+              <div class="srb-header">
+                <span class="srb-prob" id="srb-prob">0.0%</span>
+                <span class="srb-badge" id="srb-badge">Prediction</span>
               </div>
+              <div class="srb-explanation" id="srb-explanation"></div>
             </div>
           </div>
-        </div>
 
-        <!-- Temporal Audit Details -->
-        <div class="chart-card glass">
-          <div class="card-header">
-            <h3>🔒 Strict Temporal Leakage Audit Certificate</h3>
+          <div class="chart-card glass">
+            <div class="card-header">
+              <h3>🛡️ Temporal Leakage Audit Certificate</h3>
+            </div>
+            <div id="audit-cert-box" style="padding: 14px;"></div>
           </div>
-          <div class="audit-cert" id="audit-cert-box"></div>
         </div>
       </section>
+
     </main>
   </div>
 
-  <script src="/static/app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
