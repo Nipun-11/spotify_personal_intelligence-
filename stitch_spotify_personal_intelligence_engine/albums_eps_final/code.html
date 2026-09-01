@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Albums &amp; EPs - Music Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#53e076",
+                        "on-surface": "#e3e2e2",
+                        "on-secondary-fixed-variant": "#474646",
+                        "on-primary-fixed-variant": "#005320",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "error": "#ffb4ab",
+                        "on-secondary": "#313030",
+                        "inverse-on-surface": "#2f3131",
+                        "on-error": "#690005",
+                        "on-primary": "#003914",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "primary-container": "#1db954",
+                        "inverse-surface": "#e3e2e2",
+                        "on-secondary-container": "#bab8b7",
+                        "surface": "#121414",
+                        "surface-bright": "#38393a",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "surface-container-low": "#1a1c1c",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "outline": "#869585",
+                        "on-background": "#e3e2e2",
+                        "tertiary": "#c8c6c5",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "on-tertiary": "#313030",
+                        "on-primary-fixed": "#002108",
+                        "secondary-container": "#4a4949",
+                        "primary": "#53e076",
+                        "primary-fixed": "#72fe8f",
+                        "on-tertiary-container": "#383838",
+                        "background": "#121414",
+                        "on-primary-container": "#004118",
+                        "surface-variant": "#343535",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-high": "#292a2a",
+                        "surface-container-highest": "#343535",
+                        "surface-dim": "#121414",
+                        "secondary": "#c8c6c5",
+                        "surface-container-lowest": "#0d0e0f",
+                        "primary-fixed-dim": "#53e076",
+                        "error-container": "#93000a",
+                        "inverse-primary": "#006e2d",
+                        "tertiary-container": "#a3a1a0",
+                        "tertiary-fixed": "#e5e2e1",
+                        "outline-variant": "#3d4a3d",
+                        "on-surface-variant": "#bccbb9",
+                        "surface-container": "#1e2020",
+                        "secondary-fixed": "#e5e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar-width": "280px",
+                        "card-gap": "1rem",
+                        "gutter": "1.5rem",
+                        "section-stack": "3rem",
+                        "container-margin": "2rem"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "display-hero": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "metadata": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "display-hero": ["72px", {"lineHeight": "80px", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                        "headline-md": ["24px", {"lineHeight": "28px", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "metadata": ["11px", {"lineHeight": "14px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined[data-weight="fill"] { font-variation-settings: 'FILL' 1; }
+        
+        /* Minimal Scrollbar for Dark Mode */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #343535; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4a4949; }
+        
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased flex min-h-screen selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-screen w-sidebar-width bg-surface-container-low border-r border-surface-variant flex flex-col py-container-margin z-50 hidden md:flex">
+<!-- Brand -->
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="graphic_eq">graphic_eq</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-black text-primary">Music DNA</h1>
+<p class="font-metadata text-metadata text-on-surface-variant uppercase tracking-wider">Intelligence Platform</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto px-2 space-y-1">
+<a class="flex items-center gap-4 text-on-surface-variant pl-5 py-3 hover:text-on-surface hover:bg-surface-container-highest transition-all rounded-lg font-body-md text-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Overview
+            </a>
+<a class="flex items-center gap-4 text-on-surface-variant pl-5 py-3 hover:text-on-surface hover:bg-surface-container-highest transition-all rounded-lg font-body-md text-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+                Discovery
+            </a>
+<a class="flex items-center gap-4 text-on-surface-variant pl-5 py-3 hover:text-on-surface hover:bg-surface-container-highest transition-all rounded-lg font-body-md text-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+                Artists
+            </a>
+<a class="flex items-center gap-4 text-on-surface border-l-4 border-primary font-bold pl-4 py-3 bg-surface-container-high hover:bg-surface-container-highest transition-all rounded-r-lg font-body-md text-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="album" data-weight="fill">album</span>
+                Albums
+            </a>
+<a class="flex items-center gap-4 text-on-surface-variant pl-5 py-3 hover:text-on-surface hover:bg-surface-container-highest transition-all rounded-lg font-body-md text-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="music_note">music_note</span>
+                Songs
+            </a>
+<a class="flex items-center gap-4 text-on-surface-variant pl-5 py-3 hover:text-on-surface hover:bg-surface-container-highest transition-all rounded-lg font-body-md text-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="timeline">timeline</span>
+                Sequences
+            </a>
+<a class="flex items-center gap-4 text-on-surface-variant pl-5 py-3 hover:text-on-surface hover:bg-surface-container-highest transition-all rounded-lg font-body-md text-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+                Network
+            </a>
+<a class="flex items-center gap-4 text-on-surface-variant pl-5 py-3 hover:text-on-surface hover:bg-surface-container-highest transition-all rounded-lg font-body-md text-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="category">category</span>
+                Genre &amp; Time
+            </a>
+<a class="flex items-center gap-4 text-on-surface-variant pl-5 py-3 hover:text-on-surface hover:bg-surface-container-highest transition-all rounded-lg font-body-md text-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+                Deep Dive
+            </a>
+<a class="flex items-center gap-4 text-on-surface-variant pl-5 py-3 hover:text-on-surface hover:bg-surface-container-highest transition-all rounded-lg font-body-md text-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+                ML Intelligence
+            </a>
+</div>
+<!-- Footer Actions -->
+<div class="px-4 mt-auto pt-6 space-y-4">
+<button class="w-full bg-primary-container text-on-primary-container font-body-lg text-body-lg font-bold py-3 px-4 rounded-full hover:bg-primary transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="bolt">bolt</span>
+                Upgrade to Pro
+            </button>
+<div class="flex items-center justify-around text-on-surface-variant">
+<a class="flex items-center gap-1 hover:text-on-surface font-metadata text-metadata transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]" data-icon="info">info</span> Disclaimer
+                </a>
+<a class="flex items-center gap-1 hover:text-on-surface font-metadata text-metadata transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]" data-icon="security">security</span> Privacy
+                </a>
+</div>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-sidebar-width min-h-screen overflow-hidden">
+<!-- TopNavBar -->
+<header class="bg-surface top-0 sticky z-40 w-full flex justify-between items-center px-gutter py-4 border-b border-surface-variant">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full bg-surface-container-high border-none rounded-full py-2 pl-10 pr-4 text-on-surface font-body-md text-body-md focus:ring-1 focus:ring-primary-container placeholder:text-on-surface-variant transition-all focus:bg-surface-container-highest" placeholder="Search albums, artists..." type="text"/>
+</div>
+<!-- Mobile Menu Trigger -->
+<button class="md:hidden p-2 text-on-surface hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="md:hidden font-headline-md text-headline-md font-black text-on-surface">Music Intelligence</h1>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-full transition-colors cursor-pointer active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-full transition-colors cursor-pointer active:scale-95 duration-200 hidden sm:block">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden ml-2 border border-surface-variant cursor-pointer">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A macro photography shot of a sleek, abstract metallic sphere reflecting dark green and black hues in a studio lighting environment, creating a high-contrast, premium, dark-mode profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEIRIXKMFckKbcSgY8jaG-eiH6kml_eJ53RK8F_dkdIpxMsoAilnXAJi3R0jU7Yu5Pfa8yJyjIR1k_KKOK5aY-geXJdfwvb-g6C5vyz-ipIAEH3PuitUE2EO1-wUjgy-ATAfB7pTSfx4V_nO4IiQGzmdm57QmLYx59aDWZVpVbzw9WclqURTiVeRVM-pObNWudoZ02u58joOCJ4QnhDI-XbpjKz8LE7bTaxRa91AtMDAHfjkRgR67Y"/>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 p-4 md:p-container-margin overflow-y-auto">
+<!-- Header Section -->
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<h2 class="font-display-hero text-headline-lg-mobile md:text-display-hero font-black text-on-surface">Albums &amp; EPs</h2>
+<div class="relative flex items-center tooltip cursor-help">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]" data-icon="info">info</span>
+<div class="tooltip-text absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-surface-container-high text-on-surface text-label-sm font-label-sm rounded-lg border border-surface-variant shadow-xl z-10 text-center pointer-events-none">
+                                        Explored = at least 3 unique tracks heard. This threshold also supports 3-track EPs.
+                                    </div>
+</div>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant">How deeply did you explore each project?</p>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 bg-surface-container-high text-on-surface rounded-full font-label-sm text-label-sm hover:bg-surface-container-highest transition-colors border border-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="filter_list">filter_list</span> Filter
+                    </button>
+<button class="px-4 py-2 bg-surface-container-high text-on-surface rounded-full font-label-sm text-label-sm hover:bg-surface-container-highest transition-colors border border-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="sort">sort</span> Sort
+                    </button>
+</div>
+</div>
+<!-- Top Metrics -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-section-stack">
+<div class="bg-surface-container-low p-4 rounded-xl border border-surface-variant">
+<p class="font-metadata text-metadata text-on-surface-variant uppercase mb-1">Projects Explored</p>
+<p class="font-headline-lg text-headline-lg text-primary">248</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-surface-variant">
+<p class="font-metadata text-metadata text-on-surface-variant uppercase mb-1">Full Projects</p>
+<p class="font-headline-lg text-headline-lg text-on-surface">86</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-surface-variant">
+<p class="font-metadata text-metadata text-on-surface-variant uppercase mb-1">Deep Projects</p>
+<p class="font-headline-lg text-headline-lg text-on-surface">112</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-surface-variant">
+<p class="font-metadata text-metadata text-on-surface-variant uppercase mb-1">Partial Projects</p>
+<p class="font-headline-lg text-headline-lg text-on-surface">50</p>
+</div>
+</div>
+<!-- Featured Detail View -->
+<div class="bg-surface-container-low rounded-2xl border border-surface-variant overflow-hidden mb-section-stack">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
+<!-- Artwork & Overview -->
+<div class="lg:col-span-5 relative bg-black flex flex-col p-6 items-center justify-center border-b lg:border-b-0 lg:border-r border-surface-variant min-h-[400px]">
+<div class="absolute inset-0 bg-cover bg-center opacity-40 blur-xl" data-alt="A cinematic, high-contrast, dark-mode abstract representation of an electronic music album cover. Deep blacks dominate the background, overlaid with subtle, glowing, volumetric fog in vibrant primary green (#1DB954) and electric purple. The lighting is moody and dramatic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAL6T8lTjI6izp5KuMMDk6ibU5qR8H_5-ei5uv01paTnx70swsZbRhvflrpMQawLvzAJ18zczozY8RPEtyk4LbxwuzeOrsMRMWkQqTayGpH6Ub365tQSxrqnpcyGrPJJIiUV2KnUOz26_Bqr1H_Pd4-LYZzwHQzzEHzqIhpDmiEIr2ojnkBk5ZhpRoSrlo-qJFUGX_pXpwUP4yb43RTu7MwiuReBPy-aw6Ypuv7g699a5b4NBI60fV2')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest to-transparent opacity-80"></div>
+<div class="w-64 h-64 rounded-lg shadow-2xl overflow-hidden shrink-0 relative z-10 mb-6 border border-surface-variant">
+<img class="w-full h-full object-cover" data-alt="A minimalist, geometric album cover featuring a solitary, glowing neon green triangle against a pitch-black, textured vinyl-like surface, shot in a high-end studio setting with rim lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKq9F3NjsjHQCuW7caGwqfzAMOvIMBbg4IoxPv3n-mIjUZLRkF-TSbHSMn3on-ppkknlZ4WsBqGGTZxgtdqZWEEZ3VOGL5T6eTVLZX2HUXm8CK79u4CCBBAjZgOy6IU6TtH8HWTxoVQ0Sx57uUsOh0lwUhRv4YKWLQY82CXtDZIUcXr-dtrFvQuZCj8E_USeK5I8oyEpbwNwYcPwgovKoJBEktr7_mMk8nRxDCAkK4ngdM2SKYyvLR"/>
+</div>
+<div class="text-center relative z-10">
+<h3 class="font-headline-lg text-headline-lg text-on-surface mb-1">Neon Genesis</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-4">Kavinsky • 2023 • EP</p>
+<span class="inline-block px-4 py-1.5 bg-primary/20 text-primary rounded-full font-label-sm text-label-sm border border-primary/30 uppercase tracking-widest">Explored</span>
+</div>
+</div>
+<!-- Detailed Stats & Tracks -->
+<div class="lg:col-span-7 p-6 md:p-8 flex flex-col justify-between">
+<div class="grid grid-cols-3 gap-6 mb-8">
+<div>
+<p class="font-metadata text-metadata text-on-surface-variant uppercase tracking-wide mb-1">Penetration</p>
+<p class="font-headline-md text-headline-md text-on-surface">83%</p>
+<p class="font-metadata text-metadata text-on-surface-variant">5/6 Tracks</p>
+</div>
+<div>
+<p class="font-metadata text-metadata text-on-surface-variant uppercase tracking-wide mb-1">Total Plays</p>
+<p class="font-headline-md text-headline-md text-on-surface">142</p>
+<p class="font-metadata text-metadata text-on-surface-variant">All time</p>
+</div>
+<div>
+<p class="font-metadata text-metadata text-on-surface-variant uppercase tracking-wide mb-1">Time Spent</p>
+<p class="font-headline-md text-headline-md text-on-surface">3h 12m</p>
+<p class="font-metadata text-metadata text-on-surface-variant">Total minutes</p>
+</div>
+</div>
+<div>
+<h4 class="font-body-lg text-body-lg text-on-surface mb-4 flex items-center gap-2 border-b border-surface-variant pb-2">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="star">star</span> Project-Driving Songs
+                            </h4>
+<div class="space-y-3">
+<!-- Track 1 -->
+<div class="group flex items-center justify-between p-2 -mx-2 rounded-lg hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-4">
+<span class="font-metadata text-metadata text-on-surface-variant w-4 text-right">1</span>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium">Nightcall</p>
+<p class="font-metadata text-metadata text-on-surface-variant">1,240 plays</p>
+</div>
+</div>
+<div class="w-1/3 md:w-1/2 flex items-center gap-3">
+<div class="flex-1 h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 75%"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant w-10 text-right">75%</span>
+</div>
+</div>
+<!-- Track 2 -->
+<div class="group flex items-center justify-between p-2 -mx-2 rounded-lg hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-4">
+<span class="font-metadata text-metadata text-on-surface-variant w-4 text-right">2</span>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium">Odd Look</p>
+<p class="font-metadata text-metadata text-on-surface-variant">320 plays</p>
+</div>
+</div>
+<div class="w-1/3 md:w-1/2 flex items-center gap-3">
+<div class="flex-1 h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-fixed-dim rounded-full" style="width: 20%"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant w-10 text-right">20%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Project Grid -->
+<div class="mb-section-stack">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-headline-md text-headline-md text-on-surface">Recently Explored</h3>
+<button class="text-primary hover:text-primary-fixed transition-colors font-label-sm text-label-sm uppercase tracking-wider">View All</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+<!-- Card 1 -->
+<div class="bg-surface-container-low rounded-xl border border-surface-variant p-4 hover:bg-surface-container transition-colors cursor-pointer group flex flex-col gap-3">
+<div class="flex gap-4 items-center">
+<div class="w-16 h-16 rounded-md overflow-hidden shrink-0 shadow-md border border-surface-variant">
+<img class="w-full h-full object-cover" data-alt="A dark-mode album cover design featuring a swirling vortex of deep ocean blue and emerald green liquid textures, shot from directly above with dramatic side lighting emphasizing the viscous texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuARaupAF_LTkmrc3pMhGscXfOH6XLTKnez-Ukq-QlSfIuSs-nY9rUHO0EtB70jxK0QPKu8f9pRfyWSbYgE6drW6bmuUi9Kdl__vLl39TPSpzRaYIrA5_jpPWQ8ixVEvPl0rCsxl2WjEBD-ScD45_ZTVilxyqwj9QLjSLkP_non03iLoDC4ftPHwB5UxbPd1fZcFuSLiYhQjnZ0tfWFXlxYSa8rtwUCkhzLVuD0JZS083XDDL3dXD06B"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-body-md text-body-md text-on-surface font-medium truncate group-hover:text-primary transition-colors">Currents</h4>
+<p class="font-metadata text-metadata text-on-surface-variant truncate">Tame Impala</p>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-metadata text-metadata text-on-surface-variant mb-1">
+<span>11/13 Tracks</span>
+<span>85%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 85%"></div>
+</div>
+<div class="flex justify-between font-metadata text-metadata text-on-surface-variant mt-1">
+<span>4h 10m total</span>
+<span class="text-primary">Deep</span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-low rounded-xl border border-surface-variant p-4 hover:bg-surface-container transition-colors cursor-pointer group flex flex-col gap-3">
+<div class="flex gap-4 items-center">
+<div class="w-16 h-16 rounded-md overflow-hidden shrink-0 shadow-md border border-surface-variant">
+<img class="w-full h-full object-cover" data-alt="A high-contrast, moody album cover featuring a solitary silhouette of a figure walking down a foggy, neon-lit cyberpunk alleyway in deep purple and cyan hues." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCh4p3jMY7PO4KjyrgDKgdhiIi9TAS7uoMZuDglOTlct8kDjJ7-3rYPaWRdDqcXWErSiHtD4-Dr8yOswJIfVLx-EPH3LhDv82epetydqvTZUEbiTPlGEHHULChqqpUeMkK_qRvv8X5xcsLOQ58UZAhP89hxYw6iL27KzY6lba0ZQZ0Tk2YtrQvrsARQzb6gsaYOsVISAvU6lzn_izCfrW6b7SHmIH7WbtiGtOyp5GNuPahPqMnB-JXo"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-body-md text-body-md text-on-surface font-medium truncate group-hover:text-primary transition-colors">After Hours</h4>
+<p class="font-metadata text-metadata text-on-surface-variant truncate">The Weeknd</p>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-metadata text-metadata text-on-surface-variant mb-1">
+<span>14/14 Tracks</span>
+<span>100%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 100%"></div>
+</div>
+<div class="flex justify-between font-metadata text-metadata text-on-surface-variant mt-1">
+<span>6h 45m total</span>
+<span class="text-primary font-medium">Full</span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-low rounded-xl border border-surface-variant p-4 hover:bg-surface-container transition-colors cursor-pointer group flex flex-col gap-3">
+<div class="flex gap-4 items-center">
+<div class="w-16 h-16 rounded-md overflow-hidden shrink-0 shadow-md border border-surface-variant relative">
+<img class="w-full h-full object-cover" data-alt="An ethereal, minimalist album cover showing a soft, out-of-focus gradient of pale grey and muted sage green, conveying a sense of quiet ambiance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFQN__bNmtdw0lalRKRmLVV_SkP-2JOFZqdaFsq0cORL38_ZuKirG8gAedOCi5gNN6vcSjKJu3bFN8xmgd7uDEcdtfvOOkjRhnjxXlqqulDhSO38y5IdjUiAY3OsA6DP5A4j95ROTgPXZnG0n9_JDoZlnigtlOw5beTm6vz6_AknADbySaMYLB7fDqhVh7X5YEyfwtRIwmMWhzdbmTBLWy6pTQEwa4u_qg3f4F63A6rVXFkIIh6dn7"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-body-md text-body-md text-on-surface font-medium truncate group-hover:text-primary transition-colors">Selected Works</h4>
+<p class="font-metadata text-metadata text-on-surface-variant truncate">Aphex Twin</p>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-metadata text-metadata text-on-surface-variant mb-1">
+<span>4/15 Tracks</span>
+<span>26%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary/60 rounded-full" style="width: 26%"></div>
+</div>
+<div class="flex justify-between font-metadata text-metadata text-on-surface-variant mt-1">
+<span>1h 12m total</span>
+<span class="text-on-surface-variant">Partial</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom spacing -->
+<div class="h-section-stack"></div>
+</main>
+</div>
+</body></html>

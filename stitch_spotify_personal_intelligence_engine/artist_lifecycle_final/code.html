@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Artist Lifecycle - SPIE</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline-variant": "#3d4a3d",
+                      "on-background": "#e3e2e2",
+                      "surface-container-low": "#1a1c1c",
+                      "background": "#121414",
+                      "surface-dim": "#121414",
+                      "on-surface-variant": "#bccbb9",
+                      "on-tertiary-fixed": "#1c1b1b",
+                      "outline": "#869585",
+                      "on-primary": "#003914",
+                      "surface": "#121414",
+                      "on-secondary": "#313030",
+                      "surface-tint": "#53e076",
+                      "on-tertiary-container": "#383838",
+                      "surface-container-high": "#292a2a",
+                      "error": "#ffb4ab",
+                      "surface-container": "#1e2020",
+                      "on-error-container": "#ffdad6",
+                      "on-tertiary": "#313030",
+                      "primary": "#53e076",
+                      "inverse-on-surface": "#2f3131",
+                      "primary-container": "#1db954",
+                      "secondary-container": "#4a4949",
+                      "on-secondary-fixed-variant": "#474646",
+                      "primary-fixed": "#72fe8f",
+                      "on-error": "#690005",
+                      "tertiary-container": "#a3a1a0",
+                      "on-secondary-container": "#bab8b7",
+                      "surface-container-highest": "#343535",
+                      "on-tertiary-fixed-variant": "#474746",
+                      "tertiary-fixed-dim": "#c8c6c5",
+                      "tertiary-fixed": "#e5e2e1",
+                      "inverse-primary": "#006e2d",
+                      "on-primary-container": "#004118",
+                      "surface-bright": "#38393a",
+                      "surface-container-lowest": "#0d0e0f",
+                      "primary-fixed-dim": "#53e076",
+                      "on-primary-fixed": "#002108",
+                      "error-container": "#93000a",
+                      "surface-variant": "#343535",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "on-surface": "#e3e2e2",
+                      "tertiary": "#c8c6c5",
+                      "secondary": "#c8c6c5",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "inverse-surface": "#e3e2e2",
+                      "on-primary-fixed-variant": "#005320"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "card-gap": "1rem",
+                      "sidebar-width": "280px",
+                      "section-stack": "3rem",
+                      "container-margin": "2rem",
+                      "gutter": "1.5rem"
+              },
+              "fontFamily": {
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "display-hero": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "metadata": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "display-hero": [
+                              "72px",
+                              {
+                                      "lineHeight": "80px",
+                                      "letterSpacing": "-0.04em",
+                                      "fontWeight": "900"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "metadata": [
+                              "11px",
+                              {
+                                      "lineHeight": "14px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(40, 40, 40, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(180deg, rgba(29, 185, 84, 0.15) 0%, rgba(18, 20, 20, 1) 100%);
+        }
+
+        .stat-chip {
+            background: rgba(51, 51, 51, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Chart placeholder animations */
+        @keyframes pulse-line {
+            0% { opacity: 0.5; stroke-dasharray: 1, 10; }
+            50% { opacity: 1; stroke-dasharray: 10, 20; }
+            100% { opacity: 0.5; stroke-dasharray: 1, 10; }
+        }
+        .animated-line {
+            animation: pulse-line 3s infinite ease-in-out;
+        }
+
+        .heatmap-cell {
+            transition: opacity 0.2s;
+        }
+        .heatmap-cell:hover {
+            opacity: 0.8;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen flex overflow-x-hidden">
+<!-- SideNavBar -->
+<nav class="hidden md:flex w-[sidebar-width] h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-surface-variant flex-col py-6 px-4 z-50">
+<div class="mb-8 px-4 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-headline-md text-headline-md font-black">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-black text-on-surface">SPIE</h1>
+<p class="font-metadata text-metadata text-on-surface-variant">Intelligence Engine</p>
+</div>
+</div>
+<ul class="flex-1 space-y-1">
+<li class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer rounded">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">Overview</span>
+</li>
+<li class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer rounded">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-body-md text-body-md">Discovery</span>
+</li>
+<li class="flex items-center gap-3 py-3 text-on-surface font-bold border-l-4 border-primary pl-4 -ml-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer rounded bg-surface-container-low">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-body-md text-body-md">Artists</span>
+</li>
+<li class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer rounded">
+<span class="material-symbols-outlined">album</span>
+<span class="font-body-md text-body-md">Albums</span>
+</li>
+<li class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer rounded">
+<span class="material-symbols-outlined">audiotrack</span>
+<span class="font-body-md text-body-md">Songs</span>
+</li>
+<li class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer rounded">
+<span class="material-symbols-outlined">auto_graph</span>
+<span class="font-body-md text-body-md">Sequences</span>
+</li>
+<li class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer rounded">
+<span class="material-symbols-outlined">hub</span>
+<span class="font-body-md text-body-md">Network</span>
+</li>
+<li class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer rounded">
+<span class="material-symbols-outlined">schedule</span>
+<span class="font-body-md text-body-md">Time &amp; Genre</span>
+</li>
+<li class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer rounded">
+<span class="material-symbols-outlined">manage_search</span>
+<span class="font-body-md text-body-md">Deep Dive</span>
+</li>
+<li class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer rounded">
+<span class="material-symbols-outlined">psychology</span>
+<span class="font-body-md text-body-md">ML Intelligence</span>
+</li>
+</ul>
+<div class="mt-auto pt-6 border-t border-surface-variant space-y-4">
+<button class="w-full bg-primary text-on-primary font-label-sm text-label-sm py-2 rounded-full hover:opacity-90 transition-opacity font-bold">
+                Upgrade to Premium
+            </button>
+<ul class="space-y-1">
+<li class="flex items-center gap-3 py-2 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer rounded">
+<span class="material-symbols-outlined text-sm">settings</span>
+<span class="font-metadata text-metadata">Settings</span>
+</li>
+<li class="flex items-center gap-3 py-2 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer rounded">
+<span class="material-symbols-outlined text-sm">help</span>
+<span class="font-metadata text-metadata">Support</span>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-[sidebar-width] flex flex-col min-h-screen relative">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-8 py-4 bg-background/80 backdrop-blur-md docked full-width top-0 sticky z-40">
+<div class="flex items-center gap-6">
+<span class="font-headline-md text-headline-md font-black text-on-surface hidden lg:block">Spotify Personal Intelligence Engine</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-sm text-label-sm" href="#">Home</a>
+<a class="text-on-surface border-b-2 border-primary pb-1 font-label-sm text-label-sm" href="#">Analytics</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-sm text-label-sm" href="#">Library</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="bg-surface-container-high border border-surface-variant text-on-surface rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 font-body-md" placeholder="Search artist..." type="text" value="Flume"/>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors hover:scale-95 duration-100">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors hover:scale-95 duration-100">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<div class="flex-1">
+<!-- Hero Section -->
+<section class="relative pt-12 pb-24 px-8 md:px-container-margin hero-gradient flex flex-col md:flex-row items-end gap-8 border-b border-surface-variant">
+<div class="w-48 h-48 md:w-64 md:h-64 rounded-xl shadow-2xl overflow-hidden border border-surface-variant flex-shrink-0 relative">
+<img class="w-full h-full object-cover" data-alt="A highly detailed, cinematic portrait of an electronic music producer, bathed in moody neon green and dark grey lighting, creating a modern, slightly abstract visualizer aesthetic. Deep blacks and vibrant green highlights, hyper-realistic, 8k resolution, capturing a sense of deep musical focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2kfGVOrG1kILGWam6Ge4m5GRvqllIs24VwdW7C0P2gNxbVu8r7BZHw0DtsJ9dbChRPwgLptwmsgrnIG7Qh1LvCxV-vxwV506BzX6Psm9zGxP08hsOkyv7_piVP1ZHPwvbMSYDghEPp84hKhUkvpM4mUBOuKB6aVgTb0Q_xm5ApzZXOwiQSYDe-lJdh1Bty4PzmqjsZCXgmGMQXwtMAklRPJvsBZe6AIXG0tODBAbvCzB9dOYvopOl"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+</div>
+<div class="flex-1 space-y-4 relative z-10">
+<div class="flex items-center gap-2 text-primary font-label-sm text-label-sm tracking-wider uppercase">
+<span class="material-symbols-outlined text-sm">verified</span>
+                        Artist Lifecycle Analysis
+                    </div>
+<h1 class="font-display-hero text-display-hero text-on-surface">Flume</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+                        Your listening journey.
+                    </p>
+<div class="flex flex-wrap gap-3 mt-6">
+<button class="bg-primary text-on-primary font-label-sm text-label-sm px-6 py-2.5 rounded-full hover:opacity-90 transition-opacity flex items-center gap-2 font-bold">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                            Play Top Tracks
+                        </button>
+<button class="border border-outline text-on-surface font-label-sm text-label-sm px-6 py-2.5 rounded-full hover:bg-surface-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined">share</span>
+                            Share Report
+                        </button>
+</div>
+</div>
+</section>
+<!-- Content Canvas -->
+<div class="px-8 md:px-container-margin py-section-stack space-y-section-stack">
+<!-- Stats Grid -->
+<section class="grid grid-cols-2 md:grid-cols-6 gap-4 md:gap-card-gap">
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-secondary mb-2">timer</span>
+<span class="font-metadata text-metadata text-on-surface-variant uppercase tracking-wider">Hours</span>
+<span class="font-headline-lg text-headline-lg text-on-surface">104</span>
+</div>
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-primary mb-2">equalizer</span>
+<span class="font-metadata text-metadata text-on-surface-variant uppercase tracking-wider">Plays</span>
+<span class="font-headline-lg text-headline-lg text-on-surface">1,492</span>
+</div>
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-tertiary mb-2">audiotrack</span>
+<span class="font-metadata text-metadata text-on-surface-variant uppercase tracking-wider">Tracks</span>
+<span class="font-headline-lg text-headline-lg text-on-surface">78</span>
+</div>
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant mb-2">album</span>
+<span class="font-metadata text-metadata text-on-surface-variant uppercase tracking-wider">Projects</span>
+<span class="font-headline-lg text-headline-lg text-on-surface">12</span>
+</div>
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-tertiary mb-2">calendar_month</span>
+<span class="font-metadata text-metadata text-on-surface-variant uppercase tracking-wider">First Heard</span>
+<span class="font-headline-md text-headline-md text-on-surface">Mar 2016</span>
+<div class="mt-auto pt-2">
+<span class="text-on-surface-variant font-metadata text-metadata truncate block" title="Never Be Like You">"Never Be Like You"</span>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-error mb-2">show_chart</span>
+<span class="font-metadata text-metadata text-on-surface-variant uppercase tracking-wider">Peak Period</span>
+<span class="font-headline-md text-headline-md text-on-surface">Summer '22</span>
+<div class="flex items-center gap-1 mt-auto pt-2">
+<span class="stat-chip px-2 py-0.5 rounded-full font-metadata text-metadata text-error flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">local_fire_department</span> Intense
+                            </span>
+</div>
+</div>
+</section>
+<!-- Listening Lifecycle Chart -->
+<section class="glass-panel rounded-xl p-8 border border-surface-variant">
+<div class="flex justify-between items-end mb-8 border-b border-surface-variant pb-4">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-1">Listening Lifecycle Timeline</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Your journey with this artist across key phases.</p>
+</div>
+<div class="flex gap-2">
+<span class="px-3 py-1 rounded-full bg-surface-container-high text-on-surface font-metadata text-metadata border border-surface-variant">All Time</span>
+</div>
+</div>
+<div class="h-72 w-full relative">
+<!-- Abstract Chart Representation -->
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 300">
+<!-- Grid lines -->
+<line stroke="#333333" stroke-dasharray="4,4" stroke-width="1" x1="0" x2="1000" y1="50" y2="50"></line>
+<line stroke="#333333" stroke-dasharray="4,4" stroke-width="1" x1="0" x2="1000" y1="150" y2="150"></line>
+<line stroke="#333333" stroke-dasharray="4,4" stroke-width="1" x1="0" x2="1000" y1="250" y2="250"></line>
+<!-- Gradient for area -->
+<defs>
+<lineargradient id="areaGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="rgba(29, 185, 84, 0.4)"></stop>
+<stop offset="100%" stop-color="rgba(29, 185, 84, 0.0)"></stop>
+</lineargradient>
+</defs>
+<!-- Data Path -->
+<path class="animated-line" d="M0,280 C100,280 150,230 200,180 C280,100 350,50 450,40 C550,30 650,150 750,220 C850,290 920,270 1000,240" fill="none" stroke="#1db954" stroke-width="3"></path>
+<path d="M0,280 C100,280 150,230 200,180 C280,100 350,50 450,40 C550,30 650,150 750,220 C850,290 920,270 1000,240 L1000,300 L0,300 Z" fill="url(#areaGradient)"></path>
+<!-- Stage Markers -->
+<circle cx="100" cy="280" fill="#1db954" r="4"></circle>
+<circle cx="200" cy="180" fill="#1db954" r="4"></circle>
+<circle cx="320" cy="80" fill="#1db954" r="4"></circle>
+<circle cx="450" cy="40" fill="#fff" r="6" stroke="#1db954" stroke-width="2"></circle>
+<circle cx="650" cy="150" fill="#1db954" r="4"></circle>
+<circle cx="850" cy="290" fill="#1db954" r="4"></circle>
+<circle cx="980" cy="245" fill="#1db954" r="4"></circle>
+</svg>
+<!-- Labels absolute positioned -->
+<div class="absolute bottom-[-30px] left-[10%] transform -translate-x-1/2 font-metadata text-metadata text-on-surface-variant">DISCOVERY</div>
+<div class="absolute bottom-[-30px] left-[20%] transform -translate-x-1/2 font-metadata text-metadata text-on-surface-variant">EXPLORATION</div>
+<div class="absolute bottom-[-30px] left-[32%] transform -translate-x-1/2 font-metadata text-metadata text-on-surface-variant">GROWTH</div>
+<div class="absolute bottom-[-30px] left-[45%] transform -translate-x-1/2 font-metadata text-metadata text-primary font-bold">PEAK</div>
+<div class="absolute bottom-[-30px] left-[65%] transform -translate-x-1/2 font-metadata text-metadata text-on-surface-variant">DECLINE</div>
+<div class="absolute bottom-[-30px] left-[85%] transform -translate-x-1/2 font-metadata text-metadata text-on-surface-variant">DORMANCY</div>
+<div class="absolute bottom-[-30px] left-[98%] transform -translate-x-1/2 font-metadata text-metadata text-on-surface-variant">REVIVAL</div>
+</div>
+</section>
+<!-- Heatmap & Discography Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-card-gap">
+<!-- Heatmap -->
+<section class="glass-panel rounded-xl p-8 border border-surface-variant">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-1">Time of Day</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">When you listen to this artist most.</p>
+<div class="w-full overflow-x-auto">
+<div class="min-w-[400px]">
+<div class="grid grid-cols-[auto_1fr] gap-2">
+<!-- Y-axis (Days) -->
+<div class="flex flex-col justify-between pt-6 pb-2 text-on-surface-variant font-metadata text-metadata pr-4">
+<span>Mon</span>
+<span>Wed</span>
+<span>Fri</span>
+<span>Sun</span>
+</div>
+<!-- Heatmap Grid -->
+<div>
+<!-- X-axis (Hours) -->
+<div class="flex justify-between text-on-surface-variant font-metadata text-metadata mb-2 px-1">
+<span>12a</span><span>6a</span><span>12p</span><span>6p</span><span>11p</span>
+</div>
+<div class="grid grid-rows-7 gap-1">
+<!-- Monday -->
+<div class="grid grid-cols-24 gap-1 h-3">
+<div class="heatmap-cell bg-surface-container-high col-span-6 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/20 col-span-3 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/40 col-span-4 rounded-sm"></div>
+<div class="heatmap-cell bg-surface-container-high col-span-5 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/80 col-span-4 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/20 col-span-2 rounded-sm"></div>
+</div>
+<!-- Tuesday -->
+<div class="grid grid-cols-24 gap-1 h-3">
+<div class="heatmap-cell bg-surface-container-high col-span-7 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/30 col-span-4 rounded-sm"></div>
+<div class="heatmap-cell bg-surface-container-high col-span-6 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/90 col-span-5 rounded-sm"></div>
+<div class="heatmap-cell bg-surface-container-high col-span-2 rounded-sm"></div>
+</div>
+<!-- Wednesday -->
+<div class="grid grid-cols-24 gap-1 h-3">
+<div class="heatmap-cell bg-surface-container-high col-span-6 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/40 col-span-3 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/20 col-span-5 rounded-sm"></div>
+<div class="heatmap-cell bg-surface-container-high col-span-4 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/60 col-span-4 rounded-sm"></div>
+<div class="heatmap-cell bg-surface-container-high col-span-2 rounded-sm"></div>
+</div>
+<!-- Thursday -->
+<div class="grid grid-cols-24 gap-1 h-3">
+<div class="heatmap-cell bg-surface-container-high col-span-8 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/50 col-span-5 rounded-sm"></div>
+<div class="heatmap-cell bg-surface-container-high col-span-4 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/70 col-span-6 rounded-sm"></div>
+<div class="heatmap-cell bg-surface-container-high col-span-1 rounded-sm"></div>
+</div>
+<!-- Friday -->
+<div class="grid grid-cols-24 gap-1 h-3">
+<div class="heatmap-cell bg-surface-container-high col-span-6 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/30 col-span-4 rounded-sm"></div>
+<div class="heatmap-cell bg-surface-container-high col-span-5 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/80 col-span-6 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/100 col-span-3 rounded-sm"></div>
+</div>
+<!-- Saturday -->
+<div class="grid grid-cols-24 gap-1 h-3">
+<div class="heatmap-cell bg-primary/20 col-span-4 rounded-sm"></div>
+<div class="heatmap-cell bg-surface-container-high col-span-6 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/60 col-span-8 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/90 col-span-4 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/40 col-span-2 rounded-sm"></div>
+</div>
+<!-- Sunday -->
+<div class="grid grid-cols-24 gap-1 h-3">
+<div class="heatmap-cell bg-surface-container-high col-span-8 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/50 col-span-6 rounded-sm"></div>
+<div class="heatmap-cell bg-surface-container-high col-span-6 rounded-sm"></div>
+<div class="heatmap-cell bg-primary/30 col-span-4 rounded-sm"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Discography Breakdown -->
+<section class="glass-panel rounded-xl p-8 border border-surface-variant flex flex-col">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-1">Discography Penetration</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">How much of their catalog you've explored.</p>
+<div class="space-y-6 flex-1 flex flex-col justify-center">
+<!-- Albums -->
+<div>
+<div class="flex justify-between text-on-surface font-label-sm text-label-sm mb-2">
+<span>Albums (4)</span>
+<span class="text-on-surface-variant">85% Listened</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 85%"></div>
+</div>
+<div class="mt-2 text-on-surface-variant font-metadata text-metadata flex justify-between">
+<span>Most Played: <em>Skin</em></span>
+<span>3/4 Completed</span>
+</div>
+</div>
+<!-- EPs -->
+<div>
+<div class="flex justify-between text-on-surface font-label-sm text-label-sm mb-2">
+<span>EPs &amp; Mixtapes (5)</span>
+<span class="text-on-surface-variant">60% Listened</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 60%"></div>
+</div>
+<div class="mt-2 text-on-surface-variant font-metadata text-metadata flex justify-between">
+<span>Most Played: <em>Hi This Is Flume</em></span>
+<span>3/5 Completed</span>
+</div>
+</div>
+<!-- Singles -->
+<div>
+<div class="flex justify-between text-on-surface font-label-sm text-label-sm mb-2">
+<span>Singles (24)</span>
+<span class="text-on-surface-variant">42% Listened</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 42%"></div>
+</div>
+<div class="mt-2 text-on-surface-variant font-metadata text-metadata flex justify-between">
+<span>Most Played: <em>The Difference</em></span>
+<span>10/24 Completed</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="flex justify-between items-center px-8 py-4 bg-surface-container-low border-t border-surface-variant full-width bottom-0 mt-auto">
+<div class="text-secondary font-metadata text-metadata">
+                © 2024 Spotify Personal Intelligence Engine
+            </div>
+<div class="flex gap-4 text-on-surface-variant font-metadata text-metadata">
+<a class="hover:text-on-surface underline transition-all" href="#">Privacy Policy</a>
+<a class="hover:text-on-surface underline transition-all" href="#">Terms of Service</a>
+<a class="hover:text-on-surface underline transition-all" href="#">API Status</a>
+</div>
+</footer>
+</main>
+</body></html>

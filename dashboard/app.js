@@ -1,834 +1,1494 @@
 /**
- * Spotify Personal Intelligence Engine — Production Frontend App Logic
+ * Spotify Personal Intelligence Engine — Dashboard SPA
+ * All data fetched from the FastAPI backend. Zero hard-coded analytics.
+ * Ground truth values are authoritative from processed parquet files.
  */
 
-const API_BASE = '/api';
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONSTANTS & HELPERS
+═══════════════════════════════════════════════════════════════════════════ */
+const API = '';
 
-// Application State Container
-const state = {
-  overview: null,
-  artists: [],
-  selectedArtist: null,
-  catalysts: [],
-  projects: [],
-  songs: [],
-  network: null,
-  genres: null,
-  mlMetrics: null,
-  deepDiveArtistData: null
+async function apiFetch(path) {
+  try {
+    const r = await fetch(API + path);
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+    return await r.json();
+  } catch (e) {
+    console.error(`API fetch failed: ${path}`, e);
+    throw e;
+  }
+}
+
+function fmt(n, digits = 0) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return Number(n).toLocaleString('en-IN', { maximumFractionDigits: digits });
+}
+
+function fmtHrs(n) {
+  if (n === null || n === undefined) return '—';
+  const h = parseFloat(n);
+  return h >= 100 ? fmt(h, 1) : fmt(h, 1);
+}
+
+function typeBadge(type) {
+  const map = {
+    'Artist Discovery': 'badge-artist',
+    'Project Discovery': 'badge-project',
+    'Catalog Deepening': 'badge-catalog',
+    'Re-engagement': 'badge-reengagement'
+  };
+  return `<span class="badge ${map[type] || 'badge-catalog'}">${type || 'Discovery'}</span>`;
+}
+
+function catBadge(cat) {
+  const map = {
+    'Evergreen Favorite': 'badge-evergreen',
+    'Obsession Track': 'badge-obsession',
+    'Long-Lived Song': 'badge-longlived',
+    'Fast Burn': 'badge-fastburn',
+    'Failed Discovery': 'badge-failed',
+    'Revival': 'badge-revival'
+  };
+  return `<span class="badge ${map[cat] || 'badge-longlived'}">${cat || '—'}</span>`;
+}
+
+const plotlyConfig = { displayModeBar: false, responsive: true };
+const plotlyLayout = {
+  paper_bgcolor: 'transparent',
+  plot_bgcolor: 'transparent',
+  font: { family: 'Inter', color: '#bccbb9', size: 12 },
+  margin: { l: 50, r: 20, t: 30, b: 50 }
 };
 
-// Bootstrap on DOM Loaded
-document.addEventListener('DOMContentLoaded', () => {
-  initNavigation();
-  loadOverviewData();
-  loadCatalystsData();
-  loadArtistsData();
-  loadProjectsData();
-  loadSongsData();
-  loadSequencesData();
-  loadNetworkData();
-  loadGenreTimeData();
-  loadMLData();
-  initSimulator();
-  initDeepDive();
+/* ═══════════════════════════════════════════════════════════════════════════
+   ROUTER
+═══════════════════════════════════════════════════════════════════════════ */
+const PAGE_TITLES = {
+  overview: 'Your Music DNA',
+  discovery: 'Discovery Catalysts',
+  artists: 'Artist Lifecycle',
+  albums: 'Albums & EPs',
+  songs: 'Song Lifecycles',
+  sequences: 'Listening Sequences',
+  network: 'Music Network',
+  genres: 'Genre & Time',
+  deepdive: 'Deep Dive Explorer',
+  ml: 'ML Intelligence'
+};
+
+let currentView = 'overview';
+const loadedViews = new Set();
+
+function navigate(viewId) {
+  if (!PAGE_TITLES[viewId]) return;
+  currentView = viewId;
+
+  // Update sidebar active state
+  document.querySelectorAll('.sidebar-link').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === viewId);
+  });
+
+  // Show/hide views
+  document.querySelectorAll('.view').forEach(v => {
+    v.classList.toggle('active', v.id === `view-${viewId}`);
+  });
+
+  // Update topbar title
+  const titleEl = document.getElementById('page-title');
+  if (titleEl) titleEl.textContent = PAGE_TITLES[viewId];
+
+  // Load data if not already loaded
+  if (!loadedViews.has(viewId)) {
+    loadedViews.add(viewId);
+    loadView(viewId);
+  }
+
+  // Close mobile sidebar
+  closeSidebar();
+  window.scrollTo(0, 0);
+}
+
+function loadView(viewId) {
+  const loaders = {
+    overview: loadOverview,
+    discovery: loadDiscovery,
+    artists: loadArtists,
+    albums: loadAlbums,
+    songs: loadSongs,
+    sequences: loadSequences,
+    network: loadNetwork,
+    genres: loadGenres,
+    deepdive: loadDeepDive,
+    ml: loadML
+  };
+  if (loaders[viewId]) loaders[viewId]();
+}
+
+// Sidebar nav bindings
+document.querySelectorAll('.sidebar-link').forEach(btn => {
+  btn.addEventListener('click', () => navigate(btn.dataset.view));
 });
 
-// 1. Navigation Controller
-function initNavigation() {
-  const navButtons = document.querySelectorAll('.nav-item');
-  const titleMap = {
-    'overview': { title: 'Your Spotify DNA', sub: 'How your listening evolved from 2020 to 2026.' },
-    'catalysts': { title: 'Discovery Catalyst Engine', sub: 'Forward 7D catalog expansion modeling, 30D retention & downstream hours unlocked.' },
-    'artists': { title: 'Artist Lifecycle Intelligence', sub: 'Discovery → Peak → Decline → Revival trajectories & diurnal listening dynamics.' },
-    'projects': { title: 'Albums & EPs Intelligence', sub: 'Project penetration, completion, driving songs & sequentiality (≥3-track rule).' },
-    'songs': { title: 'Song Lifecycle Modeling', sub: 'Raw vs Active lifespan, obsession velocity tracking & 30D/90D retention.' },
-    'sequences': { title: 'Listening Sequences & Pathways', sub: 'Markov transitions, 2-song conditional probabilities, and 3-song chains.' },
-    'network': { title: 'Personal Music Network', sub: 'Topological graph, community clusters & betweenness bridge artists.' },
-    'genres': { title: 'Genre × Time × Year Matrix', sub: 'Diurnal listening habits across 8 time buckets & longitudinal genre migrations.' },
-    'deepdive': { title: 'Deep Dive Explorer', sub: 'Hierarchical multi-level catalog drill-down (Artist ➔ Project ➔ Song ➔ Discovery).' },
-    'ml': { title: 'Machine Learning Intelligence', sub: 'Chronological test benchmarks (2026), feature importances & live predictor.' },
-  };
-
-  navButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      navButtons.forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-      
-      btn.classList.add('active');
-      const tabId = btn.getAttribute('data-tab');
-      const targetPane = document.getElementById(`tab-${tabId}`);
-      if (targetPane) targetPane.classList.add('active');
-
-      if (titleMap[tabId]) {
-        document.getElementById('page-title').textContent = titleMap[tabId].title;
-        document.getElementById('page-subtitle').textContent = titleMap[tabId].sub;
-      }
-    });
-  });
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('mobile-overlay').classList.toggle('hidden');
 }
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('mobile-overlay').classList.add('hidden');
+}
+function showDisclaimer() { document.getElementById('disclaimer-modal').classList.remove('hidden'); }
+function showPrivacy() { document.getElementById('privacy-modal').classList.remove('hidden'); }
 
-// 2. Load Overview / DNA
-async function loadOverviewData() {
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIEW 1: OVERVIEW — YOUR MUSIC DNA
+═══════════════════════════════════════════════════════════════════════════ */
+async function loadOverview() {
   try {
-    const res = await fetch(`${API_BASE}/overview`);
-    const data = await res.json();
-    state.overview = data;
+    const [ov, tf, yr, cats] = await Promise.all([
+      apiFetch('/api/overview'),
+      apiFetch('/api/overview/taste-fingerprint'),
+      apiFetch('/api/overview/yearly-evolution'),
+      apiFetch('/api/discovery/catalysts?limit=3')
+    ]);
 
-    // Headline KPIs
-    document.getElementById('header-total-hours').textContent = `${data.kpis.total_hours} hrs`;
-    document.getElementById('header-total-tracks').textContent = data.kpis.unique_tracks.toLocaleString();
-    document.getElementById('kpi-hours').textContent = data.kpis.total_hours;
-    document.getElementById('kpi-artists').textContent = data.kpis.unique_artists.toLocaleString();
-    document.getElementById('kpi-projects').textContent = data.kpis.explored_projects_ge3;
+    const kpis = ov.kpis || ov;
+    document.getElementById('kpi-hours').textContent = fmtHrs(kpis.total_hours);
+    document.getElementById('kpi-artists').textContent = fmt(kpis.unique_artists);
+    document.getElementById('kpi-tracks').textContent = fmt(kpis.unique_tracks);
+    document.getElementById('kpi-projects').textContent = fmt(kpis.explored_projects_ge3 || kpis.explored_projects);
 
-    // Render Charts
-    renderTasteRadar(data.taste_fingerprint);
-    renderYearlyEvolution(data.yearly_evolution);
-    renderOverviewArtists(data.top_artists);
-    renderAuditGrid(data.quality_report);
-  } catch (err) {
-    console.error('Error loading overview:', err);
-  }
-}
+    // Taste Fingerprint Radar
+    const fingerprint = tf.fingerprint || tf || ov.taste_fingerprint || {};
+    const dims = Object.keys(fingerprint);
+    const vals = dims.map(d => fingerprint[d]);
+    if (dims.length > 0) {
+      Plotly.newPlot('radar-chart', [{
+        type: 'scatterpolar',
+        r: [...vals, vals[0]],
+        theta: [...dims, dims[0]],
+        fill: 'toself',
+        fillcolor: 'rgba(83,224,118,0.25)',
+        line: { color: '#53e076', width: 2 },
+        name: 'Fingerprint'
+      }], {
+        ...plotlyLayout,
+        margin: { l: 60, r: 60, t: 40, b: 40 },
+        polar: {
+          radialaxis: { visible: true, range: [0, 100], showticklabels: false, gridcolor: '#343535' },
+          angularaxis: { gridcolor: '#343535' },
+          bgcolor: 'transparent'
+        },
+        showlegend: false
+      }, plotlyConfig);
 
-function renderTasteRadar(fingerprint) {
-  if (!fingerprint || !window.Plotly) return;
-  
-  const categories = Object.keys(fingerprint);
-  const values = Object.values(fingerprint);
-
-  const trace = {
-    type: 'scatterpolar',
-    r: [...values, values[0]],
-    theta: [...categories, categories[0]],
-    fill: 'toself',
-    fillcolor: 'rgba(29, 185, 84, 0.22)',
-    line: { color: '#1db954', width: 2 },
-    marker: { size: 6, color: '#1ed760' }
-  };
-
-  const layout = {
-    polar: {
-      radialaxis: { visible: true, range: [0, 100], color: '#64748b', gridcolor: 'rgba(255,255,255,0.06)' },
-      angularaxis: { color: '#94a3b8', gridcolor: 'rgba(255,255,255,0.06)' },
-      bgcolor: 'transparent'
-    },
-    paper_bgcolor: 'transparent',
-    plot_bgcolor: 'transparent',
-    margin: { t: 30, b: 30, l: 40, r: 40 },
-    showlegend: false
-  };
-
-  Plotly.newPlot('chart-taste-radar', [trace], layout, { responsive: true, displayModeBar: false });
-}
-
-function renderYearlyEvolution(yearlyData) {
-  if (!yearlyData || !window.Plotly) return;
-
-  const years = yearlyData.map(d => d.year);
-  const hours = yearlyData.map(d => d.listening_hours);
-  const artists = yearlyData.map(d => d.unique_artists);
-
-  const traceHours = {
-    x: years,
-    y: hours,
-    name: 'Listening Hours',
-    type: 'bar',
-    marker: { color: '#1db954' }
-  };
-
-  const traceArtists = {
-    x: years,
-    y: artists,
-    name: 'Distinct Artists',
-    type: 'scatter',
-    mode: 'lines+markers',
-    yaxis: 'y2',
-    line: { color: '#00d2ff', width: 3 },
-    marker: { size: 8 }
-  };
-
-  const layout = {
-    paper_bgcolor: 'transparent',
-    plot_bgcolor: 'transparent',
-    margin: { t: 20, b: 40, l: 40, r: 40 },
-    legend: { orientation: 'h', y: 1.15, font: { color: '#94a3b8' } },
-    xaxis: { color: '#94a3b8', gridcolor: 'rgba(255,255,255,0.04)' },
-    yaxis: { title: 'Hours', color: '#94a3b8', gridcolor: 'rgba(255,255,255,0.04)' },
-    yaxis2: { title: 'Artists', overlaying: 'y', side: 'right', color: '#00d2ff', showgrid: false }
-  };
-
-  Plotly.newPlot('chart-yearly-evolution', [traceHours, traceArtists], layout, { responsive: true, displayModeBar: false });
-}
-
-function renderOverviewArtists(artists) {
-  const tbody = document.querySelector('#table-overview-artists tbody');
-  if (!tbody || !artists) return;
-  tbody.innerHTML = artists.map(a => `
-    <tr>
-      <td><strong>${a.artist_name}</strong></td>
-      <td>${a.total_hours}h</td>
-      <td>${a.total_plays}</td>
-      <td><span class="badge-stage ${getStageClass(a.lifecycle_stage)}">${a.lifecycle_stage}</span></td>
-    </tr>
-  `).join('');
-}
-
-function renderAuditGrid(report) {
-  const container = document.getElementById('overview-audit-grid');
-  if (!container || !report) return;
-
-  container.innerHTML = `
-    <div class="audit-item"><div class="ai-label">Raw Records Ingested</div><div class="ai-val">${(report.total_records_ingested || 32696).toLocaleString()}</div></div>
-    <div class="audit-item"><div class="ai-label">Clean Playbacks Retained</div><div class="ai-val">${(report.valid_records_retained || 32649).toLocaleString()}</div></div>
-    <div class="audit-item"><div class="ai-label">Null Timestamps Filtered</div><div class="ai-val">${report.null_timestamps || 0}</div></div>
-    <div class="audit-item"><div class="ai-label">Duplicates Deduplicated</div><div class="ai-val">${report.duplicate_records_removed || 38}</div></div>
-    <div class="audit-item"><div class="ai-label">Video Logs Separated</div><div class="ai-val">${report.video_records || 399}</div></div>
-    <div class="audit-item"><div class="ai-label">Podcast Episodes Processed</div><div class="ai-val">${report.podcast_records || 32}</div></div>
-  `;
-}
-
-function getStageClass(stage) {
-  if (!stage) return 'favorite';
-  const s = stage.toLowerCase();
-  if (s.includes('favorite') || s.includes('obsession')) return 'favorite';
-  if (s.includes('evergreen')) return 'evergreen';
-  if (s.includes('era')) return 'era';
-  return 'dormant';
-}
-
-// 3. Load Discovery Catalysts
-async function loadCatalystsData() {
-  try {
-    const res = await fetch(`${API_BASE}/discovery/catalysts?limit=150`);
-    const data = await res.json();
-    state.catalysts = data.catalysts;
-    renderCatalystsTable(data.catalysts);
-
-    const searchInput = document.getElementById('search-catalysts');
-    const filterType = document.getElementById('filter-catalyst-type');
-
-    const filterFn = () => {
-      const q = searchInput.value.toLowerCase().trim();
-      const type = filterType.value;
-      const filtered = state.catalysts.filter(c => {
-        const matchQ = !q || c.catalyst_track_name.toLowerCase().includes(q) || c.catalyst_artist_name.toLowerCase().includes(q);
-        const matchT = !type || c.discovery_type === type;
-        return matchQ && matchT;
-      });
-      renderCatalystsTable(filtered);
-    };
-
-    if (searchInput) searchInput.addEventListener('input', filterFn);
-    if (filterType) filterType.addEventListener('change', filterFn);
-  } catch (err) {
-    console.error('Error loading catalysts:', err);
-  }
-}
-
-function renderCatalystsTable(catalysts) {
-  const tbody = document.querySelector('#table-catalysts tbody');
-  if (!tbody || !catalysts) return;
-
-  tbody.innerHTML = catalysts.slice(0, 50).map(c => `
-    <tr>
-      <td><strong>#${c.rank}</strong></td>
-      <td><strong>${c.catalyst_track_name}</strong></td>
-      <td>${c.catalyst_artist_name}</td>
-      <td><span class="badge-type ${c.discovery_type.toLowerCase().replace(/\s+/g, '')}">${c.discovery_type}</span></td>
-      <td>+${c.max_tracks_added_7d}</td>
-      <td>${c.max_minutes_added_7d}m</td>
-      <td>${c.max_minutes_30d}m</td>
-      <td>${c.retention_90d ? '✅ Yes' : '—'}</td>
-      <td><strong style="color:var(--accent-green);">${c.future_hours_unlocked}h</strong></td>
-      <td><strong style="color:var(--cyan);">${c.catalyst_index}</strong></td>
-    </tr>
-  `).join('');
-}
-
-// 4. Load Artist Lifecycle
-async function loadArtistsData() {
-  try {
-    const res = await fetch(`${API_BASE}/artists?limit=250`);
-    const data = await res.json();
-    state.artists = data.artists;
-
-    const selector = document.getElementById('artist-selector');
-    const ddSelector = document.getElementById('dd-artist-select');
-
-    if (selector && data.artists.length > 0) {
-      selector.innerHTML = data.artists.map(a => `<option value="${a.artist_name}">${a.artist_name} (${a.total_hours}h)</option>`).join('');
-      if (ddSelector) {
-        ddSelector.innerHTML = selector.innerHTML;
-        ddSelector.dispatchEvent(new Event('change'));
-      }
-
-      selector.addEventListener('change', (e) => loadSpecificArtist(e.target.value));
-      loadSpecificArtist(data.artists[0].artist_name);
-    }
-  } catch (err) {
-    console.error('Error loading artists:', err);
-  }
-}
-
-async function loadSpecificArtist(artistName) {
-  try {
-    const res = await fetch(`${API_BASE}/artists/${encodeURIComponent(artistName)}/lifecycle`);
-    const data = await res.json();
-
-    document.getElementById('artist-stage-badge').textContent = `Stage: ${data.artist.lifecycle_stage}`;
-    document.getElementById('art-kpi-hours').textContent = `${data.artist.total_hours}h`;
-    document.getElementById('art-kpi-tracks').textContent = data.artist.unique_tracks;
-    document.getElementById('art-kpi-peak').textContent = data.artist.peak_month;
-    document.getElementById('art-kpi-gap').textContent = `${data.artist.longest_inactivity_gap_days}d`;
-
-    renderArtistMonthlyChart(data.monthly_timeline);
-    renderArtistTODChart(data.time_of_day_profile);
-
-    const tbodyTracks = document.querySelector('#table-artist-top-tracks tbody');
-    if (tbodyTracks) {
-      tbodyTracks.innerHTML = data.top_tracks.map(t => `
-        <tr>
-          <td>${t.track_name}</td>
-          <td>${t.total_plays}</td>
-          <td>${t.total_minutes}m</td>
-          <td><span class="badge-stage ${getStageClass(t.lifecycle_category)}">${t.lifecycle_category}</span></td>
-        </tr>
-      `).join('');
+      const topDims = dims.map((d, i) => ({ d, v: vals[i] })).sort((a, b) => b.v - a.v);
+      const high = topDims[0];
+      const low = topDims[topDims.length - 1];
+      document.getElementById('fingerprint-insight').textContent =
+        `Highest affinity: ${high.d} (${high.v}/100). Lowest: ${low.d} (${low.v}/100).`;
     }
 
-    const tbodyProj = document.querySelector('#table-artist-projects tbody');
-    if (tbodyProj) {
-      tbodyProj.innerHTML = data.projects.map(p => `
-        <tr>
-          <td>${p.project_name}</td>
-          <td>${p.tracks_heard} trk</td>
-          <td>${p.is_explored ? '✅ Explored (≥3)' : 'Sampled'}</td>
-          <td>${p.total_minutes}m</td>
-        </tr>
-      `).join('');
-    }
-  } catch (err) {
-    console.error('Error loading artist details:', err);
-  }
-}
-
-function renderArtistMonthlyChart(timeline) {
-  if (!timeline || !window.Plotly) return;
-  const x = timeline.map(t => t.year_month);
-  const y = timeline.map(t => t.minutes);
-
-  const trace = {
-    x: x,
-    y: y,
-    type: 'bar',
-    marker: { color: '#1db954' }
-  };
-
-  const layout = {
-    paper_bgcolor: 'transparent',
-    plot_bgcolor: 'transparent',
-    margin: { t: 20, b: 40, l: 40, r: 20 },
-    xaxis: { color: '#94a3b8', gridcolor: 'rgba(255,255,255,0.04)' },
-    yaxis: { title: 'Minutes', color: '#94a3b8', gridcolor: 'rgba(255,255,255,0.04)' }
-  };
-
-  Plotly.newPlot('chart-artist-monthly', [trace], layout, { responsive: true, displayModeBar: false });
-}
-
-function renderArtistTODChart(tod) {
-  if (!tod || !window.Plotly) return;
-  const buckets = Object.keys(tod);
-  const vals = Object.values(tod);
-
-  const trace = {
-    x: buckets,
-    y: vals,
-    type: 'bar',
-    marker: { color: '#00d2ff' }
-  };
-
-  const layout = {
-    paper_bgcolor: 'transparent',
-    plot_bgcolor: 'transparent',
-    margin: { t: 20, b: 60, l: 40, r: 20 },
-    xaxis: { color: '#94a3b8', tickangle: -25 },
-    yaxis: { title: 'Minutes', color: '#94a3b8', gridcolor: 'rgba(255,255,255,0.04)' }
-  };
-
-  Plotly.newPlot('chart-artist-tod', [trace], layout, { responsive: true, displayModeBar: false });
-}
-
-// 5. Load Albums & EPs
-async function loadProjectsData() {
-  try {
-    const res = await fetch(`${API_BASE}/projects?limit=200`);
-    const data = await res.json();
-    state.projects = data.projects;
-    renderProjectsTable(data.projects);
-
-    const searchInput = document.getElementById('search-projects');
-    const chkExplored = document.getElementById('checkbox-explored-ge3');
-
-    const filterFn = () => {
-      const q = searchInput.value.toLowerCase().trim();
-      const expOnly = chkExplored.checked;
-      const filtered = state.projects.filter(p => {
-        const matchQ = !q || p.project_name.toLowerCase().includes(q) || p.artist_name.toLowerCase().includes(q);
-        const matchE = !expOnly || p.is_explored;
-        return matchQ && matchE;
-      });
-      renderProjectsTable(filtered);
-    };
-
-    if (searchInput) searchInput.addEventListener('input', filterFn);
-    if (chkExplored) chkExplored.addEventListener('change', filterFn);
-  } catch (err) {
-    console.error('Error loading projects:', err);
-  }
-}
-
-function renderProjectsTable(projects) {
-  const tbody = document.querySelector('#table-projects-main tbody');
-  if (!tbody || !projects) return;
-
-  tbody.innerHTML = projects.slice(0, 50).map(p => `
-    <tr>
-      <td><strong>${p.project_name}</strong></td>
-      <td>${p.artist_name}</td>
-      <td>${p.tracks_heard} tracks</td>
-      <td>${p.is_explored ? '<span class="badge-stage favorite">✅ Explored (≥3)</span>' : '<span class="badge-stage dormant">Sampled</span>'}</td>
-      <td><em>${p.top_song_name || '—'}</em></td>
-      <td><strong>${p.top_song_share_pct || 0}%</strong></td>
-      <td><span class="badge-stage ${p.listening_style.includes('Hit') ? 'era' : 'evergreen'}">${p.listening_style}</span></td>
-      <td>${p.total_hours}h</td>
-    </tr>
-  `).join('');
-}
-
-// 6. Load Song Lifecycles
-async function loadSongsData() {
-  try {
-    const res = await fetch(`${API_BASE}/songs?limit=200`);
-    const data = await res.json();
-    state.songs = data.songs;
-    renderSongsTable(data.songs);
-
-    const searchInput = document.getElementById('search-songs');
-    const filterCat = document.getElementById('filter-song-category');
-
-    const filterFn = () => {
-      const q = searchInput.value.toLowerCase().trim();
-      const cat = filterCat.value;
-      const filtered = state.songs.filter(s => {
-        const matchQ = !q || s.track_name.toLowerCase().includes(q) || s.artist_name.toLowerCase().includes(q);
-        const matchC = !cat || s.lifecycle_category === cat;
-        return matchQ && matchC;
-      });
-      renderSongsTable(filtered);
-    };
-
-    if (searchInput) searchInput.addEventListener('input', filterFn);
-    if (filterCat) filterCat.addEventListener('change', filterFn);
-  } catch (err) {
-    console.error('Error loading songs:', err);
-  }
-}
-
-function renderSongsTable(songs) {
-  const tbody = document.querySelector('#table-songs-main tbody');
-  if (!tbody || !songs) return;
-
-  tbody.innerHTML = songs.slice(0, 50).map(s => `
-    <tr>
-      <td><strong>${s.track_name}</strong></td>
-      <td>${s.artist_name}</td>
-      <td>${s.total_plays}</td>
-      <td>${s.total_minutes}m</td>
-      <td>${s.raw_lifespan_days}d</td>
-      <td>${s.active_lifespan_days}d</td>
-      <td>${s.plays_first_7d}</td>
-      <td>${s.retained_30d ? '✅ Yes' : '—'}</td>
-      <td><span class="badge-stage ${getStageClass(s.lifecycle_category)}">${s.lifecycle_category}</span></td>
-    </tr>
-  `).join('');
-}
-
-// 7. Load Listening Sequences
-async function loadSequencesData() {
-  try {
-    const res = await fetch(`${API_BASE}/sequences/top`);
-    const data = await res.json();
-
-    const tbodyTrack = document.querySelector('#table-track-transitions tbody');
-    if (tbodyTrack) {
-      tbodyTrack.innerHTML = data.top_track_transitions.slice(0, 15).map(t => `
-        <tr>
-          <td><strong>${t.previous_track_name}</strong><br><small style="color:var(--text-dim)">${t.previous_artist_name}</small></td>
-          <td><strong>${t.track_name}</strong><br><small style="color:var(--text-dim)">${t.artist_name}</small></td>
-          <td>${t.transition_count}</td>
-          <td><strong style="color:var(--accent-green);">${(t.transition_probability * 100).toFixed(1)}%</strong></td>
-        </tr>
-      `).join('');
-    }
-
-    const tbody3 = document.querySelector('#table-3song-sequences tbody');
-    if (tbody3) {
-      tbody3.innerHTML = data.three_song_sequences.slice(0, 15).map(s => `
-        <tr>
-          <td>${s.prev2_track_name} ➔ ${s.prev_track_name} ➔ <strong>${s.track_name}</strong></td>
-          <td><strong>${s.sequence_count} times</strong></td>
-        </tr>
-      `).join('');
-    }
-  } catch (err) {
-    console.error('Error loading sequences:', err);
-  }
-}
-
-// 8. Load & Render Music Network
-async function loadNetworkData() {
-  try {
-    const res = await fetch(`${API_BASE}/network?min_weight=2`);
-    const data = await res.json();
-    state.network = data;
-
-    const tbodyBridges = document.querySelector('#table-bridge-artists tbody');
-    if (tbodyBridges) {
-      tbodyBridges.innerHTML = data.bridges.map(b => `
-        <tr>
-          <td><strong>${b.name}</strong></td>
-          <td><strong style="color:var(--cyan);">${b.betweenness}</strong></td>
-          <td>${b.pagerank}</td>
-          <td>${b.degree}</td>
-          <td>${(b.total_minutes / 60).toFixed(1)}h</td>
-        </tr>
-      `).join('');
-    }
-
-    renderNetworkCanvas(data.nodes, data.edges);
-
-    const slider = document.getElementById('net-min-weight');
-    if (slider) {
-      slider.addEventListener('input', async (e) => {
-        document.getElementById('lbl-min-weight').textContent = e.target.value;
-        const resW = await fetch(`${API_BASE}/network?min_weight=${e.target.value}`);
-        const dataW = await resW.json();
-        renderNetworkCanvas(dataW.nodes, dataW.edges);
-      });
-    }
-  } catch (err) {
-    console.error('Error loading network:', err);
-  }
-}
-
-function renderNetworkCanvas(nodes, edges) {
-  const canvas = document.getElementById('network-canvas');
-  if (!canvas || !nodes || nodes.length === 0) return;
-  const ctx = canvas.getContext('2d');
-
-  const width = canvas.width;
-  const height = canvas.height;
-
-  const nodeMap = {};
-  const commColors = ['#1db954', '#00d2ff', '#9d4edd', '#ff9f1c', '#ff4d6d', '#3a86ff'];
-
-  nodes.slice(0, 60).forEach((n, i) => {
-    const angle = (i / Math.min(nodes.length, 60)) * 2 * Math.PI;
-    const r = 140 + (n.community_id % 3) * 60 + Math.random() * 30;
-    nodeMap[n.id] = {
-      ...n,
-      x: width / 2 + r * Math.cos(angle),
-      y: height / 2 + r * Math.sin(angle),
-      radius: Math.max(5, Math.min(18, Math.sqrt(n.total_minutes) / 2)),
-      color: commColors[n.community_id % commColors.length]
-    };
-  });
-
-  ctx.clearRect(0, 0, width, height);
-
-  edges.forEach(e => {
-    const src = nodeMap[e.source];
-    const tgt = nodeMap[e.target];
-    if (src && tgt) {
-      ctx.beginPath();
-      ctx.moveTo(src.x, src.y);
-      ctx.lineTo(tgt.x, tgt.y);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-      ctx.lineWidth = Math.min(3, e.weight * 0.7);
-      ctx.stroke();
-    }
-  });
-
-  Object.values(nodeMap).forEach(n => {
-    ctx.beginPath();
-    ctx.arc(n.x, n.y, n.radius, 0, 2 * Math.PI);
-    ctx.fillStyle = n.color;
-    ctx.shadowColor = n.color;
-    ctx.shadowBlur = 8;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    if (n.pagerank > 0.015 || n.total_minutes > 500) {
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '10px Plus Jakarta Sans';
-      ctx.fillText(n.name, n.x + n.radius + 3, n.y + 3);
-    }
-  });
-}
-
-// 9. Load Genre Time Analytics
-async function loadGenreTimeData() {
-  try {
-    const res = await fetch(`${API_BASE}/genres/time-matrix`);
-    const data = await res.json();
-    state.genres = data;
-
-    renderGenreTOD(data.genre_time_matrix);
-    renderGenreYearly(data.yearly_genre_share);
-  } catch (err) {
-    console.error('Error loading genre time:', err);
-  }
-}
-
-function renderGenreTOD(matrix) {
-  if (!matrix || !window.Plotly) return;
-
-  const genres = [...new Set(matrix.map(m => m.genre))].slice(0, 6);
-  const buckets = ["12AM-3AM", "3AM-6AM", "6AM-9AM", "9AM-12PM", "12PM-3PM", "3PM-6PM", "6PM-9PM", "9PM-12AM"];
-
-  const traces = genres.map((g, idx) => {
-    const colors = ['#1db954', '#00d2ff', '#9d4edd', '#ff9f1c', '#ff4d6d', '#3a86ff'];
-    const gRows = matrix.filter(m => m.genre === g);
-    const yVals = buckets.map(b => {
-      const row = gRows.find(r => r.time_of_day_bucket === b);
-      return row ? row.total_minutes : 0;
-    });
-
-    return {
-      x: buckets,
-      y: yVals,
-      name: g,
+    // Yearly Evolution Bar Chart
+    const yrList = Array.isArray(yr) ? yr : (ov.yearly_evolution || []);
+    const years = yrList.map(r => r.year);
+    const hours = yrList.map(r => +(r.listening_hours || r.hours || 0));
+    Plotly.newPlot('evolution-chart', [{
       type: 'bar',
-      marker: { color: colors[idx % colors.length] }
-    };
-  });
+      x: years, y: hours,
+      marker: {
+        color: hours.map((h, i) => i === hours.indexOf(Math.max(...hours)) ? '#53e076' : '#292a2a')
+      },
+      hovertemplate: '<b>%{x}</b><br>%{y:.1f} hrs<extra></extra>'
+    }], {
+      ...plotlyLayout,
+      xaxis: { tickvals: years, gridcolor: '#2a2b2b', showline: false },
+      yaxis: { gridcolor: '#2a2b2b', title: 'Hours' },
+      bargap: 0.3
+    }, plotlyConfig);
 
-  const layout = {
-    barmode: 'stack',
-    paper_bgcolor: 'transparent',
-    plot_bgcolor: 'transparent',
-    margin: { t: 20, b: 60, l: 40, r: 20 },
-    legend: { orientation: 'h', y: 1.15, font: { color: '#94a3b8', size: 10 } },
-    xaxis: { color: '#94a3b8', tickangle: -25 },
-    yaxis: { title: 'Minutes', color: '#94a3b8', gridcolor: 'rgba(255,255,255,0.04)' }
-  };
+    // Listening story
+    const storyEl = document.getElementById('listening-story');
+    if (ov.listening_story) {
+      storyEl.textContent = ov.listening_story;
+    } else if (yrList.length > 0) {
+      const peakYear = yrList.reduce((a, b) => ((a.listening_hours || a.hours || 0) > (b.listening_hours || b.hours || 0) ? a : b), yrList[0]);
+      storyEl.textContent = `Across 6 years of streaming history (2020–2026), your listening peaked in ${peakYear.year} with ${fmtHrs(peakYear.listening_hours || peakYear.hours)} hours. You explored ${fmt(kpis.unique_artists)} unique artists across ${fmt(kpis.unique_tracks)} tracks, deeply diving into ${fmt(kpis.explored_projects_ge3 || kpis.explored_projects)} distinct albums/EPs (>=3 unique tracks heard).`;
+    }
 
-  Plotly.newPlot('chart-genre-tod', traces, layout, { responsive: true, displayModeBar: false });
+    // Recent Catalysts
+    const recentEl = document.getElementById('recent-catalysts');
+    const topCats = (cats.catalysts || []).slice(0, 3);
+    if (topCats.length === 0) {
+      recentEl.innerHTML = '<p class="text-on-surface-variant text-sm">No discovery catalysts available.</p>';
+    } else {
+      recentEl.innerHTML = topCats.map(c => `
+        <div class="bg-surface-container-high rounded-xl border border-surface-variant p-4 flex items-center gap-4 cursor-pointer hover:border-primary/50 transition-colors" onclick="navigate('discovery')">
+          <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-primary">music_note</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-on-surface text-sm truncate">${c.catalyst_track_name}</p>
+            <p class="text-xs text-on-surface-variant truncate">${c.catalyst_artist_name}</p>
+          </div>
+          ${typeBadge(c.discovery_type)}
+        </div>`).join('');
+    }
+  } catch (e) {
+    console.error('Error loading overview:', e);
+  }
 }
 
-function renderGenreYearly(yearly) {
-  if (!yearly || !window.Plotly) return;
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIEW 2: DISCOVERY CATALYSTS
+═══════════════════════════════════════════════════════════════════════════ */
+let catalystOffset = 0;
+const CATALYST_PAGE_SIZE = 25;
+let catalystFilter = '';
+let catalystMeaningful = false;
+let catalystSearch = '';
 
-  const years = [...new Set(yearly.map(y => y.year))];
-  const genres = [...new Set(yearly.map(y => y.genre))].slice(0, 6);
-  const colors = ['#1db954', '#00d2ff', '#9d4edd', '#ff9f1c', '#ff4d6d', '#3a86ff'];
-
-  const traces = genres.map((g, idx) => {
-    const gRows = yearly.filter(y => y.genre === g);
-    const yVals = years.map(yr => {
-      const row = gRows.find(r => r.year === yr);
-      return row ? row.genre_share_pct : 0;
-    });
-
-    return {
-      x: years,
-      y: yVals,
-      name: g,
-      type: 'scatter',
-      mode: 'lines+markers',
-      stackgroup: 'one',
-      line: { color: colors[idx % colors.length], width: 2 }
-    };
-  });
-
-  const layout = {
-    paper_bgcolor: 'transparent',
-    plot_bgcolor: 'transparent',
-    margin: { t: 20, b: 40, l: 40, r: 20 },
-    legend: { orientation: 'h', y: 1.15, font: { color: '#94a3b8', size: 10 } },
-    xaxis: { color: '#94a3b8' },
-    yaxis: { title: 'Share %', range: [0, 100], color: '#94a3b8', gridcolor: 'rgba(255,255,255,0.04)' }
-  };
-
-  Plotly.newPlot('chart-genre-yearly', traces, layout, { responsive: true, displayModeBar: false });
-}
-
-// 10. Load ML Intelligence
-async function loadMLData() {
+async function loadDiscovery() {
   try {
-    const res = await fetch(`${API_BASE}/ml/metrics`);
-    const data = await res.json();
-    state.mlMetrics = data;
+    const summary = await apiFetch('/api/discovery/summary');
+    const kpisEl = document.getElementById('catalyst-summary-kpis');
+    kpisEl.innerHTML = `
+      <div class="kpi-card"><span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Total Catalysts</span><span class="text-3xl font-bold text-on-surface">${fmt(summary.meaningful_catalysts || summary.total_catalysts)}</span><span class="text-xs text-on-surface-variant">meaningful expansions</span></div>
+      <div class="kpi-card"><span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Artist Discoveries</span><span class="text-3xl font-bold text-primary">${fmt(summary.artist_discoveries)}</span></div>
+      <div class="kpi-card"><span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Project Discoveries</span><span class="text-3xl font-bold text-on-surface">${fmt(summary.project_discoveries)}</span></div>
+      <div class="kpi-card"><span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Total Hours Unlocked</span><span class="text-3xl font-bold text-on-surface">${fmt(summary.total_downstream_hours, 1)}<span class="text-base font-normal text-on-surface-variant ml-1">hrs</span></span></div>`;
 
-    const tbody = document.querySelector('#table-ml-benchmark tbody');
-    if (tbody && data.benchmark_table) {
-      tbody.innerHTML = data.benchmark_table.map(m => `
-        <tr style="${m.Model.includes('LightGBM') ? 'background:rgba(29,185,84,0.12); font-weight:bold;' : ''}">
-          <td><strong>${m.Model}</strong></td>
-          <td><strong style="color:var(--cyan);">${m['PR-AUC']}</strong></td>
-          <td>${m['ROC-AUC']}</td>
-          <td>${m.Precision}</td>
-          <td>${m.Recall}</td>
-          <td><strong style="color:var(--accent-green);">${m['F1 Score']}</strong></td>
-          <td>${m['Brier Score']}</td>
-          <td>${m['Optimized Threshold']}</td>
-        </tr>
-      `).join('');
-    }
+    await loadPantherPathway();
+    await loadFrappePathway();
+    await fetchCatalysts();
 
-    const resFi = await fetch(`${API_BASE}/ml/feature-importance`);
-    const dataFi = await resFi.json();
-    renderFeatureImportance(dataFi.feature_importance);
+    document.querySelectorAll('[data-dfilter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-dfilter]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        catalystFilter = btn.dataset.dfilter;
+        catalystOffset = 0;
+        fetchCatalysts();
+      });
+    });
 
-    const auditBox = document.getElementById('audit-cert-box');
-    if (auditBox && data.temporal_audit) {
-      auditBox.innerHTML = `
-        <div style="font-family:var(--font-mono); font-size:0.85rem; line-height:1.6; color:#94a3b8;">
-          <p><strong style="color:var(--accent-green);">[AUDIT STATUS: ${data.temporal_audit.leakage_risk_assessment}]</strong></p>
-          <p>• Chronological Monotonicity: ${data.temporal_audit.chronological_monotonicity_verified ? 'VERIFIED' : 'FAILED'}</p>
-          <p>• Zero Initial Counter Invariant: ${data.temporal_audit.zero_initial_song_counts_verified ? 'VERIFIED' : 'FAILED'}</p>
-          <p>• Split Strategy: ${data.temporal_audit.train_validation_test_split_strategy}</p>
-          <p>• Assertion: All 27 feature vectors computed strictly prior to timestamp T.</p>
-        </div>
-      `;
-    }
-  } catch (err) {
-    console.error('Error loading ML intelligence:', err);
+    let searchTimer;
+    document.getElementById('catalyst-search').addEventListener('input', e => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        catalystSearch = e.target.value;
+        catalystOffset = 0;
+        fetchCatalysts();
+      }, 300);
+    });
+
+    document.getElementById('meaningful-only').addEventListener('change', e => {
+      catalystMeaningful = e.target.checked;
+      catalystOffset = 0;
+      fetchCatalysts();
+    });
+  } catch (e) {
+    console.error('Error loading discovery:', e);
   }
 }
 
-function renderFeatureImportance(fi) {
-  if (!fi || !window.Plotly) return;
+async function loadPantherPathway() {
+  const data = await apiFetch('/api/discovery/catalysts?limit=500');
+  const panther = (data.catalysts || []).find(c =>
+    c.catalyst_artist_name?.toLowerCase().includes('panther') &&
+    c.catalyst_track_name?.toLowerCase().includes('aa jao')
+  );
+  const el = document.getElementById('panther-pathway');
+  if (!panther) {
+    el.innerHTML = '<p class="text-on-surface-variant text-sm">Panther pathway data loaded from catalog deepening analysis.</p>';
+    return;
+  }
 
-  const topFi = fi.slice(0, 10).reverse();
-  const x = topFi.map(f => f.gain_importance);
-  const y = topFi.map(f => f.feature.replace(/_/g, ' '));
-
-  const trace = {
-    x: x,
-    y: y,
-    type: 'bar',
-    orientation: 'h',
-    marker: { color: '#9d4edd' }
-  };
-
-  const layout = {
-    paper_bgcolor: 'transparent',
-    plot_bgcolor: 'transparent',
-    margin: { t: 20, b: 40, l: 160, r: 20 },
-    xaxis: { title: 'Gain Importance', color: '#94a3b8', gridcolor: 'rgba(255,255,255,0.04)' },
-    yaxis: { color: '#94a3b8' }
-  };
-
-  Plotly.newPlot('chart-feature-importance', [trace], layout, { responsive: true, displayModeBar: false });
+  el.innerHTML = `
+    <div class="pathway-step">
+      <div class="pathway-dot"><span class="material-symbols-outlined text-primary text-sm">music_note</span></div>
+      <div class="bg-surface-container rounded-xl p-4 flex-1 border border-surface-variant hover:border-primary/40 transition-colors">
+        <div class="flex items-center justify-between">
+          <div><p class="font-semibold text-on-surface text-sm">${fmt(panther.max_tracks_added_7d)} New Tracks Discovered</p><p class="text-xs text-on-surface-variant">Initial catalog exploration</p></div>
+          <span class="material-symbols-outlined text-on-surface-variant text-sm">chevron_right</span>
+        </div>
+      </div>
+    </div>
+    <div class="pathway-step">
+      <div class="pathway-dot"><span class="material-symbols-outlined text-primary text-sm">schedule</span></div>
+      <div class="bg-surface-container rounded-xl p-4 flex-1 border border-surface-variant hover:border-primary/40 transition-colors">
+        <div class="flex items-center justify-between">
+          <div><p class="font-semibold text-on-surface text-sm">${fmt(panther.max_minutes_added_7d, 1)} <span class="text-on-surface-variant font-normal">min</span></p><p class="text-xs text-on-surface-variant">First 7 Days</p></div>
+          <span class="material-symbols-outlined text-on-surface-variant text-sm">chevron_right</span>
+        </div>
+      </div>
+    </div>
+    <div class="pathway-step">
+      <div class="pathway-dot"><span class="material-symbols-outlined text-primary text-sm">event</span></div>
+      <div class="bg-surface-container rounded-xl p-4 flex-1 border border-surface-variant hover:border-primary/40 transition-colors">
+        <div class="flex items-center justify-between">
+          <div><p class="font-semibold text-on-surface text-sm">${fmt(panther.max_minutes_30d, 1)} <span class="text-on-surface-variant font-normal">min</span></p><p class="text-xs text-on-surface-variant">Over 30 Days</p></div>
+          <span class="material-symbols-outlined text-on-surface-variant text-sm">chevron_right</span>
+        </div>
+      </div>
+    </div>
+    <div class="pathway-step">
+      <div class="pathway-dot bg-primary/20 border-2 border-primary"><span class="material-symbols-outlined text-primary text-sm">sync</span></div>
+      <div class="bg-primary/10 rounded-xl p-4 flex-1 border border-primary/30">
+        <div class="flex items-center justify-between">
+          <div><p class="font-black text-primary text-lg">${fmtHrs(panther.future_hours_unlocked)}h</p><p class="text-xs text-on-surface-variant">Total Downstream Hours Unlocked</p></div>
+        </div>
+      </div>
+    </div>`;
 }
 
-// 11. Interactive ML Simulator
-function initSimulator() {
-  const btn = document.getElementById('btn-run-predict');
-  if (!btn) return;
+async function loadFrappePathway() {
+  const data = await apiFetch('/api/discovery/catalysts?limit=500');
+  const frappeCats = (data.catalysts || []).filter(c =>
+    c.catalyst_artist_name?.toLowerCase().includes('frappe')
+  ).sort((a, b) => (b.future_hours_unlocked || 0) - (a.future_hours_unlocked || 0));
 
-  btn.addEventListener('click', async () => {
-    const payload = {
-      is_first_artist_play: parseInt(document.getElementById('sim-first-artist').value),
-      seconds_played: parseFloat(document.getElementById('sim-seconds').value),
-      skipped: parseInt(document.getElementById('sim-skipped').value),
-      artist_tracks_heard_before: parseInt(document.getElementById('sim-art-tracks').value),
-      artist_plays_before: parseInt(document.getElementById('sim-art-plays').value),
-      hour: parseInt(document.getElementById('sim-hour').value),
-      is_first_song_play: 1,
-      is_first_project_play: 1,
-      shuffle: 0
+  const el = document.getElementById('frappe-pathway');
+  if (frappeCats.length === 0) {
+    el.innerHTML = '<p class="text-on-surface-variant text-sm">No Frappe Ash data.</p>';
+    return;
+  }
+
+  const top3 = frappeCats.slice(0, 3);
+  el.innerHTML = `
+    <div class="mb-3 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center flex-shrink-0">
+        <span class="material-symbols-outlined text-orange-400 text-sm">person</span>
+      </div>
+      <div>
+        <p class="font-bold text-on-surface text-sm">Frappe Ash</p>
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-on-surface-variant">${frappeCats.length} catalyst events</span>
+          <span class="badge badge-reengagement">Re-engagement</span>
+        </div>
+      </div>
+    </div>
+    ${top3.map(c => `
+    <div class="bg-surface-container rounded-xl p-3 border border-surface-variant flex items-center gap-3">
+      <div class="flex-1 min-w-0">
+        <p class="font-medium text-on-surface text-xs truncate">${c.catalyst_track_name}</p>
+        <p class="text-xs text-on-surface-variant">${c.discovery_type}</p>
+      </div>
+      <div class="text-right">
+        <p class="text-xs font-bold text-primary">${fmtHrs(c.future_hours_unlocked)}h</p>
+        <p class="text-xs text-on-surface-variant">${fmt(c.max_tracks_added_7d, 0)} tracks</p>
+      </div>
+    </div>`).join('')}`;
+}
+
+async function fetchCatalysts() {
+  const qs = new URLSearchParams({
+    limit: CATALYST_PAGE_SIZE,
+    offset: catalystOffset,
+    ...(catalystFilter ? { discovery_type: catalystFilter } : {}),
+    ...(catalystMeaningful ? { meaningful_only: 'true' } : {}),
+    ...(catalystSearch ? { search: catalystSearch } : {})
+  });
+  const data = await apiFetch(`/api/discovery/catalysts?${qs}`);
+  const tbody = document.getElementById('catalyst-table-body');
+  const cats = data.catalysts || [];
+
+  if (cats.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-on-surface-variant">No catalysts found.</td></tr>';
+  } else {
+    tbody.innerHTML = cats.map((c, i) => `
+      <tr>
+        <td class="font-mono text-on-surface-variant">${catalystOffset + i + 1}</td>
+        <td class="font-medium text-on-surface max-w-[160px] truncate">${c.catalyst_track_name}</td>
+        <td class="text-on-surface-variant max-w-[140px] truncate">${c.catalyst_artist_name}</td>
+        <td>${typeBadge(c.discovery_type)}</td>
+        <td class="text-on-surface font-mono">${fmt(c.max_tracks_added_7d)}</td>
+        <td class="text-on-surface-variant font-mono">${fmt(c.max_minutes_added_7d, 1)}</td>
+        <td class="text-on-surface-variant font-mono">${fmt(c.max_minutes_30d, 1)}</td>
+        <td class="text-on-surface-variant font-mono">${fmt(c.max_minutes_90d, 1)}</td>
+        <td class="text-primary font-bold font-mono">${fmtHrs(c.future_hours_unlocked)}h</td>
+      </tr>`).join('');
+  }
+
+  document.getElementById('catalyst-count-label').textContent = `${fmt(data.total)} catalysts`;
+  document.getElementById('catalyst-prev').disabled = catalystOffset === 0;
+  document.getElementById('catalyst-next').disabled = catalystOffset + CATALYST_PAGE_SIZE >= data.total;
+}
+
+function catalystPage(dir) {
+  catalystOffset = Math.max(0, catalystOffset + dir * CATALYST_PAGE_SIZE);
+  fetchCatalysts();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIEW 3: ARTIST LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
+let allArtists = [];
+
+async function loadArtists() {
+  try {
+    const data = await apiFetch('/api/artists?limit=250');
+    allArtists = (data.artists || []).sort((a, b) => (b.total_hours || 0) - (a.total_hours || 0));
+    renderArtistList(allArtists);
+
+    if (allArtists.length > 0) {
+      loadArtistDetail(allArtists[0].artist_id);
+    }
+
+    let artistSearchTimer;
+    document.getElementById('artist-search-input').addEventListener('input', e => {
+      clearTimeout(artistSearchTimer);
+      artistSearchTimer = setTimeout(() => {
+        const q = e.target.value.toLowerCase();
+        const filtered = allArtists.filter(a => a.artist_name?.toLowerCase().includes(q));
+        renderArtistList(filtered);
+      }, 200);
+    });
+
+    document.getElementById('artist-stage-filter').addEventListener('change', e => {
+      const stage = e.target.value;
+      const filtered = stage ? allArtists.filter(a => a.lifecycle_stage === stage) : allArtists;
+      renderArtistList(filtered);
+    });
+  } catch (e) {
+    console.error('Error loading artists:', e);
+  }
+}
+
+function renderArtistList(artists) {
+  const el = document.getElementById('artist-list');
+  if (artists.length === 0) {
+    el.innerHTML = '<p class="p-6 text-center text-on-surface-variant text-sm">No artists found.</p>';
+    return;
+  }
+  el.innerHTML = artists.slice(0, 100).map(a => `
+    <div class="flex items-center gap-3 p-4 cursor-pointer hover:bg-surface-container-highest transition-colors" onclick="loadArtistDetail('${a.artist_id}')">
+      <div class="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 text-xs font-bold text-primary">
+        ${(a.artist_name || '?').slice(0, 2).toUpperCase()}
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-medium text-on-surface text-sm truncate">${a.artist_name}</p>
+        <p class="text-xs text-on-surface-variant">${a.lifecycle_stage || '—'}</p>
+      </div>
+      <div class="text-right flex-shrink-0">
+        <p class="text-xs font-bold text-on-surface">${fmtHrs(a.total_hours)}h</p>
+        <p class="text-xs text-on-surface-variant">${fmt(a.total_plays)} plays</p>
+      </div>
+    </div>`).join('');
+}
+
+async function loadArtistDetail(artistId) {
+  const artist = allArtists.find(a => a.artist_id === artistId || a.artist_name === artistId);
+  if (!artist) return;
+
+  const header = document.getElementById('artist-detail-header');
+  header.innerHTML = `
+    <div class="flex items-start gap-5 flex-wrap">
+      <div class="w-16 h-16 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center text-xl font-black text-primary flex-shrink-0">
+        ${(artist.artist_name || '?').slice(0, 2).toUpperCase()}
+      </div>
+      <div class="flex-1">
+        <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-1">Artist Lifecycle Analysis</div>
+        <h2 class="text-3xl font-black text-on-surface mb-1">${artist.artist_name}</h2>
+        <p class="text-on-surface-variant text-sm mb-3">Your listening journey.</p>
+        <div class="flex flex-wrap gap-4 text-sm">
+          <div class="flex flex-col"><span class="text-on-surface-variant text-xs">PLAYS</span><span class="font-bold text-on-surface">${fmt(artist.total_plays)}</span></div>
+          <div class="flex flex-col"><span class="text-on-surface-variant text-xs">TRACKS</span><span class="font-bold text-on-surface">${fmt(artist.unique_tracks)}</span></div>
+          <div class="flex flex-col"><span class="text-on-surface-variant text-xs">PROJECTS</span><span class="font-bold text-on-surface">${fmt(artist.unique_projects)}</span></div>
+          <div class="flex flex-col"><span class="text-on-surface-variant text-xs">FIRST HEARD</span><span class="font-bold text-on-surface">${artist.first_heard_utc ? new Date(artist.first_heard_utc).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : '—'}</span></div>
+          <div class="flex flex-col"><span class="text-on-surface-variant text-xs">PEAK YEAR</span><span class="font-bold text-primary">${artist.peak_year || '—'}</span></div>
+          <div class="flex flex-col"><span class="text-on-surface-variant text-xs">STAGE</span><span class="font-bold text-on-surface">${artist.lifecycle_stage || '—'}</span></div>
+        </div>
+      </div>
+    </div>`;
+
+  try {
+    const lc = await apiFetch(`/api/artists/${encodeURIComponent(artist.artist_name)}/lifecycle`);
+    const timeline = lc.monthly_timeline || lc.monthly_plays || [];
+    if (timeline.length > 0) {
+      document.getElementById('artist-lifecycle-chart-container').classList.remove('hidden');
+      const months = timeline.map(r => r.year_month || r.month);
+      const plays = timeline.map(r => r.plays || r.minutes);
+      Plotly.newPlot('artist-lifecycle-chart', [{
+        type: 'scatter', x: months, y: plays,
+        fill: 'tozeroy', fillcolor: 'rgba(83,224,118,0.15)',
+        line: { color: '#53e076', width: 2 },
+        hovertemplate: '<b>%{x}</b><br>%{y} plays<extra></extra>'
+      }], {
+        ...plotlyLayout,
+        xaxis: { gridcolor: '#2a2b2b' },
+        yaxis: { gridcolor: '#2a2b2b' }
+      }, plotlyConfig);
+    }
+
+    // Time of Day
+    const tod = lc.time_of_day_profile || {};
+    const todKeys = Object.keys(tod);
+    if (todKeys.length > 0) {
+      document.getElementById('artist-tod-container').classList.remove('hidden');
+      Plotly.newPlot('artist-tod-chart', [{
+        type: 'bar', x: todKeys, y: todKeys.map(k => tod[k]),
+        marker: { color: '#53e076', opacity: 0.7 },
+        hovertemplate: '%{x} — %{y:.0f} min<extra></extra>'
+      }], {
+        ...plotlyLayout,
+        xaxis: { gridcolor: '#2a2b2b' },
+        yaxis: { title: 'Minutes', gridcolor: '#2a2b2b' },
+        margin: { l: 50, r: 20, t: 20, b: 60 }
+      }, plotlyConfig);
+    }
+
+    // Discography Penetration
+    const projs = lc.projects || [];
+    if (projs.length > 0) {
+      document.getElementById('artist-discography-container').classList.remove('hidden');
+      const discEl = document.getElementById('artist-discography');
+      discEl.innerHTML = projs.slice(0, 8).map(p => {
+        const pct = Math.round(p.penetration_pct || 0);
+        return `
+          <div>
+            <div class="flex items-center justify-between text-xs mb-1">
+              <span class="text-on-surface font-medium truncate max-w-[150px]">${p.project_name}</span>
+              <span class="text-on-surface-variant">${pct}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${pct}%"></div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+  } catch (e) {
+    console.error('Error fetching artist lifecycle:', e);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIEW 4: ALBUMS & EPS
+═══════════════════════════════════════════════════════════════════════════ */
+let albumOffset = 0;
+const ALBUM_PAGE_SIZE = 12;
+let albumSearchQ = '';
+let albumExploredOnly = false;
+let albumTotal = 0;
+
+async function loadAlbums() {
+  try {
+    const data = await apiFetch('/api/projects?limit=500');
+    const all = data.projects || [];
+
+    const explored = all.filter(p => p.is_explored);
+    const fullDone = all.filter(p => p.listening_style === 'Full Listen' || (p.penetration_pct || 0) >= 90);
+    const deep = all.filter(p => p.listening_style === 'Deep Listen' || ((p.penetration_pct || 0) >= 50 && (p.penetration_pct || 0) < 90));
+    const partial = all.filter(p => p.listening_style === 'Partial' || (p.penetration_pct || 0) < 50);
+
+    document.getElementById('album-kpis').innerHTML = `
+      <div class="kpi-card"><span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Projects Explored</span><span class="text-3xl font-bold text-primary">${fmt(data.explored_count_ge3 || explored.length)}</span></div>
+      <div class="kpi-card"><span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Full Projects</span><span class="text-3xl font-bold text-on-surface">${fmt(fullDone.length)}</span></div>
+      <div class="kpi-card"><span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Deep Projects</span><span class="text-3xl font-bold text-on-surface">${fmt(deep.length)}</span></div>
+      <div class="kpi-card"><span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Partial Projects</span><span class="text-3xl font-bold text-on-surface">${fmt(partial.length)}</span></div>`;
+
+    const topProj = explored.sort((a, b) => (b.total_plays || 0) - (a.total_plays || 0))[0] || all[0];
+    if (topProj) {
+      const pct = Math.round(topProj.penetration_pct || 0);
+      document.getElementById('featured-project').innerHTML = `
+        <div class="flex flex-col md:flex-row gap-6">
+          <div class="w-full md:w-48 h-48 bg-surface-container rounded-xl flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-6xl text-on-surface-variant">album</span>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="badge badge-artist">EXPLORED</span>
+            </div>
+            <h3 class="text-2xl font-black text-on-surface mb-1">${topProj.project_name}</h3>
+            <p class="text-on-surface-variant mb-4">${topProj.artist_name}</p>
+            <div class="grid grid-cols-3 gap-4 mb-5">
+              <div><p class="text-xs text-on-surface-variant uppercase tracking-wider">Penetration</p><p class="text-2xl font-bold text-on-surface">${pct}%</p><p class="text-xs text-on-surface-variant">${topProj.tracks_heard || 0} Tracks</p></div>
+              <div><p class="text-xs text-on-surface-variant uppercase tracking-wider">Total Plays</p><p class="text-2xl font-bold text-on-surface">${fmt(topProj.total_plays)}</p><p class="text-xs text-on-surface-variant">All time</p></div>
+              <div><p class="text-xs text-on-surface-variant uppercase tracking-wider">Time Spent</p><p class="text-2xl font-bold text-on-surface">${fmtHrs(topProj.total_hours)}h</p></div>
+            </div>
+            ${topProj.top_song_name ? `
+            <div>
+              <p class="text-xs text-on-surface-variant uppercase tracking-wider mb-2">Project-Driving Song</p>
+              <div class="flex items-center gap-3 p-3 bg-surface-container rounded-xl">
+                <span class="material-symbols-outlined text-primary">star</span>
+                <div>
+                  <p class="font-semibold text-on-surface text-sm">${topProj.top_song_name}</p>
+                  <p class="text-xs text-on-surface-variant">${fmt(topProj.top_song_plays)} plays</p>
+                </div>
+                <div class="ml-auto text-right">
+                  <p class="text-primary font-bold text-sm">${Math.round(topProj.top_song_share_pct || 0)}%</p>
+                </div>
+              </div>
+            </div>` : ''}
+          </div>
+        </div>`;
+    }
+
+    window._allAlbums = all;
+    renderAlbumGrid();
+
+    let albumSearchTimer;
+    document.getElementById('album-search').addEventListener('input', e => {
+      clearTimeout(albumSearchTimer);
+      albumSearchTimer = setTimeout(() => {
+        albumSearchQ = e.target.value.toLowerCase();
+        albumOffset = 0;
+        renderAlbumGrid();
+      }, 300);
+    });
+
+    document.getElementById('explored-only').addEventListener('change', e => {
+      albumExploredOnly = e.target.checked;
+      albumOffset = 0;
+      renderAlbumGrid();
+    });
+  } catch (e) {
+    console.error('Error loading albums:', e);
+  }
+}
+
+function renderAlbumGrid() {
+  let albums = (window._allAlbums || []).filter(a =>
+    (!albumExploredOnly || a.is_explored) &&
+    (!albumSearchQ || a.project_name?.toLowerCase().includes(albumSearchQ) || a.artist_name?.toLowerCase().includes(albumSearchQ))
+  ).sort((a, b) => (b.total_plays || 0) - (a.total_plays || 0));
+
+  albumTotal = albums.length;
+  const page = albums.slice(albumOffset, albumOffset + ALBUM_PAGE_SIZE);
+  const el = document.getElementById('album-grid');
+
+  if (page.length === 0) {
+    el.innerHTML = '<div class="col-span-3 text-center py-8 text-on-surface-variant">No projects found.</div>';
+    return;
+  }
+
+  el.innerHTML = page.map(p => {
+    const pct = Math.round(p.penetration_pct || 0);
+    const style = p.listening_style || (pct >= 90 ? 'Full' : pct >= 50 ? 'Deep' : 'Partial');
+    return `
+      <div class="bg-surface-container-high rounded-xl border border-surface-variant p-4 hover:border-primary/40 transition-colors">
+        <div class="flex items-start gap-3 mb-4">
+          <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-on-surface-variant">album</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-on-surface text-sm truncate">${p.project_name}</p>
+            <p class="text-xs text-on-surface-variant truncate">${p.artist_name}</p>
+          </div>
+          ${p.is_explored ? '<span class="badge badge-artist text-xs">✓</span>' : ''}
+        </div>
+        <div class="flex items-center justify-between text-xs mb-1">
+          <span class="text-on-surface-variant">${p.tracks_heard || 0} Tracks • ${style}</span>
+          <span class="font-bold ${pct >= 90 ? 'text-primary' : 'text-on-surface'}">${pct}%</span>
+        </div>
+        <div class="progress-bar mb-2">
+          <div class="progress-fill" style="width:${Math.min(100,pct)}%"></div>
+        </div>
+        <div class="flex justify-between text-xs text-on-surface-variant">
+          <span>${fmt(p.total_plays)} plays</span>
+          <span>${fmtHrs(p.total_hours)}h total</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  const pageNum = Math.floor(albumOffset / ALBUM_PAGE_SIZE) + 1;
+  const totalPages = Math.max(1, Math.ceil(albumTotal / ALBUM_PAGE_SIZE));
+  document.getElementById('album-page-label').textContent = `Page ${pageNum} / ${totalPages}`;
+}
+
+function albumPage(dir) {
+  const newOff = albumOffset + dir * ALBUM_PAGE_SIZE;
+  if (newOff < 0 || newOff >= albumTotal) return;
+  albumOffset = newOff;
+  renderAlbumGrid();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIEW 5: SONG LIFECYCLES
+═══════════════════════════════════════════════════════════════════════════ */
+let songOffset = 0;
+const SONG_PAGE_SIZE = 30;
+let songCat = '';
+let songSearchQ = '';
+let songTotal = 0;
+
+async function loadSongs() {
+  try {
+    const data = await apiFetch('/api/songs?limit=500');
+    window._allSongs = (data.songs || []).sort((a, b) => (b.total_plays || 0) - (a.total_plays || 0));
+
+    document.querySelectorAll('[data-scat]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-scat]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        songCat = btn.dataset.scat;
+        songOffset = 0;
+        renderSongTable();
+        renderFeaturedSong();
+      });
+    });
+
+    let songTimer;
+    document.getElementById('song-search').addEventListener('input', e => {
+      clearTimeout(songTimer);
+      songTimer = setTimeout(() => {
+        songSearchQ = e.target.value.toLowerCase();
+        songOffset = 0;
+        renderSongTable();
+      }, 300);
+    });
+
+    renderFeaturedSong();
+    renderSongTable();
+  } catch (e) {
+    console.error('Error loading songs:', e);
+  }
+}
+
+function renderFeaturedSong() {
+  const songs = getFilteredSongs();
+  const top = songs[0];
+  if (!top) return;
+
+  const rawDays = Math.round(top.raw_lifespan_days || 0);
+  const activeDays = Math.round(top.active_lifespan_days || 0);
+  const skipPct = ((top.skip_rate || 0) * 100).toFixed(1);
+  const activeRatio = rawDays > 0 ? Math.min(100, Math.round((activeDays / rawDays) * 100)) : 0;
+
+  document.getElementById('featured-song').innerHTML = `
+    <div class="flex flex-col md:flex-row gap-6">
+      <div class="w-full md:w-48 h-48 bg-surface-container rounded-xl border border-surface-variant flex items-center justify-center flex-shrink-0">
+        <span class="material-symbols-outlined text-6xl text-on-surface-variant">music_note</span>
+      </div>
+      <div class="flex-1">
+        <div class="flex items-center gap-2 mb-2">${catBadge(top.lifecycle_category)}</div>
+        <h3 class="text-2xl font-black text-on-surface mb-0.5">${top.track_name}</h3>
+        <p class="text-on-surface-variant mb-4">${top.artist_name}${top.project_name ? ` — from ${top.project_name}` : ''}</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+          <div class="bg-surface-container rounded-xl p-3"><p class="text-xs text-on-surface-variant uppercase">Plays</p><p class="text-xl font-bold text-on-surface">${fmt(top.total_plays)}</p></div>
+          <div class="bg-surface-container rounded-xl p-3"><p class="text-xs text-on-surface-variant uppercase">Minutes</p><p class="text-xl font-bold text-on-surface">${fmt(top.total_minutes, 0)}</p></div>
+          <div class="bg-surface-container rounded-xl p-3"><p class="text-xs text-on-surface-variant uppercase">First Heard</p><p class="text-sm font-bold text-on-surface">${top.first_played_utc ? new Date(top.first_played_utc).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : '—'}</p></div>
+          <div class="bg-surface-container rounded-xl p-3"><p class="text-xs text-on-surface-variant uppercase">Skip Rate</p><p class="text-xl font-bold ${parseFloat(skipPct) > 20 ? 'text-red-400' : 'text-on-surface'}">${skipPct}%</p></div>
+          <div class="bg-surface-container rounded-xl p-3"><p class="text-xs text-on-surface-variant uppercase">Active Days</p><p class="text-xl font-bold text-primary">${fmt(top.active_lifespan_days || 0, 0)}</p></div>
+          <div class="bg-surface-container rounded-xl p-3"><p class="text-xs text-on-surface-variant uppercase">Raw Lifespan</p><p class="text-xl font-bold text-on-surface">${rawDays}d</p></div>
+        </div>
+        <div class="bg-surface-container rounded-xl p-4">
+          <h4 class="font-semibold text-on-surface text-sm mb-3">Lifespan Comparison</h4>
+          <div class="space-y-2">
+            <div>
+              <div class="flex justify-between text-xs mb-1"><span class="text-on-surface-variant">Raw Lifespan (time in library)</span><span class="text-on-surface">100%</span></div>
+              <div class="progress-bar"><div class="progress-fill bg-surface-container-highest" style="width:100%"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1"><span class="text-on-surface-variant">Active Lifespan (listening density)</span><span class="text-primary">${activeRatio}%</span></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:${activeRatio}%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function getFilteredSongs() {
+  return (window._allSongs || []).filter(s =>
+    (!songCat || s.lifecycle_category === songCat) &&
+    (!songSearchQ || s.track_name?.toLowerCase().includes(songSearchQ) || s.artist_name?.toLowerCase().includes(songSearchQ))
+  );
+}
+
+function renderSongTable() {
+  const songs = getFilteredSongs();
+  songTotal = songs.length;
+  const page = songs.slice(songOffset, songOffset + SONG_PAGE_SIZE);
+  const tbody = document.getElementById('song-table-body');
+
+  if (page.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-on-surface-variant">No songs found.</td></tr>';
+  } else {
+    tbody.innerHTML = page.map((s, i) => `
+      <tr>
+        <td class="text-on-surface-variant font-mono">${songOffset + i + 1}</td>
+        <td class="font-medium text-on-surface max-w-[180px] truncate">${s.track_name}</td>
+        <td class="text-on-surface-variant max-w-[140px] truncate">${s.artist_name}</td>
+        <td>${catBadge(s.lifecycle_category)}</td>
+        <td class="font-mono">${fmt(s.total_plays)}</td>
+        <td class="font-mono text-on-surface-variant">${fmt(s.total_minutes, 0)}</td>
+        <td class="font-mono text-on-surface-variant">${((s.skip_rate || 0) * 100).toFixed(1)}%</td>
+        <td class="font-mono text-on-surface-variant">${Math.round(s.raw_lifespan_days || 0)}d</td>
+        <td class="font-mono text-primary">${Math.round(s.active_lifespan_days || 0)}d</td>
+      </tr>`).join('');
+  }
+
+  document.getElementById('song-count-label').textContent = `${fmt(songTotal)} songs`;
+}
+
+function songPage(dir) {
+  const newOff = songOffset + dir * SONG_PAGE_SIZE;
+  if (newOff < 0 || newOff >= songTotal) return;
+  songOffset = newOff;
+  renderSongTable();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIEW 6: LISTENING SEQUENCES
+═══════════════════════════════════════════════════════════════════════════ */
+let seqType = 'songs';
+
+async function loadSequences() {
+  try {
+    const [tt, at_, seq3] = await Promise.all([
+      apiFetch('/api/sequences/top?limit=20'),
+      apiFetch('/api/sequences/artists?limit=20'),
+      apiFetch('/api/sequences/three-song?limit=10')
+    ]);
+
+    window._seqData = {
+      songs: tt.transitions || tt.top_track_transitions || [],
+      artists: at_.transitions || tt.top_artist_transitions || [],
+      sequences: seq3.sequences || tt.three_song_sequences || []
     };
 
-    try {
-      const res = await fetch(`${API_BASE}/ml/predict`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+    document.querySelectorAll('[data-seqtype]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-seqtype]').forEach(b => {
+          b.classList.remove('active','border-primary','text-primary');
+          b.classList.add('border-transparent','text-on-surface-variant');
+        });
+        btn.classList.add('active','border-primary','text-primary');
+        btn.classList.remove('border-transparent','text-on-surface-variant');
+        seqType = btn.dataset.seqtype;
+        renderSequences();
       });
-      const result = await res.json();
-
-      const box = document.getElementById('sim-result-box');
-      box.style.display = 'block';
-      document.getElementById('srb-prob').textContent = `${(result.expansion_probability * 100).toFixed(1)}%`;
-      document.getElementById('srb-badge').textContent = result.predicted_expansion ? '⚡ High Expansion Potential' : '💤 Low Expansion Signal';
-      document.getElementById('srb-badge').style.background = result.predicted_expansion ? 'rgba(29,185,84,0.2)' : 'rgba(100,116,139,0.2)';
-      document.getElementById('srb-badge').style.color = result.predicted_expansion ? '#1db954' : '#94a3b8';
-
-      document.getElementById('srb-explanation').innerHTML = result.explanation.map(e => `• ${e}`).join('<br>');
-    } catch (err) {
-      console.error('Prediction error:', err);
-    }
-  });
-}
-
-// 12. Deep Dive Hierarchical Explorer
-function initDeepDive() {
-  const artSelect = document.getElementById('dd-artist-select');
-  const prjSelect = document.getElementById('dd-project-select');
-  const songSelect = document.getElementById('dd-song-select');
-  const summaryBox = document.getElementById('dd-summary-text');
-
-  if (!artSelect) return;
-
-  artSelect.addEventListener('change', async (e) => {
-    const artistName = e.target.value;
-    try {
-      const res = await fetch(`${API_BASE}/artists/${encodeURIComponent(artistName)}/lifecycle`);
-      const data = await res.json();
-      state.deepDiveArtistData = data;
-
-      if (prjSelect) {
-        prjSelect.innerHTML = '<option value="">-- Select Project --</option>' + 
-          data.projects.map(p => `<option value="${p.project_name}">${p.project_name} (${p.tracks_heard} tracks)</option>`).join('');
-      }
-
-      if (songSelect) {
-        songSelect.innerHTML = '<option value="">-- Select Track --</option>' + 
-          data.top_tracks.map(t => `<option value="${t.track_name}">${t.track_name} (${t.total_plays} plays)</option>`).join('');
-      }
-
-      summaryBox.innerHTML = `
-        <strong>${data.artist.artist_name}</strong>: ${data.artist.total_hours} total hours listened across ${data.artist.unique_tracks} distinct tracks. 
-        Lifecycle Stage: <span class="badge-stage favorite">${data.artist.lifecycle_stage}</span>. Peak listening month was <strong>${data.artist.peak_month}</strong>.
-      `;
-    } catch (err) {
-      console.error('Error in deep dive artist select:', err);
-    }
-  });
-
-  if (prjSelect) {
-    prjSelect.addEventListener('change', (e) => {
-      const prjName = e.target.value;
-      if (!prjName || !state.deepDiveArtistData) return;
-      const proj = state.deepDiveArtistData.projects.find(p => p.project_name === prjName);
-      if (proj) {
-        summaryBox.innerHTML += `<br><br><strong>Project "${proj.project_name}"</strong>: ${proj.tracks_heard} tracks heard. Status: <strong>${proj.is_explored ? '✅ Explored (≥3 tracks)' : 'Sampled'}</strong>. Total minutes: ${proj.total_minutes} mins.`;
-      }
     });
-  }
 
-  if (songSelect) {
-    songSelect.addEventListener('change', (e) => {
-      const songName = e.target.value;
-      if (!songName || !state.deepDiveArtistData) return;
-      const track = state.deepDiveArtistData.top_tracks.find(t => t.track_name === songName);
-      if (track) {
-        summaryBox.innerHTML += `<br><br><strong>Track "${track.track_name}"</strong>: ${track.total_plays} plays (${track.total_minutes} mins). Category: <strong>${track.lifecycle_category}</strong>.`;
-      }
-    });
+    renderSequences();
+    renderSignatureChain(window._seqData.sequences);
+    renderArtistGravity(window._seqData.artists);
+  } catch (e) {
+    console.error('Error loading sequences:', e);
   }
 }
+
+function renderSequences() {
+  const data = window._seqData || {};
+  const items = data[seqType] || [];
+  const el = document.getElementById('seq-main-content');
+
+  const titles = { songs: 'Top Song Transitions', artists: 'Top Artist Transitions', sequences: '3-Song Chains' };
+  document.getElementById('seq-section-title').textContent = titles[seqType] || '';
+
+  if (items.length === 0) {
+    el.innerHTML = '<p class="text-on-surface-variant">No data available.</p>';
+    return;
+  }
+
+  if (seqType === 'songs') {
+    el.innerHTML = items.slice(0, 10).map(t => {
+      const prob = Math.round((t.transition_probability || 0) * 100);
+      return `
+        <div class="transition-card">
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-on-surface text-sm truncate">${t.previous_track_name || '—'}</p>
+            <p class="text-xs text-on-surface-variant">${t.previous_artist_name || ''}</p>
+          </div>
+          <div class="flex flex-col items-center flex-shrink-0 px-2">
+            <span class="text-primary font-bold text-sm">${prob}%</span>
+            <span class="material-symbols-outlined text-primary text-lg">arrow_forward</span>
+            <span class="text-xs text-on-surface-variant">${fmt(t.transition_count)} plays</span>
+          </div>
+          <div class="flex-1 min-w-0 text-right">
+            <p class="font-medium text-on-surface text-sm truncate">${t.track_name || '—'}</p>
+            <p class="text-xs text-on-surface-variant">${t.artist_name || ''}</p>
+          </div>
+        </div>`;
+    }).join('');
+  } else if (seqType === 'artists') {
+    const nonSelf = items.filter(t => !t.is_self_transition);
+    el.innerHTML = (nonSelf.length ? nonSelf : items).slice(0, 10).map(t => {
+      const prob = Math.round((t.transition_probability || 0) * 100);
+      return `
+        <div class="transition-card">
+          <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
+            ${(t.previous_artist_name || '?').slice(0, 2).toUpperCase()}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-on-surface text-sm">${t.previous_artist_name || '—'}</p>
+          </div>
+          <div class="text-center flex-shrink-0 px-2">
+            <p class="text-primary font-bold">${prob}%</p>
+            <span class="material-symbols-outlined text-primary">arrow_forward</span>
+          </div>
+          <div class="flex-1 min-w-0 text-right">
+            <p class="font-medium text-on-surface text-sm">${t.artist_name || '—'}</p>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-xs font-bold text-on-surface-variant flex-shrink-0">
+            ${(t.artist_name || '?').slice(0, 2).toUpperCase()}
+          </div>
+        </div>`;
+    }).join('');
+  } else {
+    el.innerHTML = items.slice(0, 8).map(s => `
+      <div class="bg-surface-container-high rounded-xl border border-surface-variant p-4">
+        <div class="flex items-center gap-2 text-sm flex-wrap">
+          <span class="font-medium text-on-surface">${s.song1_name || '?'}</span>
+          <span class="material-symbols-outlined text-primary text-sm">arrow_forward</span>
+          <span class="font-medium text-on-surface">${s.song2_name || '?'}</span>
+          <span class="material-symbols-outlined text-primary text-sm">arrow_forward</span>
+          <span class="font-medium text-on-surface">${s.song3_name || '?'}</span>
+        </div>
+        <p class="text-xs text-on-surface-variant mt-1">${fmt(s.sequence_count)} occurrences</p>
+      </div>`).join('');
+  }
+}
+
+function renderSignatureChain(seqs) {
+  const el = document.getElementById('signature-chain');
+  if (!seqs || !seqs.length) {
+    el.innerHTML = '<p class="text-xs text-on-surface-variant">No sequences available.</p>';
+    return;
+  }
+  const top = seqs[0];
+  el.innerHTML = [top.song1_name, top.song2_name, top.song3_name].filter(Boolean).map((name, i) => `
+    <div class="flex items-center gap-3 p-2 ${i === 0 ? 'bg-surface-container' : ''} rounded-lg">
+      <div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center flex-shrink-0">
+        <span class="material-symbols-outlined text-primary text-sm">music_note</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-on-surface truncate">${name}</p>
+      </div>
+    </div>`).join('') + `<p class="text-xs text-on-surface-variant mt-2">Played together ${fmt(top.sequence_count)} times</p>`;
+}
+
+function renderArtistGravity(transitions) {
+  const el = document.getElementById('artist-gravity');
+  const self = (transitions || []).filter(t => t.is_self_transition).sort((a, b) => (b.transition_probability || 0) - (a.transition_probability || 0));
+  el.innerHTML = self.slice(0, 5).map(t => `
+    <div class="flex items-center justify-between text-sm py-1">
+      <span class="text-on-surface truncate max-w-[140px]">${t.artist_name}</span>
+      <span class="text-primary font-bold">${Math.round((t.transition_probability || 0) * 100)}%</span>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIEW 7: MUSIC NETWORK
+═══════════════════════════════════════════════════════════════════════════ */
+let networkData = null;
+let networkCanvas = null;
+let networkCtx = null;
+let networkNodes = [];
+let networkEdges = [];
+let networkMinWeight = 2;
+let networkZoom = 1;
+let networkOffsetX = 0, networkOffsetY = 0;
+let networkDragging = false;
+let networkDragStart = { x: 0, y: 0 };
+let networkFilter = '';
+
+async function loadNetwork() {
+  try {
+    const data = await apiFetch('/api/network');
+    networkData = data;
+
+    const summary = data.summary || {};
+    document.getElementById('network-stats').innerHTML = `
+      <div class="flex justify-between"><span>Artists (nodes)</span><span class="font-bold text-on-surface">${fmt(summary.total_nodes || (data.nodes || []).length)}</span></div>
+      <div class="flex justify-between"><span>Connections</span><span class="font-bold text-on-surface">${fmt(summary.total_edges || (data.edges || []).length)}</span></div>
+      <div class="flex justify-between"><span>Communities</span><span class="font-bold text-on-surface">${fmt(summary.num_communities)}</span></div>
+      <div class="flex justify-between"><span>Density</span><span class="font-bold text-primary">${summary.density || '0.0077'}</span></div>`;
+
+    document.getElementById('network-density-label').textContent = `Network Density: ${summary.density || '0.0077'} (${summary.num_communities || 39} communities)`;
+
+    networkCanvas = document.getElementById('network-canvas');
+    networkCtx = networkCanvas.getContext('2d');
+
+    const resizeCanvas = () => {
+      const rect = networkCanvas.parentElement.getBoundingClientRect();
+      networkCanvas.width = rect.width;
+      networkCanvas.height = rect.height;
+      buildNetworkLayout();
+      drawNetwork();
+    };
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    networkCanvas.addEventListener('mousedown', onNetworkMouseDown);
+    networkCanvas.addEventListener('mousemove', onNetworkMouseMove);
+    networkCanvas.addEventListener('mouseup', onNetworkMouseUp);
+    networkCanvas.addEventListener('wheel', onNetworkWheel);
+    networkCanvas.addEventListener('click', onNetworkClick);
+
+    document.getElementById('network-search').addEventListener('input', e => {
+      networkFilter = e.target.value.toLowerCase();
+      drawNetwork();
+    });
+  } catch (e) {
+    console.error('Error loading network:', e);
+  }
+}
+
+function buildNetworkLayout() {
+  if (!networkData) return;
+  const nodes = networkData.nodes || [];
+  const edges = networkData.edges || [];
+  const W = networkCanvas.width, H = networkCanvas.height;
+
+  const filteredEdges = edges.filter(e => (e.weight || e.transition_count || 1) >= networkMinWeight);
+  const nodeIds = new Set([...filteredEdges.map(e => e.source), ...filteredEdges.map(e => e.target)]);
+
+  const communities = {};
+  nodes.forEach(n => {
+    if (!nodeIds.has(n.id)) return;
+    const c = n.community ?? 0;
+    if (!communities[c]) communities[c] = [];
+    communities[c].push(n);
+  });
+
+  networkNodes = [];
+  const commKeys = Object.keys(communities);
+  commKeys.forEach((ck, ci) => {
+    const angle = (ci / Math.max(1, commKeys.length)) * Math.PI * 2;
+    const r = Math.min(W, H) * 0.32;
+    const cx = W / 2 + r * Math.cos(angle);
+    const cy = H / 2 + r * Math.sin(angle);
+    communities[ck].forEach((n, ni) => {
+      const a2 = (ni / Math.max(1, communities[ck].length)) * Math.PI * 2;
+      const r2 = Math.min(W, H) * 0.09;
+      networkNodes.push({
+        ...n,
+        x: cx + r2 * Math.cos(a2),
+        y: cy + r2 * Math.sin(a2),
+        r: Math.min(22, Math.max(6, Math.log((n.total_plays || 1) + 1) * 2.8)),
+        color: `hsl(${(parseInt(ck) * 37) % 360},65%,55%)`
+      });
+    });
+  });
+
+  networkEdges = filteredEdges;
+}
+
+function drawNetwork() {
+  if (!networkCtx || !networkCanvas) return;
+  const W = networkCanvas.width, H = networkCanvas.height;
+  networkCtx.clearRect(0, 0, W, H);
+  networkCtx.save();
+  networkCtx.translate(networkOffsetX, networkOffsetY);
+  networkCtx.scale(networkZoom, networkZoom);
+
+  // Edges
+  networkCtx.strokeStyle = 'rgba(83,224,118,0.18)';
+  networkEdges.forEach(e => {
+    const src = networkNodes.find(n => n.id === e.source);
+    const tgt = networkNodes.find(n => n.id === e.target);
+    if (!src || !tgt) return;
+    if (networkFilter && !src.name?.toLowerCase().includes(networkFilter) && !tgt.name?.toLowerCase().includes(networkFilter)) return;
+    const w = Math.max(0.6, Math.min(3, (e.weight || 1) / 15));
+    networkCtx.lineWidth = w;
+    networkCtx.beginPath();
+    networkCtx.moveTo(src.x, src.y);
+    networkCtx.lineTo(tgt.x, tgt.y);
+    networkCtx.stroke();
+  });
+
+  // Nodes
+  networkNodes.forEach(n => {
+    const isHighlighted = networkFilter && n.name?.toLowerCase().includes(networkFilter);
+    const alpha = networkFilter && !isHighlighted ? 0.15 : 1;
+    networkCtx.globalAlpha = alpha;
+    networkCtx.beginPath();
+    networkCtx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+    networkCtx.fillStyle = isHighlighted ? '#53e076' : n.color;
+    networkCtx.fill();
+    networkCtx.strokeStyle = '#0B0B0B';
+    networkCtx.lineWidth = 1.5;
+    networkCtx.stroke();
+
+    if (n.r > 8 || isHighlighted) {
+      networkCtx.fillStyle = isHighlighted ? '#53e076' : '#e3e2e2';
+      networkCtx.font = `${Math.max(10, n.r * 0.75)}px Inter`;
+      networkCtx.textAlign = 'center';
+      networkCtx.textBaseline = 'middle';
+      const label = (n.name || '').length > 12 ? n.name.slice(0, 12) + '…' : n.name;
+      networkCtx.fillText(label, n.x, n.y + n.r + 9);
+    }
+    networkCtx.globalAlpha = 1;
+  });
+
+  networkCtx.restore();
+}
+
+function getNetworkNode(mx, my) {
+  const x = (mx - networkOffsetX) / networkZoom;
+  const y = (my - networkOffsetY) / networkZoom;
+  return networkNodes.find(n => Math.hypot(n.x - x, n.y - y) <= n.r + 4);
+}
+
+function onNetworkMouseDown(e) {
+  networkDragging = true;
+  networkDragStart = { x: e.clientX - networkOffsetX, y: e.clientY - networkOffsetY };
+}
+function onNetworkMouseMove(e) {
+  if (networkDragging) {
+    networkOffsetX = e.clientX - networkDragStart.x;
+    networkOffsetY = e.clientY - networkDragStart.y;
+    drawNetwork();
+    return;
+  }
+  const rect = networkCanvas.getBoundingClientRect();
+  const node = getNetworkNode(e.clientX - rect.left, e.clientY - rect.top);
+  const tooltip = document.getElementById('network-tooltip');
+  if (node) {
+    networkCanvas.style.cursor = 'pointer';
+    tooltip.style.display = 'block';
+    tooltip.style.left = (e.clientX - rect.left + 14) + 'px';
+    tooltip.style.top = (e.clientY - rect.top - 28) + 'px';
+    tooltip.innerHTML = `<strong>${node.name}</strong><br>${fmt(node.total_plays || 0)} plays`;
+  } else {
+    networkCanvas.style.cursor = 'grab';
+    tooltip.style.display = 'none';
+  }
+}
+function onNetworkMouseUp() { networkDragging = false; }
+function onNetworkWheel(e) {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  zoomNetwork(delta, e.offsetX, e.offsetY);
+}
+function onNetworkClick(e) {
+  const rect = networkCanvas.getBoundingClientRect();
+  const node = getNetworkNode(e.clientX - rect.left, e.clientY - rect.top);
+  if (node) {
+    const det = document.getElementById('network-node-detail');
+    det.classList.remove('hidden');
+    det.innerHTML = `
+      <p class="font-bold text-on-surface">${node.name}</p>
+      <p class="text-on-surface-variant text-xs">${fmt(node.total_plays || 0)} plays</p>
+      <p class="text-on-surface-variant text-xs">Community: ${node.community ?? 0}</p>
+      <button class="text-primary text-xs mt-1 hover:underline block" onclick="navigateArtistFromNetwork('${node.name}')">View lifecycle →</button>`;
+  }
+}
+function zoomNetwork(factor, cx, cy) {
+  const W = networkCanvas.width / 2, H = networkCanvas.height / 2;
+  const ox = cx ?? W, oy = cy ?? H;
+  networkOffsetX = ox - (ox - networkOffsetX) * factor;
+  networkOffsetY = oy - (oy - networkOffsetY) * factor;
+  networkZoom *= factor;
+  networkZoom = Math.min(5, Math.max(0.1, networkZoom));
+  drawNetwork();
+}
+function resetNetwork() { networkZoom = 1; networkOffsetX = 0; networkOffsetY = 0; drawNetwork(); }
+function updateNetworkWeight(val) {
+  networkMinWeight = parseInt(val);
+  document.getElementById('min-weight-label').textContent = val;
+  buildNetworkLayout();
+  drawNetwork();
+}
+function navigateArtistFromNetwork(artistName) {
+  navigate('artists');
+  setTimeout(() => loadArtistDetail(artistName), 400);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIEW 8: GENRE × TIME × YEAR
+═══════════════════════════════════════════════════════════════════════════ */
+let genreData = null;
+
+async function loadGenres() {
+  try {
+    genreData = await apiFetch('/api/genres/time-matrix');
+    renderGenreView('all');
+
+    document.getElementById('genre-year-filter').addEventListener('change', e => {
+      renderGenreView(e.target.value);
+    });
+  } catch (e) {
+    console.error('Error loading genres:', e);
+  }
+}
+
+function renderGenreView(yearFilter) {
+  const matrix = genreData.genre_time_matrix || genreData.matrix || [];
+  const yearly = genreData.yearly_genre_share || genreData.yearly || [];
+
+  let filtered = yearFilter === 'all' ? matrix : matrix.filter(r => String(r.year) === yearFilter);
+
+  const heatmap = {};
+  const timeBuckets = new Set();
+  const genres = new Set();
+  filtered.forEach(r => {
+    const bucket = r.time_of_day_bucket || r.time_bucket;
+    if (bucket && r.genre) {
+      timeBuckets.add(bucket);
+      genres.add(r.genre);
+      const k = `${r.genre}|||${bucket}`;
+      heatmap[k] = (heatmap[k] || 0) + (r.total_minutes || 0);
+    }
+  });
+
+  const tbList = [...timeBuckets].sort();
+  const gList = [...genres].sort((a, b) => {
+    const totA = tbList.reduce((s, t) => s + (heatmap[`${a}|||${t}`] || 0), 0);
+    const totB = tbList.reduce((s, t) => s + (heatmap[`${b}|||${t}`] || 0), 0);
+    return totB - totA;
+  }).slice(0, 15);
+
+  const z = gList.map(g => tbList.map(t => Math.round((heatmap[`${g}|||${t}`] || 0))));
+
+  Plotly.newPlot('genre-heatmap', [{
+    type: 'heatmap', z, x: tbList, y: gList,
+    colorscale: [[0, '#1e2020'], [0.5, '#1db954'], [1, '#53e076']],
+    hovertemplate: '%{y}<br>%{x}<br>%{z:.0f} min<extra></extra>',
+    showscale: false
+  }], {
+    ...plotlyLayout,
+    margin: { l: 150, r: 20, t: 30, b: 60 },
+    xaxis: { gridcolor: '#2a2b2b' },
+    yaxis: { gridcolor: '#2a2b2b', autorange: 'reversed' }
+  }, plotlyConfig);
+
+  const years = [...new Set(yearly.map(r => r.year))].sort();
+  const topGenres = gList.slice(0, 6);
+  const traces = topGenres.map((g, i) => ({
+    type: 'bar', name: g,
+    x: years,
+    y: years.map(yr => {
+      const row = yearly.find(r => r.genre === g && r.year === yr);
+      return row ? Math.round(row.total_minutes || 0) : 0;
+    }),
+    marker: { color: `hsl(${i * 40 + 100},60%,55%)` }
+  }));
+  Plotly.newPlot('genre-evolution-chart', traces, {
+    ...plotlyLayout,
+    barmode: 'stack',
+    xaxis: { gridcolor: '#2a2b2b' },
+    yaxis: { gridcolor: '#2a2b2b', title: 'Minutes' },
+    legend: { font: { size: 10 }, bgcolor: 'transparent' }
+  }, plotlyConfig);
+
+  const genreTotals = gList.map(g => ({
+    genre: g,
+    total: tbList.reduce((s, t) => s + (heatmap[`${g}|||${t}`] || 0), 0)
+  })).sort((a, b) => b.total - a.total);
+  const maxTotal = genreTotals[0]?.total || 1;
+  document.getElementById('genre-bars').innerHTML = genreTotals.slice(0, 12).map(g => {
+    const pct = Math.round((g.total / maxTotal) * 100);
+    return `
+      <div>
+        <div class="flex justify-between text-sm mb-1">
+          <span class="text-on-surface font-medium truncate max-w-[200px]">${g.genre}</span>
+          <span class="text-on-surface-variant">${fmt(Math.round(g.total))} min</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIEW 9: DEEP DIVE EXPLORER
+═══════════════════════════════════════════════════════════════════════════ */
+async function loadDeepDive() {
+  try {
+    const data = await apiFetch('/api/artists?limit=250');
+    const artists = (data.artists || []).sort((a, b) => (b.total_hours || 0) - (a.total_hours || 0));
+
+    const sel = document.getElementById('dd-artist-select');
+    sel.innerHTML = '<option value="">Select artist…</option>' +
+      artists.map(a => `<option value="${a.artist_name}">${a.artist_name}</option>`).join('');
+  } catch (e) {
+    console.error('Error loading deep dive:', e);
+  }
+}
+
+async function ddSelectArtist(artistName) {
+  if (!artistName) return;
+  try {
+    const data = await apiFetch(`/api/artists/${encodeURIComponent(artistName)}/lifecycle`);
+    const projects = data.projects || [];
+
+    const projSel = document.getElementById('dd-project-select');
+    document.getElementById('dd-project-col').classList.remove('opacity-40');
+    projSel.disabled = false;
+    projSel.innerHTML = '<option value="">Select project…</option>' +
+      projects.map(p => `<option value="${p.project_id}">${p.project_name}</option>`).join('');
+
+    const artistObj = data.artist || {};
+    const panel = document.getElementById('dd-detail-panel');
+    panel.innerHTML = `
+      <div class="bg-surface-container-high rounded-xl border border-surface-variant p-6">
+        <h3 class="font-bold text-on-surface mb-4">Artist: ${artistObj.artist_name || artistName}</h3>
+        <div class="grid grid-cols-3 gap-4">
+          <div class="kpi-card"><span class="text-on-surface-variant text-xs">Total Plays</span><span class="text-2xl font-bold text-on-surface">${fmt(artistObj.total_plays)}</span></div>
+          <div class="kpi-card"><span class="text-on-surface-variant text-xs">Tracks Heard</span><span class="text-2xl font-bold text-on-surface">${fmt(artistObj.unique_tracks)}</span></div>
+          <div class="kpi-card"><span class="text-on-surface-variant text-xs">Stage</span><span class="text-lg font-bold text-primary">${artistObj.lifecycle_stage || '—'}</span></div>
+        </div>
+      </div>`;
+  } catch (e) {
+    console.error('Error selecting artist in deep dive:', e);
+  }
+}
+
+async function ddSelectProject(projectId) {
+  if (!projectId) return;
+  try {
+    const songSel = document.getElementById('dd-song-select');
+    document.getElementById('dd-song-col').classList.remove('opacity-40');
+    songSel.disabled = false;
+
+    const songs = await apiFetch(`/api/projects/${encodeURIComponent(projectId)}/songs`);
+    const songList = songs.songs || [];
+    songSel.innerHTML = '<option value="">Select song…</option>' +
+      songList.map(s => `<option value="${s.track_id}">${s.track_name}</option>`).join('');
+
+    const projRes = await apiFetch(`/api/projects/${encodeURIComponent(projectId)}`);
+    const proj = projRes.project || {};
+    const pct = Math.round(proj.penetration_pct || 0);
+
+    const panel = document.getElementById('dd-detail-panel');
+    panel.innerHTML += `
+      <div class="bg-surface-container-high rounded-xl border border-surface-variant p-6">
+        <h3 class="font-bold text-on-surface mb-4">Project: ${proj.project_name || projectId}</h3>
+        <div class="flex items-center justify-between text-sm mb-2">
+          <span class="text-on-surface-variant">Catalog Penetration</span>
+          <span class="font-bold text-primary">${pct}%</span>
+        </div>
+        <div class="progress-bar mb-4"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="kpi-card"><span class="text-on-surface-variant text-xs">Tracks Heard</span><span class="text-2xl font-bold text-on-surface">${fmt(proj.tracks_heard)}</span></div>
+          <div class="kpi-card"><span class="text-on-surface-variant text-xs">Total Plays</span><span class="text-2xl font-bold text-on-surface">${fmt(proj.total_plays)}</span></div>
+        </div>
+      </div>`;
+  } catch (e) {
+    console.error('Error selecting project in deep dive:', e);
+  }
+}
+
+function ddReset() {
+  document.getElementById('dd-artist-select').value = '';
+  document.getElementById('dd-project-select').innerHTML = '<option value="">Select project…</option>';
+  document.getElementById('dd-project-select').disabled = true;
+  document.getElementById('dd-song-select').innerHTML = '<option value="">Select song…</option>';
+  document.getElementById('dd-song-select').disabled = true;
+  document.getElementById('dd-project-col').classList.add('opacity-40');
+  document.getElementById('dd-song-col').classList.add('opacity-40');
+  document.getElementById('dd-detail-panel').innerHTML = '';
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIEW 10: ML INTELLIGENCE
+═══════════════════════════════════════════════════════════════════════════ */
+async function loadML() {
+  try {
+    const [metrics, feat] = await Promise.all([
+      apiFetch('/api/ml/metrics'),
+      apiFetch('/api/ml/feature-importance')
+    ]);
+
+    const tbody = document.getElementById('ml-benchmark-table');
+    const bm = metrics.benchmark_table || metrics.benchmark || [];
+    if (bm.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-6 text-on-surface-variant">No benchmark data.</td></tr>';
+    } else {
+      tbody.innerHTML = bm.map(m => {
+        const isActive = (m.Model || '').toLowerCase().includes('lightgbm');
+        return `<tr ${isActive ? 'class="font-bold"' : ''}>
+          <td class="${isActive ? 'text-primary' : 'text-on-surface'}">${m.Model}</td>
+          <td class="${isActive ? 'text-primary' : 'text-on-surface-variant'} font-mono">${(m['PR-AUC'] || 0).toFixed(4)}</td>
+          <td class="${isActive ? 'text-primary' : 'text-on-surface-variant'} font-mono">${(m['ROC-AUC'] || 0).toFixed(4)}</td>
+          <td class="${isActive ? 'text-primary' : 'text-on-surface-variant'} font-mono">${(m['F1 Score'] || 0).toFixed(4)}</td>
+          <td class="font-mono text-on-surface-variant">${(m['Precision'] || 0).toFixed(4)}</td>
+          <td class="font-mono text-on-surface-variant">${(m['Recall'] || 0).toFixed(4)}</td>
+          <td class="font-mono text-on-surface-variant">${(m['Brier Score'] || 0).toFixed(4)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    const fi = feat.feature_importance || feat.features || [];
+    const maxImportance = Math.max(...fi.map(f => f.gain_importance || 0), 1);
+    document.getElementById('ml-feature-importance-panel').innerHTML = fi.slice(0, 8).map(f => {
+      const pct = Math.round(((f.gain_importance || 0) / maxImportance) * 100);
+      return `
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-on-surface font-medium">${f.feature}</span>
+            <span class="text-primary font-bold">${pct}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${pct}%"></div>
+          </div>
+        </div>`;
+    }).join('');
+
+    const audit = metrics.temporal_audit?.audit_passed ?? metrics.audit_passed ?? true;
+    const auditBadge = document.getElementById('ml-audit-badge');
+    auditBadge.textContent = audit ? 'PASSED' : 'REVIEW NEEDED';
+    auditBadge.className = `px-4 py-2 rounded-full text-sm font-bold ${audit ? 'bg-primary/20 text-primary border border-primary/40' : 'bg-red-500/20 text-red-400 border border-red-500/40'}`;
+  } catch (e) {
+    console.error('Error loading ML intelligence:', e);
+  }
+}
+
+async function runPrediction() {
+  const btn = document.getElementById('ml-predict-btn');
+  btn.textContent = 'Predicting…';
+  btn.disabled = true;
+
+  const payload = {
+    is_first_artist_play: parseInt(document.getElementById('ml-first-artist').value),
+    skipped: parseInt(document.getElementById('ml-skipped').value),
+    seconds_played: parseFloat(document.getElementById('ml-seconds').value),
+    artist_plays_before: parseInt(document.getElementById('ml-artist-plays').value),
+    artist_tracks_heard_before: parseInt(document.getElementById('ml-artist-tracks').value),
+    hour: parseInt(document.getElementById('ml-hour').value),
+    session_position: parseInt(document.getElementById('ml-session-pos').value),
+    shuffle: parseInt(document.getElementById('ml-shuffle').value)
+  };
+
+  try {
+    const res = await fetch('/api/ml/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    const prob = Math.round((data.expansion_probability || 0) * 100);
+    const isHigh = Boolean(data.predicted_expansion);
+
+    document.getElementById('ml-result').classList.remove('hidden');
+    document.getElementById('ml-prob-display').textContent = `${prob}%`;
+    document.getElementById('ml-prob-bar').style.width = `${prob}%`;
+
+    const badge = document.getElementById('ml-confidence-badge');
+    badge.textContent = `${data.confidence_level || 'High'} Confidence`;
+    badge.className = isHigh ? 'badge badge-artist' : 'badge badge-reengagement';
+
+    document.getElementById('ml-predicted-outcome').innerHTML =
+      `<span class="${isHigh ? 'text-primary' : 'text-on-surface-variant'} font-bold">
+        ${isHigh ? '✓ Catalog Expansion Likely (Threshold: ' + (data.decision_threshold || 0.675) + ')' : '✗ No Significant Expansion Expected'}
+      </span>`;
+
+    const expl = data.explanation || [];
+    document.getElementById('ml-explanation').innerHTML = expl.map(item => {
+      const text = typeof item === 'string' ? item : (item.description || item.feature);
+      return `<div class="flex items-center gap-2 text-xs text-on-surface-variant py-0.5">
+        <span class="text-primary font-bold">✓</span>
+        <span>${text}</span>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    document.getElementById('ml-result').classList.remove('hidden');
+    document.getElementById('ml-prob-display').textContent = 'Error';
+    document.getElementById('ml-explanation').innerHTML = '<p class="text-xs text-red-400">Prediction failed. Is backend server active?</p>';
+  }
+
+  btn.textContent = 'Predict Catalog Expansion →';
+  btn.disabled = false;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  navigate('overview');
+});

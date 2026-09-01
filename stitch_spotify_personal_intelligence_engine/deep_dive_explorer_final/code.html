@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Deep Dive Explorer - SPIE</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "outline-variant": "#3d4a3d",
+                "on-background": "#e3e2e2",
+                "surface-container-low": "#1a1c1c",
+                "background": "#121414",
+                "surface-dim": "#121414",
+                "on-surface-variant": "#bccbb9",
+                "on-tertiary-fixed": "#1c1b1b",
+                "outline": "#869585",
+                "on-primary": "#003914",
+                "surface": "#121414",
+                "on-secondary": "#313030",
+                "surface-tint": "#53e076",
+                "on-tertiary-container": "#383838",
+                "surface-container-high": "#292a2a",
+                "error": "#ffb4ab",
+                "surface-container": "#1e2020",
+                "on-error-container": "#ffdad6",
+                "on-tertiary": "#313030",
+                "primary": "#53e076",
+                "inverse-on-surface": "#2f3131",
+                "primary-container": "#1db954",
+                "secondary-container": "#4a4949",
+                "on-secondary-fixed-variant": "#474646",
+                "primary-fixed": "#72fe8f",
+                "on-error": "#690005",
+                "tertiary-container": "#a3a1a0",
+                "on-secondary-container": "#bab8b7",
+                "surface-container-highest": "#343535",
+                "on-tertiary-fixed-variant": "#474746",
+                "tertiary-fixed-dim": "#c8c6c5",
+                "tertiary-fixed": "#e5e2e1",
+                "inverse-primary": "#006e2d",
+                "on-primary-container": "#004118",
+                "surface-bright": "#38393a",
+                "surface-container-lowest": "#0d0e0f",
+                "primary-fixed-dim": "#53e076",
+                "on-primary-fixed": "#002108",
+                "error-container": "#93000a",
+                "surface-variant": "#343535",
+                "secondary-fixed": "#e5e2e1",
+                "on-secondary-fixed": "#1c1b1b",
+                "on-surface": "#e3e2e2",
+                "tertiary": "#c8c6c5",
+                "secondary": "#c8c6c5",
+                "secondary-fixed-dim": "#c8c6c5",
+                "inverse-surface": "#e3e2e2",
+                "on-primary-fixed-variant": "#005320"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "card-gap": "1rem",
+                "sidebar-width": "280px",
+                "section-stack": "3rem",
+                "container-margin": "2rem",
+                "gutter": "1.5rem"
+        },
+        "fontFamily": {
+                "label-sm": [
+                        "Inter"
+                ],
+                "body-md": [
+                        "Inter"
+                ],
+                "headline-lg": [
+                        "Inter"
+                ],
+                "display-hero": [
+                        "Inter"
+                ],
+                "body-lg": [
+                        "Inter"
+                ],
+                "metadata": [
+                        "Inter"
+                ],
+                "headline-md": [
+                        "Inter"
+                ],
+                "headline-lg-mobile": [
+                        "Inter"
+                ]
+        },
+        "fontSize": {
+                "label-sm": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-md": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-lg": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "800"
+                        }
+                ],
+                "display-hero": [
+                        "72px",
+                        {
+                                "lineHeight": "80px",
+                                "letterSpacing": "-0.04em",
+                                "fontWeight": "900"
+                        }
+                ],
+                "body-lg": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "metadata": [
+                        "11px",
+                        {
+                                "lineHeight": "14px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-md": [
+                        "24px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "700"
+                        }
+                ],
+                "headline-lg-mobile": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "800"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121414;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #343535;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4a4949;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex overflow-x-hidden">
+<!-- SideNavBar -->
+<aside class="w-[sidebar-width] h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-surface-variant flex flex-col h-full py-6 px-4 z-50">
+<div class="mb-8 px-4 flex items-center space-x-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="account_circle">account_circle</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-black text-primary">SPIE</h1>
+<p class="font-metadata text-metadata text-on-surface-variant">Intelligence Engine</p>
+</div>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center space-x-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Overview</span>
+</a>
+<a class="flex items-center space-x-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span>Discovery</span>
+</a>
+<a class="flex items-center space-x-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span>Artists</span>
+</a>
+<a class="flex items-center space-x-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="album">album</span>
+<span>Albums</span>
+</a>
+<a class="flex items-center space-x-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="audiotrack">audiotrack</span>
+<span>Songs</span>
+</a>
+<a class="flex items-center space-x-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="auto_graph">auto_graph</span>
+<span>Sequences</span>
+</a>
+<a class="flex items-center space-x-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+<span>Network</span>
+</a>
+<a class="flex items-center space-x-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+<span>Time &amp; Genre</span>
+</a>
+<a class="flex items-center space-x-3 py-3 text-on-surface font-bold border-l-4 border-primary pl-4 -ml-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80 rounded-r-lg bg-surface-container" href="#">
+<span class="material-symbols-outlined text-primary" data-icon="manage_search">manage_search</span>
+<span>Deep Dive</span>
+</a>
+<a class="flex items-center space-x-3 py-3 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+<span>ML Intelligence</span>
+</a>
+</nav>
+<div class="mt-auto">
+<button class="w-full bg-primary-container text-on-primary-container py-3 px-4 rounded-full font-label-sm text-label-sm font-bold hover:bg-primary transition-colors cursor-pointer active:opacity-80 mb-6">
+                Upgrade to Premium
+            </button>
+<nav class="space-y-2">
+<a class="flex items-center space-x-3 py-2 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80 rounded-lg font-metadata text-metadata" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center space-x-3 py-2 text-on-surface-variant hover:text-on-surface px-4 hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80 rounded-lg font-metadata text-metadata" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="help">help</span>
+<span>Support</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[sidebar-width] flex-1 flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-background/80 backdrop-blur-md docked full-width top-0 sticky z-40 flex flex-col w-full px-8 py-6 border-b border-surface-variant">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-black text-on-surface tracking-tight">
+            Deep Dive Explorer
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+            Follow a listening pattern all the way to the underlying behavior.
+        </p>
+</div>
+<div class="flex items-center space-x-4">
+<div class="relative bg-surface-container-high rounded-full px-4 py-2 flex items-center border border-surface-variant">
+<span class="material-symbols-outlined text-on-surface-variant text-sm mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none outline-none text-on-surface font-body-md text-body-md placeholder-on-surface-variant/50 w-48 focus:ring-0" placeholder="Search Deep Dive..." type="text"/>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</div>
+<!-- Breadcrumbs -->
+<nav class="flex items-center space-x-2 font-label-sm text-label-sm text-on-surface-variant">
+<a class="hover:text-primary transition-colors" href="#">Artist</a>
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Project</a>
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Song</a>
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+<span class="text-primary font-bold">Discovery</span>
+</nav>
+</header>
+<!-- Canvas -->
+<div class="p-container-margin flex-1 flex flex-col gap-section-stack">
+<!-- Visual Narrative / Summary Bar -->
+<section class="bg-surface-container-high rounded-xl p-4 border border-surface-variant flex items-center justify-between overflow-x-auto whitespace-nowrap gap-4">
+<div class="flex items-center gap-3">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Origin Node</span>
+<span class="font-body-lg text-body-lg font-bold text-on-surface">Panther</span>
+</div>
+<span class="material-symbols-outlined text-surface-variant" data-icon="arrow_forward">arrow_forward</span>
+<div class="flex items-center gap-3">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Primary Catalyst</span>
+<span class="font-body-lg text-body-lg font-bold text-on-surface">Aa Jao</span>
+</div>
+<span class="material-symbols-outlined text-surface-variant" data-icon="arrow_forward">arrow_forward</span>
+<div class="flex items-center gap-3">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Behavioral Shift</span>
+<span class="font-body-lg text-body-lg font-bold text-on-surface">Catalog Deepening</span>
+</div>
+<span class="material-symbols-outlined text-surface-variant" data-icon="arrow_forward">arrow_forward</span>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="library_music">library_music</span>
+<span class="font-body-md text-body-md text-on-surface">19 new tracks</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="schedule">schedule</span>
+<span class="font-body-md text-body-md text-on-surface">110.34 min (7 days)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="timeline">timeline</span>
+<span class="font-body-md text-body-md text-on-surface font-bold">32.57 downstream hours</span>
+</div>
+</div>
+</section>
+<!-- Hero / Origin -->
+<section class="grid grid-cols-12 gap-card-gap">
+<div class="col-span-12 md:col-span-8 bg-surface-container-high rounded-xl p-8 relative overflow-hidden border border-surface-variant">
+<div class="absolute inset-0 bg-gradient-to-r from-[#1E2020] to-[#121414] opacity-80 z-0"></div>
+<div class="relative z-10 flex flex-col h-full justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-primary mb-2 uppercase tracking-widest flex items-center">
+<span class="material-symbols-outlined mr-2 text-sm" data-icon="my_location">my_location</span>
+                                Pathway Origin
+                            </p>
+<h2 class="font-display-hero text-display-hero text-on-surface">Panther</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-2 max-w-2xl">
+                                An exploration of downstream behavioral influence stemming from a single artist node. This pathway reveals how early interactions shape long-tail listening habits.
+                            </p>
+</div>
+<div class="flex gap-4 mt-8">
+<div class="bg-surface/50 border border-surface-variant rounded-full px-4 py-2 flex items-center">
+<span class="w-2 h-2 rounded-full bg-primary mr-2"></span>
+<span class="font-metadata text-metadata text-on-surface">Active Analysis</span>
+</div>
+<div class="bg-surface/50 border border-surface-variant rounded-full px-4 py-2 flex items-center">
+<span class="material-symbols-outlined text-sm text-on-surface-variant mr-2" data-icon="timeline">timeline</span>
+<span class="font-metadata text-metadata text-on-surface">32.57 Downstream Hours</span>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-surface-container-high rounded-xl p-6 border border-surface-variant flex flex-col justify-center items-center text-center">
+<div class="w-32 h-32 rounded-full mb-4 border-4 border-surface overflow-hidden relative shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
+<img class="w-full h-full object-cover" data-alt="A striking, high-contrast portrait photograph of a musician bathed in moody, dramatic lighting. Deep shadows contrast with a sharp, cool rim light, creating a cinematic and sophisticated aesthetic. The background is completely black. Modern, high-end editorial style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCY0ABUm5Z813rc4yn1TO3vZXSWnLIqXRpGK9Z1jUAp8oH_9jl1KpiM8E1yRcTLlC-5MyxZMocBYtbgaywosoWaX_NlWNbP5RZOee_Ly4CwVJuM4419RzZXbZg_Y--0j6sAVZYp53h4m7OzeFgIqGaQslGA2KWgKQ6X2PVux3pKCMH1GoHZOi6_H5o6jjDox1jJgf8i5OY5JXbQ1wlR_j391kO59-LGa-Lwc3Cc0FO2wjbsk9ZukFnz"/>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Panther Node</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Primary Catalyst</p>
+<div class="grid grid-cols-2 gap-4 w-full mt-6">
+<div class="bg-surface rounded-lg p-3 border border-surface-variant">
+<p class="font-headline-md text-headline-md text-primary">19</p>
+<p class="font-metadata text-metadata text-on-surface-variant uppercase">Tracks Analyzed</p>
+</div>
+<div class="bg-surface rounded-lg p-3 border border-surface-variant">
+<p class="font-headline-md text-headline-md text-primary">7</p>
+<p class="font-metadata text-metadata text-on-surface-variant uppercase">Projects</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Projects & Songs Pathway -->
+<section class="grid grid-cols-12 gap-card-gap">
+<!-- Project Node -->
+<div class="col-span-12 lg:col-span-5 flex flex-col gap-4">
+<h3 class="font-headline-lg text-headline-lg text-on-surface border-b border-surface-variant pb-2">Primary Project</h3>
+<div class="bg-surface-container-high rounded-xl p-6 border border-surface-variant hover:bg-surface-variant transition-colors duration-300 group cursor-pointer relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="relative z-10 flex gap-6 items-center">
+<div class="w-24 h-24 rounded-lg bg-surface flex-shrink-0 shadow-[0_8px_24px_rgba(0,0,0,0.5)] border border-surface-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A moody, abstract album cover featuring dark geometric shapes and subtle textures in a monochromatic palette with a single bright green accent. Minimalist, premium aesthetic, high resolution." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6-N1JfBKxaFtC9pz_6JkUnj31qMXs0g_CNVCqsFjJYYcvgW61hloOeXpHnnA-RWt1HSCEvZdvo0PK8jAUsw0m2HGqqyyEMGCslH73IvNibriMzzb4gXWa7HSkWYakFirWcYfUxbC-SJh9rlGKKRIgFbqHvfKmjXj3Mh6fLlbVSbYPPQKA0T5QNWfvpJ1441N4S0sRgTv05PnLzeOVpG_oCz0noeYCN9BxQoXdOJrt6EU83t3S0sbW"/>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-primary mb-1 uppercase tracking-wider">Project Entry Point</p>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-1 group-hover:text-primary transition-colors">Aa Jao</h4>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center">
+<span class="material-symbols-outlined text-sm mr-1" data-icon="album">album</span>
+                                    EP • 2023
+                                </p>
+</div>
+<div class="ml-auto">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Connecting Line (Visual only) -->
+<div class="hidden lg:flex col-span-1 items-center justify-center relative">
+<div class="w-full h-px bg-surface-variant absolute top-1/2 left-0 transform -translate-y-1/2"></div>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest border border-surface-variant z-10 flex items-center justify-center shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="mediation">mediation</span>
+</div>
+</div>
+<!-- Songs Array -->
+<div class="col-span-12 lg:col-span-6 flex flex-col gap-4">
+<h3 class="font-headline-lg text-headline-lg text-on-surface border-b border-surface-variant pb-2">Track Pathway</h3>
+<div class="bg-surface-container-high rounded-xl border border-surface-variant overflow-hidden">
+<div class="p-4 border-b border-surface-variant bg-surface-container-highest/50 flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Key Tracks (19 Total)</span>
+<button class="font-label-sm text-label-sm text-primary hover:underline">View All</button>
+</div>
+<div class="flex flex-col">
+<!-- Track Item 1 -->
+<div class="flex items-center gap-4 p-4 hover:bg-surface-variant transition-colors cursor-pointer group border-b border-surface-variant/50 last:border-0">
+<div class="w-8 h-8 rounded bg-surface flex items-center justify-center font-metadata text-metadata text-on-surface-variant group-hover:text-primary">01</div>
+<div class="flex-1">
+<h5 class="font-body-lg text-body-lg text-on-surface group-hover:text-primary transition-colors">Galactic Protocol</h5>
+<div class="flex gap-2 mt-1">
+<span class="px-2 py-0.5 rounded-full bg-surface border border-surface-variant font-metadata text-metadata text-on-surface-variant">120 BPM</span>
+<span class="px-2 py-0.5 rounded-full bg-surface border border-surface-variant font-metadata text-metadata text-on-surface-variant">F Minor</span>
+</div>
+</div>
+<div class="text-right">
+<p class="font-body-md text-body-md text-on-surface">14.2 hrs</p>
+<p class="font-metadata text-metadata text-on-surface-variant">Downstream</p>
+</div>
+</div>
+<!-- Track Item 2 -->
+<div class="flex items-center gap-4 p-4 hover:bg-surface-variant transition-colors cursor-pointer group border-b border-surface-variant/50 last:border-0">
+<div class="w-8 h-8 rounded bg-surface flex items-center justify-center font-metadata text-metadata text-on-surface-variant group-hover:text-primary">02</div>
+<div class="flex-1">
+<h5 class="font-body-lg text-body-lg text-on-surface group-hover:text-primary transition-colors">Neon Horizon</h5>
+<div class="flex gap-2 mt-1">
+<span class="px-2 py-0.5 rounded-full bg-surface border border-surface-variant font-metadata text-metadata text-on-surface-variant">115 BPM</span>
+<span class="px-2 py-0.5 rounded-full bg-surface border border-surface-variant font-metadata text-metadata text-on-surface-variant">C Major</span>
+</div>
+</div>
+<div class="text-right">
+<p class="font-body-md text-body-md text-on-surface">8.5 hrs</p>
+<p class="font-metadata text-metadata text-on-surface-variant">Downstream</p>
+</div>
+</div>
+<!-- Track Item 3 -->
+<div class="flex items-center gap-4 p-4 hover:bg-surface-variant transition-colors cursor-pointer group last:border-0">
+<div class="w-8 h-8 rounded bg-surface flex items-center justify-center font-metadata text-metadata text-on-surface-variant group-hover:text-primary">03</div>
+<div class="flex-1">
+<h5 class="font-body-lg text-body-lg text-on-surface group-hover:text-primary transition-colors">Synthetic Dawn</h5>
+<div class="flex gap-2 mt-1">
+<span class="px-2 py-0.5 rounded-full bg-surface border border-surface-variant font-metadata text-metadata text-on-surface-variant">128 BPM</span>
+<span class="px-2 py-0.5 rounded-full bg-surface border border-surface-variant font-metadata text-metadata text-on-surface-variant">G Minor</span>
+</div>
+</div>
+<div class="text-right">
+<p class="font-body-md text-body-md text-on-surface">5.1 hrs</p>
+<p class="font-metadata text-metadata text-on-surface-variant">Downstream</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Discovery Events (Bento Grid) -->
+<section class="flex flex-col gap-4">
+<div class="flex justify-between items-end border-b border-surface-variant pb-2">
+<h3 class="font-headline-lg text-headline-lg text-on-surface">Discovery Events</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Subsequent Discoveries Triggered</p>
+</div>
+<div class="grid grid-cols-12 gap-card-gap auto-rows-[160px]">
+<!-- Large Discovery Card -->
+<div class="col-span-12 md:col-span-8 row-span-2 bg-surface-container-high rounded-xl p-6 border border-surface-variant hover:bg-surface-variant transition-colors duration-300 relative overflow-hidden group cursor-pointer">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-9xl" data-icon="radar">radar</span>
+</div>
+<div class="relative z-10 flex flex-col h-full justify-between">
+<div>
+<span class="bg-primary/20 text-primary px-3 py-1 rounded-full font-label-sm text-label-sm border border-primary/30 inline-block mb-4">Major Discovery</span>
+<h4 class="font-headline-lg text-headline-lg text-on-surface group-hover:text-primary transition-colors">Electronic Shift</h4>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-2 max-w-md">The 'Galactic Protocol' track triggered a 45% increase in listening to instrumental electronic genres over the following month.</p>
+</div>
+<div class="flex items-center gap-4 border-t border-surface-variant pt-4">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-high bg-surface overflow-hidden"><img class="w-full h-full object-cover" data-alt="Small circular portrait of a moody electronic musician, dark background, single neon highlight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwpgoj5KSM1nrfYK7F1j3XaM4IuOJmNWdlRzM2J-QbBaWKiADz256ofkDqYIjsvlo-Ku3CEiqlAcQOmGz1FgvHWuIN5KWy1mKrleWRMYhBVUxj-CtJfd9Jkbsk-2aUHMUjfmQ3Oj1N0q-x2FHIf-dsIa1WmIdi0snDrBBv5OpoBvp-81XEYtAEHo4K_Nv8T98gfL3JT1WWPSAi6a9eAUFHXIHXf0JgLYRPlP5Rj8pCuGYAamMmD9BU"/></div>
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-high bg-surface overflow-hidden"><img class="w-full h-full object-cover" data-alt="Small circular album art, abstract geometric shapes, dark mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrq5rmeRDhd_rw7xSxBunyavMCPNqRq7rDOzkZvEyfdljFXD1EtqB0Gf7JK7-eoHA6O89sE7p_42_reuqNbeNCiJxtz1jRPECg4LC49zc9gLedNP2IkDynlksCIIXRseYTzBcaYTsVnfZYQBLUlaz6HRLOoCAXzlC6BJkNYyGSPrC2YCCvrLk5I6z6hnR-MXZIf108XFrt4I8iiBwFYkJ_FVqo7Df3x5v2bJWrN-vIjfDUyXhZ8uZ0"/></div>
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-high bg-surface flex items-center justify-center font-metadata text-metadata text-on-surface-variant">+3</div>
+</div>
+<span class="font-metadata text-metadata text-on-surface-variant">New Artists Discovered</span>
+</div>
+</div>
+</div>
+<!-- Small Event Card 1 -->
+<div class="col-span-12 md:col-span-4 row-span-1 bg-surface-container-high rounded-xl p-6 border border-surface-variant hover:bg-surface-variant transition-colors duration-300 flex flex-col justify-between cursor-pointer group">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors" data-icon="schedule">schedule</span>
+<span class="font-metadata text-metadata text-on-surface-variant">Time-Shift Event</span>
+</div>
+<div>
+<h5 class="font-headline-md text-headline-md text-on-surface mb-1">+2.5 hrs</h5>
+<p class="font-body-md text-body-md text-on-surface-variant">Late-night listening increased</p>
+</div>
+</div>
+<!-- Small Event Card 2 -->
+<div class="col-span-12 md:col-span-4 row-span-1 bg-surface-container-high rounded-xl p-6 border border-surface-variant hover:bg-surface-variant transition-colors duration-300 flex flex-col justify-between cursor-pointer group relative overflow-hidden">
+<div class="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary via-surface-container-high to-surface-container-high"></div>
+<div class="relative z-10 flex justify-between items-start">
+<span class="material-symbols-outlined text-primary" data-icon="graphic_eq">graphic_eq</span>
+<span class="font-metadata text-metadata text-on-surface-variant">Tempo Shift</span>
+</div>
+<div class="relative z-10">
+<h5 class="font-headline-md text-headline-md text-on-surface mb-1">BPM +15</h5>
+<p class="font-body-md text-body-md text-on-surface-variant">Average tempo preference</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-low border-t border-surface-variant flex justify-between items-center px-8 py-4 w-full mt-auto">
+<div class="font-metadata text-metadata text-secondary">
+                © 2024 Spotify Personal Intelligence Engine
+            </div>
+<div class="flex space-x-6">
+<a class="font-metadata text-metadata text-on-surface-variant hover:text-on-surface underline transition-all" href="#">Privacy Policy</a>
+<a class="font-metadata text-metadata text-on-surface-variant hover:text-on-surface underline transition-all" href="#">Terms of Service</a>
+<a class="font-metadata text-metadata text-on-surface-variant hover:text-on-surface underline transition-all" href="#">API Status</a>
+</div>
+</footer>
+</main>
+</body></html>

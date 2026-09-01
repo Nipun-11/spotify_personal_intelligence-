@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Listening Sequences - SPIE</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#53e076",
+                        "on-surface": "#e3e2e2",
+                        "on-secondary-fixed-variant": "#474646",
+                        "on-primary-fixed-variant": "#005320",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "error": "#ffb4ab",
+                        "on-secondary": "#313030",
+                        "inverse-on-surface": "#2f3131",
+                        "on-error": "#690005",
+                        "on-primary": "#003914",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "primary-container": "#1db954",
+                        "inverse-surface": "#e3e2e2",
+                        "on-secondary-container": "#bab8b7",
+                        "surface": "#121414",
+                        "surface-bright": "#38393a",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "surface-container-low": "#1a1c1c",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "outline": "#869585",
+                        "on-background": "#e3e2e2",
+                        "tertiary": "#c8c6c5",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "on-tertiary": "#313030",
+                        "on-primary-fixed": "#002108",
+                        "secondary-container": "#4a4949",
+                        "primary": "#53e076",
+                        "primary-fixed": "#72fe8f",
+                        "on-tertiary-container": "#383838",
+                        "background": "#121414",
+                        "on-primary-container": "#004118",
+                        "surface-variant": "#343535",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-high": "#292a2a",
+                        "surface-container-highest": "#343535",
+                        "surface-dim": "#121414",
+                        "secondary": "#c8c6c5",
+                        "surface-container-lowest": "#0d0e0f",
+                        "primary-fixed-dim": "#53e076",
+                        "error-container": "#93000a",
+                        "inverse-primary": "#006e2d",
+                        "tertiary-container": "#a3a1a0",
+                        "tertiary-fixed": "#e5e2e1",
+                        "outline-variant": "#3d4a3d",
+                        "on-surface-variant": "#bccbb9",
+                        "surface-container": "#1e2020",
+                        "secondary-fixed": "#e5e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar-width": "280px",
+                        "card-gap": "1rem",
+                        "gutter": "1.5rem",
+                        "section-stack": "3rem",
+                        "container-margin": "2rem"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "display-hero": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "metadata": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "display-hero": ["72px", { "lineHeight": "80px", "letterSpacing": "-0.04em", "fontWeight": "900" }],
+                        "headline-md": ["24px", { "lineHeight": "28px", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "metadata": ["11px", { "lineHeight": "14px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .glass-panel {
+            background: rgba(40, 40, 40, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .sequence-line {
+            background: linear-gradient(90deg, var(--tw-colors-surface-container-high) 0%, var(--tw-colors-primary-container) 50%, var(--tw-colors-surface-container-high) 100%);
+            height: 2px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased overflow-x-hidden">
+<!-- AppShell -->
+<div class="flex h-screen w-full relative">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-lowest border-r border-surface-variant w-[280px] h-screen fixed left-0 top-0 hidden md:flex flex-col py-6 px-4 z-50">
+<div class="flex items-center gap-3 mb-8 px-4">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A stylized, glowing avatar placeholder in dark mode, reflecting a premium music interface aesthetic. The avatar is abstract, using smooth green and dark gray gradients, hinting at audio waves or a minimal digital identity. High contrast, sharp edges, modern minimalist style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1ucKTNkD-htQyv9mevGX1K1JdXAED7VNKOSIWEta0Ru6_D0wMXuWgfALuaUrrNaJwQuRBT2cP_0Bl3fGuIeijgs_pXwv8lLTsZ9kGGMT8NNHm9jPa6eg1FbEduAAiOpfr1EAKIqcNChfnZlh-LfCobmMFTMN9828MJ7PUt98a8rAXxxneVUMiUSTZKdSWC6d2kj1mxB5KtTHFEfAvdRf1eI0j9HOSDuTtVjD6X8HYUsLsa7oWaNfn"/>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-black text-primary">SPIE</h1>
+<p class="font-metadata text-metadata text-on-surface-variant">Intelligence Engine</p>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-body-md text-body-md">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">explore</span>
+<span class="font-body-md text-body-md">Discovery</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">person</span>
+<span class="font-body-md text-body-md">Artists</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">album</span>
+<span class="font-body-md text-body-md">Albums</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">audiotrack</span>
+<span class="font-body-md text-body-md">Songs</span>
+</a>
+<!-- ACTIVE STATE: Sequences -->
+<a class="flex items-center gap-3 py-3 rounded-r-lg text-on-surface font-bold border-l-4 border-primary pl-4 -ml-4 bg-surface-container-high cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px] text-primary" style="font-variation-settings: 'FILL' 1;">auto_graph</span>
+<span class="font-body-md text-body-md">Sequences</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">hub</span>
+<span class="font-body-md text-body-md">Network</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+<span class="font-body-md text-body-md">Time &amp; Genre</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">manage_search</span>
+<span class="font-body-md text-body-md">Deep Dive</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-[20px]">psychology</span>
+<span class="font-body-md text-body-md">ML Intelligence</span>
+</a>
+</div>
+<div class="mt-auto space-y-4 pt-6 border-t border-surface-variant">
+<button class="w-full bg-primary-container text-on-primary-container font-label-sm text-label-sm py-3 rounded-full hover:bg-primary-fixed transition-colors">
+                    Upgrade to Premium
+                </button>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[18px]">help</span>
+<span class="font-body-md text-body-md">Support</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-[280px] flex flex-col min-h-screen relative w-full md:w-[calc(100%-280px)]">
+<!-- TopAppBar -->
+<header class="bg-background/80 backdrop-blur-md full-width top-0 sticky z-40 flex justify-between items-center w-full px-8 py-4">
+<div class="flex items-center gap-6">
+<span class="font-headline-md text-headline-md font-black text-on-surface hidden md:block">Spotify Personal Intelligence Engine</span>
+<div class="hidden md:flex gap-4 ml-8">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-sm text-label-sm" href="#">Home</a>
+<a class="text-on-surface border-b-2 border-primary pb-1 font-label-sm text-label-sm" href="#">Analytics</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-sm text-label-sm" href="#">Library</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<input class="bg-surface-container-high border-none rounded-full py-2 pl-10 pr-4 text-on-surface focus:ring-1 focus:ring-primary w-64 font-body-md text-body-md placeholder-on-surface-variant" placeholder="Search sequences..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-[20px]">search</span>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors scale-95 duration-100 flex items-center justify-center p-2 rounded-full hover:bg-surface-container-high">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors scale-95 duration-100 flex items-center justify-center p-2 rounded-full hover:bg-surface-container-high">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Page Content -->
+<div class="flex-1 p-8 space-y-section-stack max-w-7xl mx-auto w-full">
+<!-- Header & Filters -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-extrabold text-on-surface tracking-tight mb-2">Listening Sequences</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">What tends to follow what?</p>
+</div>
+<div class="flex flex-wrap gap-3">
+<select class="bg-surface-container-high border-none rounded-full py-2 pl-4 pr-10 text-on-surface font-label-sm text-label-sm focus:ring-1 focus:ring-primary appearance-none cursor-pointer">
+<option>Last 6 Months</option>
+<option>Last Year</option>
+<option>All Time</option>
+</select>
+<select class="bg-surface-container-high border-none rounded-full py-2 pl-4 pr-10 text-on-surface font-label-sm text-label-sm focus:ring-1 focus:ring-primary appearance-none cursor-pointer">
+<option>All Genres</option>
+<option>Electronic</option>
+<option>Hip Hop</option>
+<option>Indie Rock</option>
+</select>
+<button class="bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-colors rounded-full p-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Tabs -->
+<div class="flex gap-6 border-b border-surface-variant mb-8">
+<button class="pb-2 text-primary border-b-2 border-primary font-label-sm text-label-sm">Songs</button>
+<button class="pb-2 text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">Artists</button>
+<button class="pb-2 text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">Projects</button>
+</div>
+<!-- Main Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Left Column: Primary Transitions (Bento style) -->
+<div class="lg:col-span-8 space-y-gutter">
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface">Top Song Transitions</h3>
+<!-- Top Transition Card -->
+<div class="glass-panel rounded-xl p-6 relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-primary-container/10 to-transparent opacity-50"></div>
+<div class="relative z-10 flex flex-col sm:flex-row items-center gap-6 w-full">
+<!-- Track A -->
+<div class="flex flex-col items-center flex-1 text-center w-full">
+<div class="w-24 h-24 sm:w-32 sm:h-32 rounded-lg shadow-lg overflow-hidden mb-4 border border-surface-variant group-hover:border-primary/50 transition-colors">
+<img class="w-full h-full object-cover" data-alt="A moody, high-contrast album cover artwork featuring abstract neon geometry in a dark room. Deep blacks and vibrant green accents. Modern electronic music aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALHLxFVldQ7fl8a9TwkLat5-sIp7HUwTnPgmp6nI0E1qwspy__9E11B6QfUZ4J-nvwqH6mU1SzwaG3jpQZ8PNgi6a6m0EHK1TXAFBd3Nv8M2imoUJI5GshLEiwyLzxDUa7ckO8ZlLTROdFIOaLakwvcxg3jTFyQSuqng8BY8qHi0a2mzFJ2QDIeKWs58kuk_wZd0JZTncrXUrL96cCGEUHZLFBeJGIdpHLWMwsA7WfgQUMA7nWzprR"/>
+</div>
+<h4 class="font-body-lg text-body-lg font-bold text-on-surface truncate w-full">Midnight City</h4>
+<p class="font-metadata text-metadata text-on-surface-variant truncate w-full">M83</p>
+</div>
+<!-- Transition UI -->
+<div class="flex flex-col items-center justify-center px-4 flex-shrink-0">
+<div class="font-headline-md text-headline-md text-primary font-black mb-1">68%</div>
+<div class="font-metadata text-metadata text-on-surface-variant uppercase tracking-widest mb-3">Probability</div>
+<div class="flex items-center w-full min-w-[100px]">
+<div class="h-px bg-surface-variant flex-1"></div>
+<span class="material-symbols-outlined text-primary mx-2">arrow_forward</span>
+<div class="h-px bg-surface-variant flex-1"></div>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-2 bg-surface-container py-1 px-3 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">play_circle</span> 142 plays
+                                    </div>
+</div>
+<!-- Track B -->
+<div class="flex flex-col items-center flex-1 text-center w-full">
+<div class="w-24 h-24 sm:w-32 sm:h-32 rounded-lg shadow-lg overflow-hidden mb-4 border border-surface-variant group-hover:border-primary/50 transition-colors">
+<img class="w-full h-full object-cover" data-alt="An ethereal album cover featuring a blurred, motion-heavy photograph of city lights at night. Deep blues and purples with bright white streaks. Cinematic and atmospheric." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYkemA0wECB6WHKyUIifruzZ5S2G6vXAUMoX5QdEgmnWjq9K37B7_bbIE2nMZMVN1kkHK3Q8Azcq_84r3TVy7G01rNzSMTGDpGMFa2r0bNWOvDqsnHU3o_tTods00AvyaSwW6kIOAOApQi_NRky1vj8HD2f2BUBonn00oQ7jsUqYg6n4DGAh0cElvLcRDjdX2tuYsEc_NyUoHDwBLhpWhhHZqYp_z1YIXkCxLJUaW1_PTOH6en-iQy"/>
+</div>
+<h4 class="font-body-lg text-body-lg font-bold text-on-surface truncate w-full">Nightcall</h4>
+<p class="font-metadata text-metadata text-on-surface-variant truncate w-full">Kavinsky</p>
+</div>
+</div>
+</div>
+<!-- Secondary Transitions List -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- List Item 1 -->
+<div class="bg-surface-container-high rounded-lg p-4 flex items-center justify-between hover:bg-surface-container-highest transition-colors cursor-pointer border border-transparent hover:border-surface-variant">
+<div class="flex items-center gap-3 w-[40%]">
+<img class="w-10 h-10 rounded shadow-md object-cover flex-shrink-0" data-alt="Minimalist album art, solid dark grey background with a single thin white geometric shape in the center. Sleek, industrial techno vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgm-5GmCo9zNSqmlhb3JXa2LLKlayC2OaPOzN4ytP_E8k6QlfppUAvXy2XVfdK64j4ouMotEHpw7n5ZoYcDlOkPrKscp3NLvxqjpX1oBII1VHE8OUiLRgkF-RyL870AfSmanhUtiwVvFCVVHDnpZ-hThki-mYzUnE27gs9mIeFW_vMcnptVKRoo5lYKe6e-J75ZEcUmbXRx6W-s9WWX3h9fhONISYlnF7Hg1ZPJ3LjRdXDbPnGQ2Tg"/>
+<div class="min-w-0">
+<p class="font-body-md text-body-md font-bold text-on-surface truncate">Inspector Norse</p>
+<p class="font-metadata text-metadata text-on-surface-variant truncate">Todd Terje</p>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center px-2">
+<span class="font-label-sm text-label-sm text-primary">45%</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">arrow_forward</span>
+</div>
+<div class="flex items-center gap-3 w-[40%] justify-end text-right">
+<div class="min-w-0">
+<p class="font-body-md text-body-md font-bold text-on-surface truncate">Losing It</p>
+<p class="font-metadata text-metadata text-on-surface-variant truncate">FISHER</p>
+</div>
+<img class="w-10 h-10 rounded shadow-md object-cover flex-shrink-0" data-alt="Vibrant, psychedelic album cover with swirling neon pink and green liquid patterns. High energy, chaotic yet structured club music aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl62FVuil0UKgBWoKiDyNoGe7W6uT2QasflQYgwrghPH-5XHv9DtQp5SIA9AryHtQPWGMThiPokE3zioPrWfhk1SfOreyikrPatH3LmzfByRg4DnFRWRiT4odkJPgA8IDdJeHOlLFdnP85rzPHnVC85dCPgCtCoY0JBL_BtF-VXQRGWbisXRB6N5ywJirG8cM2by2svy_LNXvXbnpqrdzlEtH5eCQfhbDrHNnxc3n8LiL5Ply6EFcS"/>
+</div>
+</div>
+<!-- List Item 2 -->
+<div class="bg-surface-container-high rounded-lg p-4 flex items-center justify-between hover:bg-surface-container-highest transition-colors cursor-pointer border border-transparent hover:border-surface-variant">
+<div class="flex items-center gap-3 w-[40%]">
+<img class="w-10 h-10 rounded shadow-md object-cover flex-shrink-0" data-alt="Classic hip hop album cover aesthetic, gritty urban street scene at dusk, high contrast shadows, muted color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdZA0e_R3AdY8tmvTR8L7EmbsAC45GL6GTx4VPUIiLN15v4TGqh9EogFn-i-0IEQw1aVQGw6lgq-8TlZbKhMOpAyGMXy5T4dVHm0l7FncmCQv5rt3UP7YX7rfpntavdrXSKtu6UEqEq7yLnbaMIWBjVfBPbM9xq0bfJkTO_cpB4sSnst_hKV3-zZWrOh0OmRjQq9e7Oj4pnXtxVTGSvSMPwqxEX2VCs82HGyWArYWLYDdXpspddrjR"/>
+<div class="min-w-0">
+<p class="font-body-md text-body-md font-bold text-on-surface truncate">N.Y. State of Mind</p>
+<p class="font-metadata text-metadata text-on-surface-variant truncate">Nas</p>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center px-2">
+<span class="font-label-sm text-label-sm text-primary">38%</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">arrow_forward</span>
+</div>
+<div class="flex items-center gap-3 w-[40%] justify-end text-right">
+<div class="min-w-0">
+<p class="font-body-md text-body-md font-bold text-on-surface truncate">Shook Ones, Pt. II</p>
+<p class="font-metadata text-metadata text-on-surface-variant truncate">Mobb Deep</p>
+</div>
+<img class="w-10 h-10 rounded shadow-md object-cover flex-shrink-0" data-alt="Dark, moody album art showing a silhouetted figure against a chainlink fence in the rain. Grayscale with slight blue tint. Underground rap feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmJ3OJYgFWoSNXMsQ08h1H3FEFyl5sSLZEwroEeX7AAyT1FppqTVZb43AeyvdLOX0okCg7BuVW8OomufqTPQ_o9hJAovJX5NzP3tRLFaxg4ghaU8AX7cS6D5f62PTK6mW1zr2iZxvbFVIizyWm5aNUfQV7CyTcMiy5A7-FNw3pP7eZElaqvVAgW_cp8RKJh7DGqeWEf3lgYXxcPKF5o_QuT8nBIUhD59236X080jPtKscbqNCa8Wl5"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: 3-Song Chains & Artist Flows -->
+<div class="lg:col-span-4 space-y-gutter">
+<!-- 3-Song Chain Widget -->
+<div class="bg-surface-container rounded-xl p-6 border border-surface-variant">
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">linear_scale</span>
+                                Signature Chain
+                            </h3>
+<p class="font-metadata text-metadata text-on-surface-variant mb-6">Your most consistent 3-song sequence.</p>
+<div class="space-y-4 relative">
+<!-- Connecting Line behind items -->
+<div class="absolute left-6 top-6 bottom-6 w-0.5 bg-surface-variant z-0"></div>
+<!-- Chain Item 1 -->
+<div class="flex items-center gap-4 relative z-10">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-surface shadow-md flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Dreamy indie pop album cover, pastel gradient background transitioning from soft pink to light blue, with a stylized sans-serif title in white." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuPmk2Wgh2bI_nUjfI4qIsikrqfkwUOHjx1BkhDK5mcT8TIsi2hfyIm1LsnRKhhNazGPOuhPyVwy28b0QP6lf52VKdHSnsCpk5wGVRxm5GaPx17pRONJT5OKlBbsO3u1YpOFk-rckI5E88GABVw-RMsUONhl-a0-I8FMimWK1-v-8bmz-CDCtg7XJqbQYUeZgiqwQD3DfBJPWsnOfG_u9792pR1FOAKlHm8RxnSh8moP8d62J_Rw6h"/>
+</div>
+<div class="bg-surface-container-high p-3 rounded-lg flex-1 shadow-sm">
+<p class="font-body-md text-body-md font-bold text-on-surface">Space Song</p>
+<p class="font-metadata text-metadata text-on-surface-variant">Beach House</p>
+</div>
+</div>
+<!-- Chain Item 2 -->
+<div class="flex items-center gap-4 relative z-10">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-primary shadow-lg flex-shrink-0 relative">
+<div class="absolute inset-0 bg-primary/20"></div>
+<img class="w-full h-full object-cover" data-alt="A vintage photograph style album cover showing a solitary figure walking on a beach at sunset, warm golden hour lighting, slightly grainy film texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjyhvZC2i90oKg2PcRrS4nn6g9bmH84eAUjASKvhwhorTcsDb8PYk6TUM_FfMHbXCv0cV2e2f-jX20TfQptcyu1kKZYOBEyTTOizzbTHiU7GJgoavsWw1GJD3tiyBGHMRZSt82Nw24T6YuCeSg2JAS7keKUO9RaeL86La03GJoKISVQUSFwz6dJqX6dqvq-ojOEC7LeXAAVuOm1wzVFv8VgM51s3u3_Pc7-GgALtJ3h7ki0w6HYz-m"/>
+</div>
+<div class="bg-surface-container-high p-3 rounded-lg flex-1 shadow-sm border border-primary/30">
+<p class="font-body-md text-body-md font-bold text-on-surface">Chamber Of Reflection</p>
+<p class="font-metadata text-metadata text-on-surface-variant">Mac DeMarco</p>
+<div class="text-[10px] text-primary mt-1 font-semibold uppercase tracking-wider">Crux</div>
+</div>
+</div>
+<!-- Chain Item 3 -->
+<div class="flex items-center gap-4 relative z-10">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-surface shadow-md flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Surreal digital art album cover featuring a floating metallic sphere in a barren desert landscape, cool blue and silver tones, sharp lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBr8JPVT6zLzkyG1onW4iaYpB0pGsQFcniGazIGZNqpqkqelXvciOWWujWFmVlcYlpMImzS_s_FoGETtmXy5eLYhb3hwwGMy3_Db2jc3WZm_8DbFyBTdzee_xMeweWvSUHoO3cg2f6iL-1V-M2Kifkq7mLT-vQl6HK0KqTMY1WlE0qzdToPL7trlKJMeSb5ChD1lvPlNiwtqyRVt2bVzePtjqyJOQfb14rIeAiuQ1QfBqmbkOwtDC1x"/>
+</div>
+<div class="bg-surface-container-high p-3 rounded-lg flex-1 shadow-sm">
+<p class="font-body-md text-body-md font-bold text-on-surface">Apocalypse</p>
+<p class="font-metadata text-metadata text-on-surface-variant">Cigarettes After Sex</p>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-surface-variant flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Played together 42 times</span>
+<button class="text-primary hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Artist Flow Mini-Widget -->
+<div class="glass-panel rounded-xl p-6">
+<h3 class="font-body-lg text-body-lg font-bold text-on-surface mb-2">Artist Gravity</h3>
+<p class="font-metadata text-metadata text-on-surface-variant mb-4">When listening to Daft Punk, you usually jump to:</p>
+<div class="space-y-3">
+<div class="flex justify-between items-center group cursor-pointer">
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Justice</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">32%</span>
+</div>
+<div class="flex justify-between items-center group cursor-pointer">
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">The Weeknd</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">24%</span>
+</div>
+<div class="flex justify-between items-center group cursor-pointer">
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Kavinsky</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">15%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-low border-t border-surface-variant full-width bottom-0 flex flex-col md:flex-row justify-between items-center px-8 py-4 mt-auto">
+<span class="font-metadata text-metadata text-secondary mb-4 md:mb-0">© 2024 Spotify Personal Intelligence Engine</span>
+<div class="flex gap-6">
+<a class="font-metadata text-metadata text-on-surface-variant hover:text-on-surface underline transition-all" href="#">Privacy Policy</a>
+<a class="font-metadata text-metadata text-on-surface-variant hover:text-on-surface underline transition-all" href="#">Terms of Service</a>
+<a class="font-metadata text-metadata text-on-surface-variant hover:text-on-surface underline transition-all" href="#">API Status</a>
+</div>
+</footer>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SPIE - Your Music Network</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#53e076",
+                        "on-surface": "#e3e2e2",
+                        "on-secondary-fixed-variant": "#474646",
+                        "on-primary-fixed-variant": "#005320",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "error": "#ffb4ab",
+                        "on-secondary": "#313030",
+                        "inverse-on-surface": "#2f3131",
+                        "on-error": "#690005",
+                        "on-primary": "#003914",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "primary-container": "#1db954",
+                        "inverse-surface": "#e3e2e2",
+                        "on-secondary-container": "#bab8b7",
+                        "surface": "#121414",
+                        "surface-bright": "#38393a",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "surface-container-low": "#1a1c1c",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "outline": "#869585",
+                        "on-background": "#e3e2e2",
+                        "tertiary": "#c8c6c5",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "on-tertiary": "#313030",
+                        "on-primary-fixed": "#002108",
+                        "secondary-container": "#4a4949",
+                        "primary": "#53e076",
+                        "primary-fixed": "#72fe8f",
+                        "on-tertiary-container": "#383838",
+                        "background": "#121414",
+                        "on-primary-container": "#004118",
+                        "surface-variant": "#343535",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-high": "#292a2a",
+                        "surface-container-highest": "#343535",
+                        "surface-dim": "#121414",
+                        "secondary": "#c8c6c5",
+                        "surface-container-lowest": "#0d0e0f",
+                        "primary-fixed-dim": "#53e076",
+                        "error-container": "#93000a",
+                        "inverse-primary": "#006e2d",
+                        "tertiary-container": "#a3a1a0",
+                        "tertiary-fixed": "#e5e2e1",
+                        "outline-variant": "#3d4a3d",
+                        "on-surface-variant": "#bccbb9",
+                        "surface-container": "#1e2020",
+                        "secondary-fixed": "#e5e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar-width": "280px",
+                        "card-gap": "1rem",
+                        "gutter": "1.5rem",
+                        "section-stack": "3rem",
+                        "container-margin": "2rem"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "display-hero": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "metadata": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "display-hero": ["72px", { "lineHeight": "80px", "letterSpacing": "-0.04em", "fontWeight": "900" }],
+                        "headline-md": ["24px", { "lineHeight": "28px", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "metadata": ["11px", { "lineHeight": "14px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #0B0B0B; } /* Requested specific background override */
+        
+        /* Node Hover Effects for fake interactivity */
+        .network-node { transition: all 0.3s ease; }
+        .network-node:hover { transform: scale(1.1); z-index: 10; filter: brightness(1.2); }
+        .network-node:hover .node-tooltip { opacity: 1; visibility: visible; transform: translateY(-5px); }
+        
+        .node-tooltip {
+            transition: all 0.2s ease;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Pulse animation for 'Bridge Artists' */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        .bridge-artist::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 50%;
+            border: 2px solid theme('colors.primary');
+            animation: pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+        }
+    </style>
+</head>
+<body class="text-on-surface min-h-screen flex flex-col md:flex-row overflow-hidden font-body-md">
+<!-- SideNavBar (Desktop) -->
+<nav class="hidden md:flex flex-col h-full py-6 px-4 bg-surface-container-lowest border-r border-surface-variant w-[sidebar-width] h-screen fixed left-0 top-0 z-50">
+<div class="mb-8 px-4 flex items-center space-x-3">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="person">person</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-black text-primary">SPIE</h1>
+<p class="font-metadata text-metadata text-on-surface-variant">Intelligence Engine</p>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto space-y-1">
+<a class="flex items-center space-x-3 text-on-surface-variant hover:text-on-surface px-4 py-3 rounded-lg hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Overview</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant hover:text-on-surface px-4 py-3 rounded-lg hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-body-md text-body-md">Discovery</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant hover:text-on-surface px-4 py-3 rounded-lg hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-body-md text-body-md">Artists</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant hover:text-on-surface px-4 py-3 rounded-lg hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="album">album</span>
+<span class="font-body-md text-body-md">Albums</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant hover:text-on-surface px-4 py-3 rounded-lg hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="audiotrack">audiotrack</span>
+<span class="font-body-md text-body-md">Songs</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant hover:text-on-surface px-4 py-3 rounded-lg hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="auto_graph">auto_graph</span>
+<span class="font-body-md text-body-md">Sequences</span>
+</a>
+<!-- Active State -->
+<a class="flex items-center space-x-3 py-3 rounded-lg hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80 text-on-surface font-bold border-l-4 border-primary pl-4 -ml-4 bg-surface-container-high" href="#">
+<span class="material-symbols-outlined text-primary" data-icon="hub">hub</span>
+<span class="font-body-md text-body-md text-primary">Network</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant hover:text-on-surface px-4 py-3 rounded-lg hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+<span class="font-body-md text-body-md">Time &amp; Genre</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant hover:text-on-surface px-4 py-3 rounded-lg hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="manage_search">manage_search</span>
+<span class="font-body-md text-body-md">Deep Dive</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant hover:text-on-surface px-4 py-3 rounded-lg hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+<span class="font-body-md text-body-md">ML Intelligence</span>
+</a>
+</div>
+<div class="mt-auto pt-6 border-t border-surface-variant">
+<button class="w-full bg-primary-container text-on-primary-container font-label-sm text-label-sm py-3 px-4 rounded-full hover:bg-primary-fixed transition-colors mb-4">
+                Upgrade to Premium
+            </button>
+<div class="space-y-1">
+<a class="flex items-center space-x-3 text-on-surface-variant hover:text-on-surface px-4 py-2 rounded-lg hover:bg-surface-container-high transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant hover:text-on-surface px-4 py-2 rounded-lg hover:bg-surface-container-high transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help">help</span>
+<span>Support</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 relative md:ml-[sidebar-width] h-screen overflow-hidden flex flex-col">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-8 py-4 bg-background/80 backdrop-blur-md docked full-width top-0 sticky z-40 border-b border-surface-variant">
+<div class="flex items-center">
+<span class="font-headline-md text-headline-md font-black text-on-surface hidden md:block">Spotify Personal Intelligence Engine</span>
+</div>
+<div class="flex items-center space-x-6 font-label-sm text-label-sm">
+<a class="text-on-surface-variant hover:text-primary transition-colors scale-95 duration-100" href="#">Home</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors scale-95 duration-100" href="#">Analytics</a>
+<a class="text-on-surface border-b-2 border-primary pb-1 hover:text-primary transition-colors scale-95 duration-100" href="#">Library</a>
+<div class="flex space-x-4 border-l border-surface-variant pl-4">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined" data-icon="account_circle">account_circle</span></button>
+</div>
+</div>
+</header>
+<!-- Network Canvas Container -->
+<div class="flex-1 relative w-full h-full p-container-margin flex flex-col">
+<!-- Controls Overlay (Glassmorphism) -->
+<div class="absolute top-container-margin left-container-margin z-20 w-80 bg-surface-container-high/60 backdrop-blur-xl border border-surface-variant rounded-xl p-6 shadow-2xl">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-2">Your Music Network</h2>
+<p class="font-metadata text-metadata text-on-surface-variant mb-6">Artists connected by your listening behavior.</p>
+<div class="space-y-5">
+<!-- Control: Search -->
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant block mb-2">Search Artist</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg pl-9 pr-3 py-2 text-on-surface focus:ring-primary focus:border-primary font-body-md text-sm placeholder:text-on-surface-variant/50" placeholder="Search..." type="text"/>
+</div>
+</div>
+<!-- Control: Year -->
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant block mb-2">Timeframe</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:ring-primary focus:border-primary font-body-md text-sm">
+<option>All Time</option>
+<option>2024</option>
+<option>2023</option>
+<option>Last 6 Months</option>
+</select>
+</div>
+<!-- Control: Genre -->
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant block mb-2">Primary Genre</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:ring-primary focus:border-primary font-body-md text-sm">
+<option>All Genres</option>
+<option>Electronic</option>
+<option>Hip Hop</option>
+<option>Indie Rock</option>
+<option>Jazz</option>
+</select>
+</div>
+<!-- Control: Min Transition Count -->
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant flex justify-between mb-2">
+<span>Min. Transition Count</span>
+<span class="text-primary">12</span>
+</label>
+<input class="w-full accent-primary bg-surface-container-lowest h-1 rounded-lg appearance-none cursor-pointer" max="50" min="1" type="range" value="12"/>
+<div class="flex justify-between text-xs text-on-surface-variant mt-1 font-metadata">
+<span>1</span>
+<span>50+</span>
+</div>
+</div>
+</div>
+<div class="mt-8 pt-4 border-t border-outline-variant/30 flex flex-col items-start justify-between space-y-2">
+<span class="font-metadata text-metadata text-on-surface-variant flex items-center"><span class="w-2 h-2 rounded-full bg-primary inline-block mr-2 animate-pulse"></span> Bridge Artists Highlighted</span>
+<p class="font-metadata text-[10px] leading-tight text-on-surface-variant/70">Bridge artists connect otherwise separate listening clusters.</p>
+</div>
+</div>
+<!-- The Network Canvas (Simulated with absolutely positioned elements & SVG lines) -->
+<div class="absolute inset-0 z-0 overflow-hidden flex items-center justify-center">
+<!-- Background Pattern/Texture -->
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, theme('colors.surface-variant') 1px, transparent 0); background-size: 32px 32px;"></div>
+<!-- Simulated Network Edges (SVG) -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" style="filter: drop-shadow(0 0 8px rgba(29, 185, 84, 0.2));">
+<line stroke="theme('colors.surface-variant')" stroke-width="2" x1="30%" x2="50%" y1="40%" y2="50%"></line>
+<line stroke="theme('colors.surface-variant')" stroke-opacity="0.8" stroke-width="4" x1="50%" x2="70%" y1="50%" y2="35%"></line>
+<line stroke="theme('colors.primary')" stroke-opacity="0.6" stroke-width="1.5" x1="50%" x2="60%" y1="50%" y2="70%"></line>
+<line stroke="theme('colors.surface-variant')" stroke-width="1" x1="60%" x2="75%" y1="70%" y2="65%"></line>
+<line stroke="theme('colors.surface-variant')" stroke-width="2" x1="30%" x2="20%" y1="40%" y2="60%"></line>
+</svg>
+<!-- Node 1 (Central/Bridge) -->
+<div class="absolute network-node bridge-artist cursor-pointer" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
+<div class="w-20 h-20 rounded-full border-2 border-primary p-1 bg-[#0B0B0B] relative z-10 shadow-[0_0_24px_rgba(29,185,84,0.3)]">
+<img class="w-full h-full rounded-full object-cover grayscale hover:grayscale-0 transition-all" data-alt="A moody, high-contrast, black and white portrait of a modern electronic music producer in a dark studio, lit by the green glow of equipment screens. The style is cinematic and sleek, fitting a premium music app interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEFL8ZJFX5r54nrx3cRbpqEP_BLwnR9GBJ2H2zAHxk5SGoKfTb68Svs4JQTv2rQ3BXqhI35vFjF_OMeu_iUhVH8yfkmm2MqVJMKz2j5O8wVdjm2YUssRImaI-7paqlLWIdMfVEQEu-EQoD9Qb_Jew3AqEhQegGWukEzY3ZpZS2qqzoRAarEe9XJkad0FTe1Qhgk4W4HL0ibHA22hrGRZ0z-4A0Rpvccn5Qhig2j2DgJccVZxP1b-fj"/>
+</div>
+<span class="absolute top-full left-1/2 -translate-x-1/2 mt-2 font-label-sm text-label-sm text-on-surface whitespace-nowrap bg-[#0B0B0B]/80 px-2 py-1 rounded backdrop-blur">Four Tet</span>
+<!-- Tooltip -->
+<div class="node-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-64 bg-surface-container-high border border-surface-variant rounded-lg p-4 shadow-2xl z-50">
+<div class="flex justify-between items-start mb-3">
+<h3 class="font-body-lg text-body-lg font-bold text-on-surface">Four Tet</h3>
+<span class="bg-primary/20 text-primary font-metadata px-2 py-0.5 rounded-full border border-primary/30">Bridge Node</span>
+</div>
+<div class="grid grid-cols-2 gap-y-2 gap-x-4 font-metadata text-metadata">
+<div class="text-on-surface-variant">Hours<br/><span class="text-on-surface font-semibold text-sm">142h</span></div>
+<div class="text-on-surface-variant">Tracks<br/><span class="text-on-surface font-semibold text-sm">84</span></div>
+<div class="text-on-surface-variant">Projects<br/><span class="text-on-surface font-semibold text-sm">12</span></div>
+<div class="text-on-surface-variant">Bridge Score<br/><span class="text-primary font-semibold text-sm">9.4/10</span></div>
+</div>
+</div>
+</div>
+<!-- Node 2 -->
+<div class="absolute network-node cursor-pointer" style="top: 40%; left: 30%; transform: translate(-50%, -50%);">
+<div class="w-14 h-14 rounded-full border border-outline p-0.5 bg-[#0B0B0B] relative z-10 opacity-80">
+<img class="w-full h-full rounded-full object-cover" data-alt="Abstract album cover art featuring minimal geometric shapes in dark charcoal and subtle green tones. High end digital art style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUhXU48jefud_9ml0wbBh0HbpVkgEEtfFrNMiix8i9YjuOY-TXsLB3CUa-F0IF1Jv8QbnXpNrm4jl4iyf1yjKt864pmERFm2HiBnytZvTZeRKs0UaV9u3KyinBtbzrLQ6r5DFcgl_fH1CLUbleIqmCvajwnUIG4jTRuzxwgwblXwNTNZ4IoYO2dNFuUgnXc7DdEM6iIb2OyS-D79ZrSFTh0FzID3taTzyutUhJ2B_vKkQcRWhW82Lh"/>
+</div>
+<span class="absolute top-full left-1/2 -translate-x-1/2 mt-1 font-metadata text-metadata text-on-surface-variant whitespace-nowrap">Bicep</span>
+</div>
+<!-- Node 3 -->
+<div class="absolute network-node cursor-pointer" style="top: 35%; left: 70%; transform: translate(-50%, -50%);">
+<div class="w-24 h-24 rounded-full border border-outline-variant p-1 bg-[#0B0B0B] relative z-10">
+<img class="w-full h-full rounded-full object-cover opacity-90" data-alt="A dramatic performance shot of an indie rock band silhouetted against intense green stage lighting in a dark venue. High contrast, energetic mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC36Mr2K-5XSaPy02Bb93qMN98gVyZiE6w-Cx3OPGCBFuISGbhDjToWfFk7HVvUKve1yGR_he4Xw-GfDU77qaQDca_GceNX_Qll4FS5MoIf_kwoFHItrN8-JamtoCXmhAFef7JA_A2X2TKgsgvvJJWSsodXXD2aiM0rEp6DrKsbpawdugE5ukas4_XZwpsiPRnPjlAviXYCIU8D8lKsvrQfgl9Q9qwBK2x88RAyF2YWJxLx_LZesEal"/>
+</div>
+<span class="absolute top-full left-1/2 -translate-x-1/2 mt-2 font-label-sm text-label-sm text-on-surface whitespace-nowrap">Radiohead</span>
+</div>
+<!-- Node 4 -->
+<div class="absolute network-node cursor-pointer" style="top: 70%; left: 60%; transform: translate(-50%, -50%);">
+<div class="w-12 h-12 rounded-full border border-outline p-0.5 bg-[#0B0B0B] relative z-10 opacity-70">
+<img class="w-full h-full rounded-full object-cover" data-alt="A close up, textured portrait of a jazz musician, highly stylized with dark shadows and a subtle green tint, creating a sophisticated, moody atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5B51N-4JzXXg6-ezafUKxmjR0jMVbT05soNKZFUTk00McK5zvNESBdWiKiBBVRttcNFLeQ0nW7Sz58scab2rbLsbKCVNLP0A7v6pVNUdUP4TH-KnnBkpXBhvp49OyD6Iz604Ys7AJsYoGYpprL1jwqLe8ywZ7NWlmFwY5lELjw3ylAdZDKKKeqY5NrPDlhJXd7b-2Gu7nTzZFdLjuXsoGuEAI_GC2v2O-XLYGOOxVlz6olrMuBIQE"/>
+</div>
+<span class="absolute top-full left-1/2 -translate-x-1/2 mt-1 font-metadata text-metadata text-on-surface-variant whitespace-nowrap">Floating Points</span>
+</div>
+<!-- Node 5 -->
+<div class="absolute network-node cursor-pointer" style="top: 60%; left: 20%; transform: translate(-50%, -50%);">
+<div class="w-16 h-16 rounded-full border border-outline p-0.5 bg-[#0B0B0B] relative z-10 opacity-80">
+<img class="w-full h-full rounded-full object-cover" data-alt="Sleek, modern typography focused album art utilizing deep blacks, charcoal greys and a single stark white element. Minimalist and premium design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8jJZmZQ-xMgVWHlcsoSVtYb4Omuf5hNFMCUwGKCeBRaoWV0ZcKFcfnw-CvaiXog7TuVTvQyrQlEaHuv1hSbHgX9V1BWrQJD-UTKTxbskGNLSJ0drGXmm7anvR_I9qa3nuccH70VilJZo031kyIpQnkXOo5oa1CbKTeomWup3XPTWjOnafgBg7FwPVOZDDWvtXOBxNvqbhwkavu07-hKjdtKGdgI6EhGeKsxiMHFhhVls4Y4YOCxy-"/>
+</div>
+<span class="absolute top-full left-1/2 -translate-x-1/2 mt-1 font-metadata text-metadata text-on-surface-variant whitespace-nowrap">Jon Hopkins</span>
+</div>
+</div>
+<!-- Bottom Data Bar (Glassmorphism) -->
+<div class="absolute bottom-0 left-0 right-0 h-16 bg-surface-container-highest/40 backdrop-blur-md border-t border-surface-variant flex items-center justify-between px-8 z-20">
+<div class="flex items-center space-x-6">
+<div class="flex flex-col">
+<span class="font-metadata text-metadata text-on-surface-variant">Total Nodes</span>
+<span class="font-label-sm text-label-sm text-on-surface">428</span>
+</div>
+<div class="w-px h-8 bg-surface-variant"></div>
+<div class="flex flex-col">
+<span class="font-metadata text-metadata text-on-surface-variant">Total Edges</span>
+<span class="font-label-sm text-label-sm text-on-surface">1,204</span>
+</div>
+<div class="w-px h-8 bg-surface-variant"></div>
+<div class="flex flex-col">
+<span class="font-metadata text-metadata text-on-surface-variant">Network Density</span>
+<span class="font-label-sm text-label-sm text-primary">High (0.84)</span>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<button class="w-8 h-8 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined text-[18px]" data-icon="zoom_in">zoom_in</span>
+</button>
+<button class="w-8 h-8 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined text-[18px]" data-icon="zoom_out">zoom_out</span>
+</button>
+<button class="w-8 h-8 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined text-[18px]" data-icon="center_focus_strong">center_focus_strong</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

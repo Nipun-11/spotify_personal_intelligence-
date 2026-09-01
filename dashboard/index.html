@@ -1,635 +1,809 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spotify Personal Intelligence Engine | Behavioral Music Discovery & ML</title>
-  <meta name="description" content="Longitudinal behavioral analytics, discovery catalyst modeling, and temporal machine learning on Spotify streaming history.">
-  
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  
-  <!-- Plotly.js -->
-  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-  
-  <link rel="stylesheet" href="index.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spotify Personal Intelligence Engine | Music DNA & Behavioral Analytics</title>
+<meta name="description" content="Longitudinal behavioral analytics, discovery catalyst modeling, and temporal machine learning on personal Spotify streaming history — 2020 to 2026."/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet"/>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "surface-tint": "#53e076",
+          "on-surface": "#e3e2e2",
+          "error": "#ffb4ab",
+          "on-secondary": "#313030",
+          "on-primary": "#003914",
+          "primary-container": "#1db954",
+          "inverse-surface": "#e3e2e2",
+          "on-secondary-container": "#bab8b7",
+          "surface": "#121414",
+          "surface-bright": "#38393a",
+          "surface-container-low": "#1a1c1c",
+          "outline": "#869585",
+          "on-background": "#e3e2e2",
+          "tertiary": "#c8c6c5",
+          "on-tertiary": "#313030",
+          "secondary-container": "#4a4949",
+          "primary": "#53e076",
+          "primary-fixed": "#72fe8f",
+          "background": "#0B0B0B",
+          "surface-variant": "#343535",
+          "surface-container-high": "#292a2a",
+          "surface-container-highest": "#343535",
+          "surface-dim": "#121414",
+          "secondary": "#c8c6c5",
+          "surface-container-lowest": "#0d0e0f",
+          "primary-fixed-dim": "#53e076",
+          "on-surface-variant": "#bccbb9",
+          "surface-container": "#1e2020",
+          "secondary-fixed": "#e5e2e1"
+        },
+        spacing: {
+          "sidebar-width": "280px",
+          "sidebar-collapsed": "0px",
+          "gutter": "1.5rem",
+          "container-margin": "2rem"
+        },
+        fontFamily: { sans: ["Inter", "sans-serif"] },
+        fontSize: {
+          "display-hero": ["clamp(2.5rem,5vw,4.5rem)", { lineHeight: "1.1", letterSpacing: "-0.04em", fontWeight: "900" }],
+          "headline-lg": ["2rem", { lineHeight: "2.5rem", letterSpacing: "-0.02em", fontWeight: "800" }],
+          "headline-md": ["1.5rem", { lineHeight: "1.75rem", fontWeight: "700" }],
+          "label-sm": ["0.75rem", { lineHeight: "1rem", letterSpacing: "0.05em", fontWeight: "600" }],
+          "metadata": ["0.6875rem", { lineHeight: "0.875rem", fontWeight: "400" }]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #343535; border-radius: 3px; }
+  .sidebar-link { @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-on-surface-variant transition-all duration-150 cursor-pointer; }
+  .sidebar-link:hover { @apply bg-surface-container-high text-on-surface; }
+  .sidebar-link.active { @apply bg-surface-container-highest text-on-surface border-l-4 border-primary pl-3; }
+  .kpi-card { @apply bg-surface-container-high rounded-xl p-5 border border-surface-variant flex flex-col gap-2; }
+  .badge { @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold; }
+  .badge-artist { @apply bg-primary/20 text-primary; }
+  .badge-project { @apply bg-blue-500/20 text-blue-400; }
+  .badge-catalog { @apply bg-purple-500/20 text-purple-400; }
+  .badge-reengagement { @apply bg-orange-500/20 text-orange-400; }
+  .badge-evergreen { @apply bg-primary/20 text-primary; }
+  .badge-obsession { @apply bg-red-500/20 text-red-400; }
+  .badge-longlived { @apply bg-blue-500/20 text-blue-400; }
+  .badge-fastburn { @apply bg-yellow-500/20 text-yellow-400; }
+  .badge-failed { @apply bg-gray-500/20 text-gray-400; }
+  .badge-revival { @apply bg-purple-500/20 text-purple-400; }
+  .skeleton { @apply animate-pulse bg-surface-container-high rounded; }
+  .data-table { @apply w-full text-sm text-left; }
+  .data-table th { @apply py-3 px-4 text-on-surface-variant font-semibold text-xs uppercase tracking-wider sticky top-0 bg-surface-container border-b border-surface-variant; }
+  .data-table td { @apply py-3 px-4 border-b border-surface-variant/40 text-on-surface; }
+  .data-table tr:hover td { @apply bg-surface-container-high/50; }
+  .view { display: none; }
+  .view.active { display: block; }
+  .tab-btn { @apply px-4 py-2 text-sm font-medium rounded-full border border-surface-variant text-on-surface-variant transition-all duration-150 cursor-pointer; }
+  .tab-btn.active { @apply bg-primary text-black border-primary; }
+  .tab-btn:not(.active):hover { @apply bg-surface-container-high text-on-surface; }
+  .transition-card { @apply bg-surface-container-high rounded-xl p-4 border border-surface-variant flex items-center gap-4; }
+  .network-tooltip { position: absolute; background: #1e2020; border: 1px solid #343535; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #e3e2e2; pointer-events: none; display: none; z-index: 100; }
+  .progress-bar { @apply h-1.5 rounded-full bg-surface-variant overflow-hidden; }
+  .progress-fill { @apply h-full bg-primary rounded-full transition-all duration-500; }
+  .pathway-step { @apply relative flex items-start gap-4; }
+  .pathway-step::before { content: ''; @apply absolute left-5 top-10 w-0.5 h-full bg-primary/30; }
+  .pathway-step:last-child::before { display: none; }
+  .pathway-dot { @apply w-10 h-10 rounded-full border-2 border-primary flex items-center justify-center flex-shrink-0 bg-surface-container; }
+  input[type=range] { accent-color: #53e076; }
+  .plotly-container { width: 100%; min-height: 300px; }
+  @media (max-width: 768px) {
+    #sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+    #sidebar.open { transform: translateX(0); }
+    #main-content { margin-left: 0 !important; }
+  }
+</style>
 </head>
-<body class="dark-theme">
-  <div class="app-layout">
-    
-    <!-- Collapsible Sidebar -->
-    <aside class="sidebar" id="main-sidebar">
-      <div class="brand">
-        <div class="brand-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.48.66.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
-          </svg>
-        </div>
-        <div class="brand-text">
-          <h2>Personal Intelligence</h2>
-          <span class="badge-sub">Longitudinal Engine</span>
-        </div>
+<body class="bg-background text-on-surface antialiased">
+
+<!-- MOBILE OVERLAY -->
+<div id="mobile-overlay" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar" class="fixed left-0 top-0 h-screen w-[280px] bg-surface-container-low border-r border-surface-variant flex flex-col py-6 z-40 overflow-y-auto">
+  <!-- Brand -->
+  <div class="px-5 mb-7 flex items-center gap-3">
+    <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#003914"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.48.66.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+    </div>
+    <div>
+      <h1 class="text-base font-black text-primary">Music DNA</h1>
+      <p class="text-xs text-on-surface-variant">Intelligence Platform</p>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <ul class="flex-1 px-3 flex flex-col gap-0.5 text-sm">
+    <li><button class="sidebar-link active w-full text-left" id="tab-overview" data-tab="tab-overview" data-view="overview"><span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1">dashboard</span>Overview</button></li>
+    <li><button class="sidebar-link w-full text-left" id="tab-catalysts" data-tab="tab-catalysts" data-view="discovery"><span class="material-symbols-outlined text-xl">explore</span>Discovery</button></li>
+    <li><button class="sidebar-link w-full text-left" id="tab-artists" data-tab="tab-artists" data-view="artists"><span class="material-symbols-outlined text-xl">person</span>Artists</button></li>
+    <li><button class="sidebar-link w-full text-left" id="tab-projects" data-tab="tab-projects" data-view="albums"><span class="material-symbols-outlined text-xl">album</span>Albums &amp; EPs</button></li>
+    <li><button class="sidebar-link w-full text-left" id="tab-songs" data-tab="tab-songs" data-view="songs"><span class="material-symbols-outlined text-xl">music_note</span>Songs</button></li>
+    <li class="mt-3 px-4 text-xs text-on-surface-variant uppercase tracking-widest font-semibold pb-1">Explore</li>
+    <li><button class="sidebar-link w-full text-left" id="tab-sequences" data-tab="tab-sequences" data-view="sequences"><span class="material-symbols-outlined text-xl">timeline</span>Sequences</button></li>
+    <li><button class="sidebar-link w-full text-left" id="tab-network" data-tab="tab-network" data-view="network"><span class="material-symbols-outlined text-xl">hub</span>Network</button></li>
+    <li><button class="sidebar-link w-full text-left" id="tab-genres" data-tab="tab-genres" data-view="genres"><span class="material-symbols-outlined text-xl">category</span>Genre &amp; Time</button></li>
+    <li><button class="sidebar-link w-full text-left" id="tab-deepdive" data-tab="tab-deepdive" data-view="deepdive"><span class="material-symbols-outlined text-xl">analytics</span>Deep Dive</button></li>
+    <li class="mt-3 px-4 text-xs text-on-surface-variant uppercase tracking-widest font-semibold pb-1">Intelligence</li>
+    <li><button class="sidebar-link w-full text-left" id="tab-ml" data-tab="tab-ml" data-view="ml"><span class="material-symbols-outlined text-xl">psychology</span>ML Intelligence</button></li>
+  </ul>
+
+  <!-- Footer -->
+  <div class="px-4 pt-5 border-t border-surface-variant flex flex-col gap-3">
+    <button class="w-full bg-primary-container text-black rounded-full py-2 text-sm font-bold hover:bg-primary transition-colors cursor-default" title="Personal analytics project — not for sale">Upgrade to Pro</button>
+    <div class="flex gap-4 text-xs text-on-surface-variant">
+      <button class="flex items-center gap-1 hover:text-on-surface transition-colors" onclick="showDisclaimer()"><span class="material-symbols-outlined text-base">info</span>Disclaimer</button>
+      <button class="flex items-center gap-1 hover:text-on-surface transition-colors" onclick="showPrivacy()"><span class="material-symbols-outlined text-base">security</span>Privacy</button>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main id="main-content" class="md:ml-[280px] min-h-screen flex flex-col">
+  <!-- Top Bar -->
+  <header class="sticky top-0 z-20 flex items-center justify-between px-6 py-3 bg-surface border-b border-surface-container-low h-[60px]">
+    <button class="md:hidden text-on-surface-variant hover:text-on-surface p-1" onclick="toggleSidebar()">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <span id="page-title" class="font-bold text-base text-on-surface hidden md:block">Music Intelligence</span>
+    <div class="flex items-center gap-3 ml-auto">
+      <div class="relative hidden sm:block">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+        <input id="global-search" class="bg-surface-container-high text-on-surface rounded-full py-1.5 pl-9 pr-4 focus:outline-none focus:ring-1 focus:ring-primary text-sm w-44 transition-all focus:w-56 border-none placeholder:text-on-surface-variant" placeholder="Search insights..." type="text"/>
       </div>
+      <button class="text-on-surface-variant hover:text-primary p-1.5 rounded-full hover:bg-surface-variant transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+      <button class="text-on-surface-variant hover:text-primary p-1.5 rounded-full hover:bg-surface-variant transition-colors"><span class="material-symbols-outlined">settings</span></button>
+      <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-black font-bold text-xs flex-shrink-0">ME</div>
+    </div>
+  </header>
 
-      <!-- Navigation Hierarchy -->
-      <nav class="nav-menu" role="navigation">
-        <div class="nav-section-title">YOUR LISTENING</div>
-        <button class="nav-item active" data-tab="overview" id="nav-overview">
-          <span class="nav-icon">🏠</span> Overview
-        </button>
-        <button class="nav-item" data-tab="catalysts" id="nav-catalysts">
-          <span class="nav-icon">⚡</span> Discovery Catalysts
-          <span class="badge-flag">Flagship</span>
-        </button>
-        <button class="nav-item" data-tab="artists" id="nav-artists">
-          <span class="nav-icon">🎤</span> Artists
-        </button>
-        <button class="nav-item" data-tab="projects" id="nav-projects">
-          <span class="nav-icon">💿</span> Albums & EPs
-        </button>
-        <button class="nav-item" data-tab="songs" id="nav-songs">
-          <span class="nav-icon">🎵</span> Songs
-        </button>
+  <!-- VIEWS CONTAINER -->
+  <div class="flex-1 p-container-margin overflow-x-hidden" id="views-container">
 
-        <div class="nav-section-title">EXPLORE</div>
-        <button class="nav-item" data-tab="sequences" id="nav-sequences">
-          <span class="nav-icon">🔁</span> Sequences
-        </button>
-        <button class="nav-item" data-tab="network" id="nav-network">
-          <span class="nav-icon">🕸</span> Music Network
-        </button>
-        <button class="nav-item" data-tab="genres" id="nav-genres">
-          <span class="nav-icon">🕒</span> Genre & Time
-        </button>
-        <button class="nav-item" data-tab="deepdive" id="nav-deepdive">
-          <span class="nav-icon">🔍</span> Deep Dive
-        </button>
-
-        <div class="nav-section-title">INTELLIGENCE</div>
-        <button class="nav-item" data-tab="ml" id="nav-ml">
-          <span class="nav-icon">🤖</span> ML Intelligence
-          <span class="badge-ml">LightGBM</span>
-        </button>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="data-status">
-          <span class="pulse-dot"></span>
-          <span id="data-status-text">Pipeline Active • 2020–2026</span>
-        </div>
-        <div class="disclaimer-text">
-          Independent personal intelligence system. Not affiliated with Spotify.
-        </div>
-      </div>
-    </aside>
-
-    <!-- Main Content Area -->
-    <main class="main-content" id="main-scroll">
-      
-      <!-- Top Dynamic Header -->
-      <header class="top-header">
-        <div class="header-left">
-          <h1 id="page-title">Your Spotify DNA</h1>
-          <p class="subtitle" id="page-subtitle">How your listening evolved from 2020 to 2026.</p>
-        </div>
-        <div class="header-right">
-          <div class="quick-stat-badge">
-            <span class="qs-label">Total Listening:</span>
-            <span class="qs-val" id="header-total-hours">908.4 hrs</span>
-          </div>
-          <div class="quick-stat-badge">
-            <span class="qs-label">Unique Tracks:</span>
-            <span class="qs-val" id="header-total-tracks">6,830</span>
-          </div>
-        </div>
-      </header>
-
-      <!-- 1. VIEW: Spotify DNA Overview -->
-      <section class="tab-pane active" id="tab-overview">
-        <div class="kpi-grid">
-          <div class="kpi-card glass">
-            <div class="kpi-label">TOTAL LISTENING TIME</div>
-            <div class="kpi-num" id="kpi-hours">908.4</div>
-            <div class="kpi-sub">Hours (54,504 mins)</div>
-          </div>
-          <div class="kpi-card glass">
-            <div class="kpi-label">DISTINCT ARTISTS</div>
-            <div class="kpi-num" id="kpi-artists">1,784</div>
-            <div class="kpi-sub">Spanning 6.2 Years</div>
-          </div>
-          <div class="kpi-card glass">
-            <div class="kpi-label">EXPLORED PROJECTS</div>
-            <div class="kpi-num" id="kpi-projects">329</div>
-            <div class="kpi-sub">≥3 Tracks Rule Enforced</div>
-          </div>
-          <div class="kpi-card glass">
-            <div class="kpi-label">DISCOVERY CATALYSTS</div>
-            <div class="kpi-num" id="kpi-catalysts">8,006</div>
-            <div class="kpi-sub">Forward 7D Gateways</div>
-          </div>
-        </div>
-
-        <div class="chart-row two-col">
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>🧬 8-Dimensional Taste Fingerprint</h3>
-            </div>
-            <div id="chart-taste-radar" style="height: 340px;"></div>
-          </div>
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>📈 Taste Evolution Over Years (2020–2026)</h3>
-            </div>
-            <div id="chart-yearly-evolution" style="height: 340px;"></div>
-          </div>
-        </div>
-
-        <div class="chart-row two-col">
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>👑 Top Lifetime Artists</h3>
-            </div>
-            <div class="table-container">
-              <table class="data-table" id="table-overview-artists">
-                <thead>
-                  <tr>
-                    <th>Artist</th>
-                    <th>Hours</th>
-                    <th>Plays</th>
-                    <th>Lifecycle Stage</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>🛡️ Ingestion & Data Quality Audit</h3>
-            </div>
-            <div class="audit-grid" id="overview-audit-grid"></div>
-          </div>
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW 1: YOUR MUSIC DNA                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-overview" class="view active">
+      <!-- Hero -->
+      <section class="relative rounded-2xl overflow-hidden p-8 md:p-12 mb-8 bg-gradient-to-br from-surface-container-highest to-background border border-surface-variant">
+        <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(circle at 80% 20%,rgba(29,185,84,0.12) 0%,transparent 55%)"></div>
+        <div class="relative z-10 max-w-2xl">
+          <h1 class="font-black text-display-hero text-on-surface mb-2">Your Music DNA</h1>
+          <p class="text-xl text-on-surface-variant font-normal">How your listening evolved from 2020 to 2026.</p>
         </div>
       </section>
 
-      <!-- 2. VIEW: Discovery Catalysts (Flagship) -->
-      <section class="tab-pane" id="tab-catalysts">
-        <div class="feature-banner glass">
-          <div class="fb-text">
-            <h2>⚡ Discovery Catalyst Engine</h2>
-            <p>Identifying songs followed by downstream catalog expansion over a forward 7-day window $[T, T+7\text{d}]$, 30-day retention, and future hours unlocked.</p>
-          </div>
+      <!-- KPI Row -->
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="kpi-card">
+          <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Listening</span>
+          <span class="text-4xl font-bold text-on-surface tracking-tight"><span id="kpi-hours">—</span> <span class="text-xl font-normal text-on-surface-variant">hrs</span></span>
         </div>
-
-        <!-- Spotlight Verified Case Studies -->
-        <div class="chart-row two-col">
-          <div class="case-study-card glass">
-            <div class="csc-badge">VERIFIED CASE STUDY #1</div>
-            <h3>Panther — <em>Aa Jao</em></h3>
-            <div class="csc-pathway">
-              <div class="csc-step"><span class="step-label">Exposure</span><strong>Aa Jao</strong></div>
-              <div class="csc-arrow">➔</div>
-              <div class="csc-step"><span class="step-label">7D Expansion</span><strong>+19 Tracks</strong></div>
-              <div class="csc-arrow">➔</div>
-              <div class="csc-step"><span class="step-label">7D Mins</span><strong>110.3 mins</strong></div>
-              <div class="csc-arrow">➔</div>
-              <div class="csc-step highlight"><span class="step-label">Hours Unlocked</span><strong>32.57 hrs</strong></div>
-            </div>
-            <p class="csc-desc">Classified as <strong>Catalog Deepening</strong>. Initial exposure was followed by deep exploration of Panther's discography, sustaining active retention across 30 and 90 days.</p>
-          </div>
-
-          <div class="case-study-card glass">
-            <div class="csc-badge">VERIFIED CASE STUDY #2</div>
-            <h3>Frappe Ash — <em>Catalog Expansion</em></h3>
-            <div class="csc-pathway">
-              <div class="csc-step"><span class="step-label">First Play</span><strong>Surma (Discovery)</strong></div>
-              <div class="csc-arrow">➔</div>
-              <div class="csc-step"><span class="step-label">Project Entry</span><strong>JAANA MAI (+22 Trk)</strong></div>
-              <div class="csc-arrow">➔</div>
-              <div class="csc-step highlight"><span class="step-label">Hours Unlocked</span><strong>33.18 hrs</strong></div>
-            </div>
-            <p class="csc-desc"><strong>46 distinct discovery events</strong> detected. Gateway tracks unlocked 33+ downstream hours across albums like <em>Ice Cream Frappe</em>.</p>
-          </div>
+        <div class="kpi-card">
+          <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Artists</span>
+          <span class="text-4xl font-bold text-on-surface tracking-tight" id="kpi-artists">—</span>
         </div>
-
-        <!-- Catalyst Rankings Table with Live Search -->
-        <div class="chart-card glass">
-          <div class="card-header">
-            <h3>Top Ranked Discovery Catalysts</h3>
-            <div class="table-controls">
-              <input type="text" id="search-catalysts" placeholder="Filter by song or artist..." class="text-input">
-              <select id="filter-catalyst-type" class="select-input">
-                <option value="">All Discovery Types</option>
-                <option value="Artist Discovery">Artist Discovery</option>
-                <option value="Project Discovery">Project Discovery</option>
-                <option value="Catalog Deepening">Catalog Deepening</option>
-                <option value="Re-engagement">Re-engagement</option>
-              </select>
-            </div>
-          </div>
-          <div class="table-container">
-            <table class="data-table" id="table-catalysts">
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Catalyst Song</th>
-                  <th>Artist</th>
-                  <th>Discovery Type</th>
-                  <th>+Tracks (7D)</th>
-                  <th>+Mins (7D)</th>
-                  <th>+Mins (30D)</th>
-                  <th>90D Impact</th>
-                  <th>Future Hrs Unlocked</th>
-                  <th>Catalyst Score</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
+        <div class="kpi-card">
+          <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Tracks</span>
+          <span class="text-4xl font-bold text-on-surface tracking-tight" id="kpi-tracks">—</span>
+        </div>
+        <div class="kpi-card">
+          <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Explored Projects</span>
+          <span class="text-4xl font-bold text-primary tracking-tight" id="kpi-projects">—</span>
         </div>
       </section>
 
-      <!-- 3. VIEW: Artist Lifecycle -->
-      <section class="tab-pane" id="tab-artists">
-        <div class="filter-bar glass">
-          <div class="filter-group">
-            <label for="artist-selector">Select Artist:</label>
-            <select id="artist-selector" class="select-input"></select>
-          </div>
-          <div class="filter-group">
-            <span class="badge-stage favorite" id="artist-stage-badge">Stage: Growth</span>
-          </div>
+      <!-- Taste Fingerprint + Listening Evolution -->
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-surface-container-high rounded-xl p-6 border border-surface-variant flex flex-col gap-4">
+          <h2 class="text-2xl font-bold text-on-surface">Taste Fingerprint</h2>
+          <div id="radar-chart" class="plotly-container" style="min-height:320px"></div>
+          <p id="fingerprint-insight" class="text-sm text-on-surface-variant italic text-center">Loading...</p>
         </div>
-
-        <div class="kpi-grid">
-          <div class="kpi-card glass">
-            <div class="kpi-label">TOTAL LISTENING</div>
-            <div class="kpi-num" id="art-kpi-hours">0h</div>
-          </div>
-          <div class="kpi-card glass">
-            <div class="kpi-label">UNIQUE TRACKS HEARD</div>
-            <div class="kpi-num" id="art-kpi-tracks">0</div>
-          </div>
-          <div class="kpi-card glass">
-            <div class="kpi-label">PEAK MONTH</div>
-            <div class="kpi-num" id="art-kpi-peak">—</div>
-          </div>
-          <div class="kpi-card glass">
-            <div class="kpi-label">LONGEST GAP</div>
-            <div class="kpi-num" id="art-kpi-gap">0d</div>
-          </div>
-        </div>
-
-        <div class="chart-row two-col">
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>📅 Monthly Listening Trajectory (Discovery ➔ Peak ➔ Revival)</h3>
-            </div>
-            <div id="chart-artist-monthly" style="height: 320px;"></div>
-          </div>
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>🕒 Diurnal Listening Heatmap</h3>
-            </div>
-            <div id="chart-artist-tod" style="height: 320px;"></div>
-          </div>
-        </div>
-
-        <div class="chart-row two-col">
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>Top Tracks</h3>
-            </div>
-            <div class="table-container">
-              <table class="data-table" id="table-artist-top-tracks">
-                <thead>
-                  <tr><th>Track</th><th>Plays</th><th>Minutes</th><th>Category</th></tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>Discography Projects</h3>
-            </div>
-            <div class="table-container">
-              <table class="data-table" id="table-artist-projects">
-                <thead>
-                  <tr><th>Project</th><th>Tracks Heard</th><th>Status</th><th>Minutes</th></tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
+        <div class="bg-surface-container-high rounded-xl p-6 border border-surface-variant flex flex-col gap-4">
+          <h2 class="text-2xl font-bold text-on-surface">Listening Evolution</h2>
+          <div id="evolution-chart" class="plotly-container" style="min-height:320px"></div>
         </div>
       </section>
 
-      <!-- 4. VIEW: Albums & EPs -->
-      <section class="tab-pane" id="tab-projects">
-        <div class="chart-card glass">
-          <div class="card-header">
-            <h3>Album & EP Exploration Analytics (Enforcing Non-Negotiable ≥3-Track Rule)</h3>
-            <div class="table-controls">
-              <input type="text" id="search-projects" placeholder="Filter albums or artists..." class="text-input">
-              <label class="checkbox-label">
-                <input type="checkbox" id="checkbox-explored-ge3" checked> Explored (≥3 Tracks) Only
+      <!-- Listening Story -->
+      <section class="bg-surface-container-high rounded-xl p-6 border border-surface-variant mb-8">
+        <h2 class="text-xl font-bold text-on-surface mb-3">Your Listening Story</h2>
+        <p id="listening-story" class="text-on-surface-variant leading-relaxed">Loading…</p>
+      </section>
+
+      <!-- Recent Catalysts -->
+      <section>
+        <h2 class="text-xl font-bold text-on-surface mb-4">Recent Discovery Catalysts</h2>
+        <div id="recent-catalysts" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </section>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW 2: DISCOVERY CATALYSTS                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-discovery" class="view">
+      <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-4xl font-black text-on-surface mb-1">Discovery Catalysts</h1>
+            <p class="text-on-surface-variant">Songs followed by meaningful expansion into an artist's catalog.</p>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <button class="tab-btn active" data-dfilter="">All</button>
+            <button class="tab-btn" data-dfilter="Artist Discovery">Artist</button>
+            <button class="tab-btn" data-dfilter="Project Discovery">Project</button>
+            <button class="tab-btn" data-dfilter="Catalog Deepening">Deepening</button>
+            <button class="tab-btn" data-dfilter="Re-engagement">Re-engage</button>
+          </div>
+        </div>
+
+        <!-- Summary KPIs -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" id="catalyst-summary-kpis"></div>
+
+        <!-- Featured: Panther Pathway -->
+        <div class="bg-surface-container-high rounded-xl border border-surface-variant overflow-hidden mb-8">
+          <div class="p-6 border-b border-surface-variant flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary text-sm">explore</span>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-on-surface">Panther — Discovery Pathway</h2>
+              <p class="text-xs text-on-surface-variant">Catalog Deepening story from <span class="text-primary font-medium">Aa Jao</span></p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-0">
+            <div class="p-6 border-r border-surface-variant">
+              <div class="space-y-4" id="panther-pathway">
+                <div class="skeleton h-16 rounded-xl w-full"></div>
+                <div class="skeleton h-16 rounded-xl w-full"></div>
+                <div class="skeleton h-16 rounded-xl w-full"></div>
+                <div class="skeleton h-16 rounded-xl w-full"></div>
+              </div>
+            </div>
+            <div class="p-6">
+              <h3 class="text-sm font-semibold text-on-surface-variant uppercase tracking-wider mb-4">Frappe Ash — Re-engagement</h3>
+              <div id="frappe-pathway" class="space-y-3">
+                <div class="skeleton h-12 rounded-xl w-full"></div>
+                <div class="skeleton h-12 rounded-xl w-full"></div>
+                <div class="skeleton h-12 rounded-xl w-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Catalyst Table -->
+        <div class="bg-surface-container-high rounded-xl border border-surface-variant overflow-hidden">
+          <div class="p-4 border-b border-surface-variant flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <h3 class="font-bold text-on-surface">All Catalysts</h3>
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+                <input id="catalyst-search" type="text" placeholder="Search track or artist..." class="bg-surface-container text-on-surface text-sm rounded-full pl-9 pr-4 py-1.5 border border-surface-variant focus:outline-none focus:ring-1 focus:ring-primary w-52"/>
+              </div>
+              <label class="flex items-center gap-2 text-sm text-on-surface-variant cursor-pointer">
+                <input type="checkbox" id="meaningful-only" class="accent-primary"/> Meaningful only
               </label>
             </div>
           </div>
-          <div class="table-container">
-            <table class="data-table" id="table-projects-main">
-              <thead>
-                <tr>
-                  <th>Album / EP</th>
-                  <th>Artist</th>
-                  <th>Tracks Heard</th>
-                  <th>Exploration Status</th>
-                  <th>Top Driving Song</th>
-                  <th>Driving Song Share</th>
-                  <th>Listening Style</th>
-                  <th>Total Hours</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead><tr>
+                <th>Rank</th><th>Track</th><th>Artist</th><th>Type</th>
+                <th>7D Tracks</th><th>7D Mins</th><th>30D Mins</th><th>90D Mins</th><th>Hours Unlocked</th>
+              </tr></thead>
+              <tbody id="catalyst-table-body">
+                <tr><td colspan="9" class="text-center py-8 text-on-surface-variant">Loading…</td></tr>
+              </tbody>
             </table>
           </div>
-        </div>
-      </section>
-
-      <!-- 5. VIEW: Song Lifecycles -->
-      <section class="tab-pane" id="tab-songs">
-        <div class="chart-card glass">
-          <div class="card-header">
-            <h3>Song Lifecycles (Raw vs. Active Lifespan & Obsessions)</h3>
-            <div class="table-controls">
-              <input type="text" id="search-songs" placeholder="Search track name..." class="text-input">
-              <select id="filter-song-category" class="select-input">
-                <option value="">All Categories</option>
-                <option value="Obsession Track">Obsession Track</option>
-                <option value="Evergreen Favorite">Evergreen Favorite</option>
-                <option value="Heavy Rotation">Heavy Rotation</option>
-                <option value="Revived Track">Revived Track</option>
-                <option value="Moderate Rotation">Moderate Rotation</option>
-                <option value="Failed Discovery">Failed Discovery</option>
-              </select>
+          <div class="p-4 flex items-center justify-between border-t border-surface-variant">
+            <span id="catalyst-count-label" class="text-xs text-on-surface-variant">— catalysts</span>
+            <div class="flex gap-2">
+              <button id="catalyst-prev" class="px-3 py-1 text-sm border border-surface-variant rounded-lg text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40" onclick="catalystPage(-1)">Prev</button>
+              <button id="catalyst-next" class="px-3 py-1 text-sm border border-surface-variant rounded-lg text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40" onclick="catalystPage(1)">Next</button>
             </div>
           </div>
-          <div class="table-container">
-            <table class="data-table" id="table-songs-main">
-              <thead>
-                <tr>
-                  <th>Track Title</th>
-                  <th>Artist</th>
-                  <th>Total Plays</th>
-                  <th>Total Minutes</th>
-                  <th>Raw Lifespan</th>
-                  <th>Active Lifespan</th>
-                  <th>Velocity (7D)</th>
-                  <th>30D Retained</th>
-                  <th>Category</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW 3: ARTIST LIFECYCLE                                             -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-artists" class="view">
+      <div class="mb-8">
+        <h1 class="text-4xl font-black text-on-surface mb-4">Artist Lifecycle</h1>
+        <!-- Artist Search -->
+        <div class="flex flex-col sm:flex-row gap-4 mb-6">
+          <div class="relative flex-1 max-w-sm">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+            <input id="artist-search-input" type="text" placeholder="Search artist..." class="w-full bg-surface-container-high border border-surface-variant text-on-surface rounded-full pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"/>
+          </div>
+          <select id="artist-stage-filter" class="bg-surface-container-high border border-surface-variant text-on-surface-variant rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+            <option value="">All Stages</option>
+            <option>Long-Term Favorite</option>
+            <option>Current Obsession</option>
+            <option>Evergreen Artist</option>
+            <option>Regular Rotation</option>
+            <option>Revived Artist</option>
+            <option>Era Artist (Dormant)</option>
+            <option>Dormant</option>
+            <option>Failed / One-Time Discovery</option>
+          </select>
+        </div>
+
+        <!-- Artist Grid + Detail -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <!-- Artist List -->
+          <div class="bg-surface-container-high rounded-xl border border-surface-variant overflow-hidden">
+            <div class="p-4 border-b border-surface-variant text-sm font-semibold text-on-surface-variant">
+              Top Artists by Listening Time
+            </div>
+            <div id="artist-list" class="divide-y divide-surface-variant overflow-y-auto max-h-[600px]">
+              <div class="p-6 text-center text-on-surface-variant text-sm">Loading…</div>
+            </div>
+          </div>
+
+          <!-- Artist Detail -->
+          <div class="xl:col-span-2 space-y-6">
+            <div id="artist-detail-header" class="bg-surface-container-high rounded-xl border border-surface-variant p-6">
+              <div class="text-on-surface-variant text-sm">Select an artist to explore their lifecycle →</div>
+            </div>
+            <div id="artist-lifecycle-chart-container" class="bg-surface-container-high rounded-xl border border-surface-variant p-6 hidden">
+              <h3 class="font-bold text-on-surface mb-4">Lifecycle Timeline</h3>
+              <div id="artist-lifecycle-chart" class="plotly-container" style="min-height:250px"></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div id="artist-tod-container" class="bg-surface-container-high rounded-xl border border-surface-variant p-6 hidden">
+                <h3 class="font-bold text-on-surface mb-4">Time of Day</h3>
+                <div id="artist-tod-chart" class="plotly-container" style="min-height:200px"></div>
+              </div>
+              <div id="artist-discography-container" class="bg-surface-container-high rounded-xl border border-surface-variant p-6 hidden">
+                <h3 class="font-bold text-on-surface mb-3">Discography Penetration</h3>
+                <div id="artist-discography" class="space-y-3"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW 4: ALBUMS & EPS                                                -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-albums" class="view">
+      <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-4xl font-black text-on-surface mb-1">Albums &amp; EPs</h1>
+            <p class="text-on-surface-variant">How deeply did you explore each project? (Explored = ≥3 unique tracks)</p>
+          </div>
+          <div class="flex gap-3">
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+              <input id="album-search" type="text" placeholder="Search albums, artists..." class="bg-surface-container-high border border-surface-variant text-on-surface rounded-full pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary w-56"/>
+            </div>
+            <label class="flex items-center gap-2 text-sm text-on-surface-variant cursor-pointer bg-surface-container-high border border-surface-variant rounded-full px-4 py-2">
+              <input type="checkbox" id="explored-only" class="accent-primary"/> Explored only
+            </label>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" id="album-kpis"></div>
+
+        <!-- Featured Project + Grid -->
+        <div id="featured-project" class="bg-surface-container-high rounded-xl border border-surface-variant p-6 mb-8">
+          <div class="skeleton h-48 rounded-xl w-full"></div>
+        </div>
+
+        <h2 class="text-xl font-bold text-on-surface mb-4">Recently Explored <span class="text-on-surface-variant font-normal text-base ml-2">Top by plays</span></h2>
+        <div id="album-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <div class="mt-4 flex justify-center gap-3">
+          <button id="album-prev-btn" class="px-4 py-2 text-sm border border-surface-variant rounded-lg text-on-surface-variant hover:bg-surface-container-high" onclick="albumPage(-1)">Previous</button>
+          <span id="album-page-label" class="flex items-center text-sm text-on-surface-variant">Page 1</span>
+          <button id="album-next-btn" class="px-4 py-2 text-sm border border-surface-variant rounded-lg text-on-surface-variant hover:bg-surface-container-high" onclick="albumPage(1)">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW 5: SONG LIFECYCLES                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-songs" class="view">
+      <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-4xl font-black text-on-surface mb-1">Song Lifecycles</h1>
+            <p class="text-on-surface-variant">Which songs became phases, favorites, or permanent fixtures?</p>
+          </div>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+            <input id="song-search" type="text" placeholder="Search songs..." class="bg-surface-container-high border border-surface-variant text-on-surface rounded-full pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary w-52"/>
+          </div>
+        </div>
+
+        <!-- Category Tabs -->
+        <div class="flex flex-wrap gap-2 mb-6" id="song-category-tabs">
+          <button class="tab-btn active" data-scat="">All</button>
+          <button class="tab-btn" data-scat="Evergreen Favorite">Evergreen</button>
+          <button class="tab-btn" data-scat="Obsession Track">Obsession</button>
+          <button class="tab-btn" data-scat="Long-Lived Song">Long-lived</button>
+          <button class="tab-btn" data-scat="Fast Burn">Fast Burn</button>
+          <button class="tab-btn" data-scat="Failed Discovery">Failed Discovery</button>
+          <button class="tab-btn" data-scat="Revival">Revival</button>
+        </div>
+
+        <!-- Featured Song Card -->
+        <div id="featured-song" class="bg-surface-container-high rounded-xl border border-surface-variant p-6 mb-6">
+          <div class="skeleton h-48 w-full rounded-xl"></div>
+        </div>
+
+        <!-- Song List -->
+        <div class="bg-surface-container-high rounded-xl border border-surface-variant overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead><tr>
+                <th>#</th><th>Track</th><th>Artist</th><th>Category</th>
+                <th>Plays</th><th>Minutes</th><th>Skip Rate</th><th>Raw Lifespan</th><th>Active Days</th>
+              </tr></thead>
+              <tbody id="song-table-body">
+                <tr><td colspan="9" class="text-center py-8 text-on-surface-variant">Loading…</td></tr>
+              </tbody>
             </table>
           </div>
-        </div>
-      </section>
-
-      <!-- 6. VIEW: Listening Sequences -->
-      <section class="tab-pane" id="tab-sequences">
-        <div class="chart-row two-col">
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>🔁 Top 2-Track Markov Transitions (Song A ➔ Song B)</h3>
-            </div>
-            <div class="table-container">
-              <table class="data-table" id="table-track-transitions">
-                <thead>
-                  <tr><th>Preceding Track</th><th>Next Track</th><th>Count</th><th>Conditional Prob</th></tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>⛓️ 3-Song Sequence Chains (A ➔ B ➔ C)</h3>
-            </div>
-            <div class="table-container">
-              <table class="data-table" id="table-3song-sequences">
-                <thead>
-                  <tr><th>Sequential Listening Pathway</th><th>Occurrences</th></tr>
-                </thead>
-                <tbody></tbody>
-              </table>
+          <div class="p-4 flex items-center justify-between border-t border-surface-variant">
+            <span id="song-count-label" class="text-xs text-on-surface-variant">— songs</span>
+            <div class="flex gap-2">
+              <button class="px-3 py-1 text-sm border border-surface-variant rounded-lg text-on-surface-variant hover:bg-surface-container-high" onclick="songPage(-1)">Prev</button>
+              <button class="px-3 py-1 text-sm border border-surface-variant rounded-lg text-on-surface-variant hover:bg-surface-container-high" onclick="songPage(1)">Next</button>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </div>
 
-      <!-- 7. VIEW: Music Network -->
-      <section class="tab-pane" id="tab-network">
-        <div class="chart-card glass">
-          <div class="card-header">
-            <h3>Topological Music Network (Community Clusters & Betweenness Bridges)</h3>
-            <div class="network-controls">
-              <label>Min Transition Weight: <span id="lbl-min-weight">2</span></label>
-              <input type="range" id="net-min-weight" min="1" max="10" value="2">
-            </div>
-          </div>
-          <div class="network-canvas-wrapper" style="position: relative; height: 500px; background: #07090e; border-radius: 8px;">
-            <canvas id="network-canvas" width="1000" height="500"></canvas>
-            <div class="network-legend">
-              <span class="legend-item"><span class="dot" style="background:#1db954;"></span> Hip-Hop / Rap</span>
-              <span class="legend-item"><span class="dot" style="background:#00d2ff;"></span> Indie / Alternative</span>
-              <span class="legend-item"><span class="dot" style="background:#9d4edd;"></span> Pop / Electronic</span>
-              <span class="legend-item"><span class="dot" style="background:#ff9f1c;"></span> Punjabi / Desi</span>
-            </div>
-          </div>
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW 6: LISTENING SEQUENCES                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-sequences" class="view">
+      <div class="mb-8">
+        <h1 class="text-4xl font-black text-on-surface mb-1">Listening Sequences</h1>
+        <p class="text-on-surface-variant mb-6">What tends to follow what?</p>
+
+        <!-- Sub-tabs -->
+        <div class="flex gap-2 mb-6 border-b border-surface-variant pb-0">
+          <button class="tab-btn active px-5 py-2 rounded-none rounded-t-lg border-b-2 border-primary bg-transparent" data-seqtype="songs">Songs</button>
+          <button class="tab-btn px-5 py-2 rounded-none rounded-t-lg border-b-2 border-transparent bg-transparent" data-seqtype="artists">Artists</button>
+          <button class="tab-btn px-5 py-2 rounded-none rounded-t-lg border-b-2 border-transparent bg-transparent" data-seqtype="sequences">3-Song Chains</button>
         </div>
 
-        <div class="chart-card glass" style="margin-top: 20px;">
-          <div class="card-header">
-            <h3>Top Betweenness Centrality Bridge Artists</h3>
-          </div>
-          <div class="table-container">
-            <table class="data-table" id="table-bridge-artists">
-              <thead>
-                <tr>
-                  <th>Artist Name</th>
-                  <th>Betweenness Centrality</th>
-                  <th>PageRank</th>
-                  <th>Degree Connections</th>
-                  <th>Total Hours</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- 8. VIEW: Genre × Time × Year -->
-      <section class="tab-pane" id="tab-genres">
-        <div class="chart-row two-col">
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>🕒 Genre Distribution Across 8 Diurnal Time Buckets</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2">
+            <h3 class="font-bold text-on-surface mb-4" id="seq-section-title">Top Song Transitions</h3>
+            <div id="seq-main-content" class="space-y-3">
+              <div class="skeleton h-20 rounded-xl"></div>
+              <div class="skeleton h-20 rounded-xl"></div>
+              <div class="skeleton h-20 rounded-xl"></div>
             </div>
-            <div id="chart-genre-tod" style="height: 350px;"></div>
           </div>
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>📊 Annual Genre Migration (2020–2026)</h3>
-            </div>
-            <div id="chart-genre-yearly" style="height: 350px;"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 9. VIEW: Deep Dive Explorer -->
-      <section class="tab-pane" id="tab-deepdive">
-        <div class="chart-card glass">
-          <div class="card-header">
-            <h3>Hierarchical Multi-Level Catalog Drill-Down</h3>
-          </div>
-          <div class="deep-dive-container">
-            <div class="dd-selectors">
-              <div class="dd-group">
-                <label>Step 1: Select Artist</label>
-                <select id="dd-artist-select" class="select-input"></select>
+          <div class="space-y-4">
+            <div class="bg-surface-container-high rounded-xl border border-surface-variant p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-primary text-lg">link</span>
+                <h3 class="font-bold text-on-surface">Signature Chain</h3>
               </div>
-              <div class="dd-group">
-                <label>Step 2: Select Project</label>
-                <select id="dd-project-select" class="select-input"></select>
-              </div>
-              <div class="dd-group">
-                <label>Step 3: Select Song</label>
-                <select id="dd-song-select" class="select-input"></select>
+              <p class="text-xs text-on-surface-variant mb-4">Your most consistent 3-song sequence.</p>
+              <div id="signature-chain" class="space-y-2">
+                <div class="skeleton h-12 rounded-lg"></div>
+                <div class="skeleton h-12 rounded-lg"></div>
+                <div class="skeleton h-12 rounded-lg"></div>
               </div>
             </div>
-            <div class="dd-result-panel glass" id="dd-output-panel" style="margin-top: 20px; padding: 20px;">
-              <h4>Catalog Pathway Summary</h4>
-              <div id="dd-summary-text" style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-top: 10px;">
-                Select an entity to explore the hierarchical discovery pathway.
+            <div class="bg-surface-container-high rounded-xl border border-surface-variant p-5">
+              <h3 class="font-bold text-on-surface mb-2">Artist Gravity</h3>
+              <p class="text-xs text-on-surface-variant mb-4">Top self-transition artists (listening binges).</p>
+              <div id="artist-gravity" class="space-y-2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW 7: MUSIC NETWORK                                               -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-network" class="view">
+      <div class="mb-8">
+        <h1 class="text-4xl font-black text-on-surface mb-1">Music Network</h1>
+        <p class="text-on-surface-variant mb-6">How your listening behavior connects artists.</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <!-- Controls -->
+          <div class="bg-surface-container-high rounded-xl border border-surface-variant p-5 space-y-5">
+            <div>
+              <label class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold block mb-2">Search Artist</label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+                <input id="network-search" type="text" placeholder="Artist name..." class="w-full bg-surface-container border border-surface-variant text-on-surface rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"/>
               </div>
             </div>
+            <div>
+              <label class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold block mb-2">Min Transitions: <span id="min-weight-label">2</span></label>
+              <input type="range" id="min-weight" min="1" max="20" value="2" class="w-full" oninput="updateNetworkWeight(this.value)"/>
+            </div>
+            <div id="network-stats" class="space-y-2 pt-2 border-t border-surface-variant text-sm text-on-surface-variant"></div>
+            <div id="network-node-detail" class="hidden p-3 bg-surface-container rounded-lg text-sm space-y-1"></div>
+          </div>
+
+          <!-- Canvas -->
+          <div class="lg:col-span-3 bg-surface-container-high rounded-xl border border-surface-variant relative overflow-hidden" style="height:600px">
+            <canvas id="network-canvas" class="w-full h-full"></canvas>
+            <div class="network-tooltip" id="network-tooltip"></div>
+            <div class="absolute bottom-3 right-3 flex gap-2">
+              <button onclick="zoomNetwork(1.2)" class="bg-surface-container rounded-lg p-2 hover:bg-surface-container-highest transition-colors"><span class="material-symbols-outlined text-sm">zoom_in</span></button>
+              <button onclick="zoomNetwork(0.8)" class="bg-surface-container rounded-lg p-2 hover:bg-surface-container-highest transition-colors"><span class="material-symbols-outlined text-sm">zoom_out</span></button>
+              <button onclick="resetNetwork()" class="bg-surface-container rounded-lg p-2 hover:bg-surface-container-highest transition-colors"><span class="material-symbols-outlined text-sm">fit_screen</span></button>
+            </div>
+            <div class="absolute bottom-3 left-3 text-xs text-on-surface-variant bg-surface-container/80 rounded px-2 py-1">
+              <span id="network-density-label">—</span>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
+    </div>
 
-      <!-- 10. VIEW: Machine Learning Intelligence & Live Simulator -->
-      <section class="tab-pane" id="tab-ml">
-        <div class="feature-banner glass">
-          <div class="fb-text">
-            <h2>🤖 Machine Learning Intelligence</h2>
-            <p>Predicting 7-Day Catalog Expansion with zero temporal leakage on held-out 2026 test data.</p>
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW 8: GENRE × TIME × YEAR                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-genres" class="view">
+      <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-4xl font-black text-on-surface mb-1">Genre &times; Time &times; Year</h1>
+            <p class="text-on-surface-variant">When you listen to what — using local IST time.</p>
+          </div>
+          <select id="genre-year-filter" class="bg-surface-container-high border border-surface-variant text-on-surface-variant rounded-full px-5 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+            <option value="all">All Years</option>
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div class="bg-surface-container-high rounded-xl border border-surface-variant p-5">
+            <h3 class="font-bold text-on-surface mb-4">Genre × Time Heatmap</h3>
+            <div id="genre-heatmap" class="plotly-container" style="min-height:350px"></div>
+          </div>
+          <div class="bg-surface-container-high rounded-xl border border-surface-variant p-5">
+            <h3 class="font-bold text-on-surface mb-4">Genre Evolution by Year</h3>
+            <div id="genre-evolution-chart" class="plotly-container" style="min-height:350px"></div>
           </div>
         </div>
 
-        <div class="chart-row two-col">
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>🎯 Model Benchmark Comparison (2026 Test Split)</h3>
-            </div>
-            <div class="table-container">
-              <table class="data-table" id="table-ml-benchmark">
-                <thead>
-                  <tr>
-                    <th>Model</th>
-                    <th>PR-AUC</th>
-                    <th>ROC-AUC</th>
-                    <th>Precision</th>
-                    <th>Recall</th>
-                    <th>F1 Score</th>
-                    <th>Brier Score</th>
-                    <th>Threshold</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
+        <div class="bg-surface-container-high rounded-xl border border-surface-variant p-5">
+          <h3 class="font-bold text-on-surface mb-4">Top Genres</h3>
+          <div id="genre-bars" class="space-y-3"></div>
+        </div>
+      </div>
+    </div>
 
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>📊 LightGBM Feature Importance (Gain)</h3>
-            </div>
-            <div id="chart-feature-importance" style="height: 320px;"></div>
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW 9: DEEP DIVE EXPLORER                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-deepdive" class="view">
+      <div class="mb-8">
+        <h1 class="text-4xl font-black text-on-surface mb-1">Deep Dive Explorer</h1>
+        <p class="text-on-surface-variant mb-6">Follow the path all the way to the underlying behavior.</p>
+
+        <!-- Breadcrumb -->
+        <div class="flex items-center gap-2 text-sm mb-6 flex-wrap" id="dd-breadcrumb">
+          <span class="text-on-surface-variant">Explore:</span>
+          <button class="text-primary font-medium hover:underline" onclick="ddReset()">Artists</button>
+        </div>
+
+        <!-- Level Selector -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-surface-container-high rounded-xl border border-surface-variant p-4">
+            <label class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold block mb-3">Artist</label>
+            <select id="dd-artist-select" class="w-full bg-surface-container border border-surface-variant text-on-surface rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary" onchange="ddSelectArtist(this.value)">
+              <option value="">Select artist…</option>
+            </select>
+          </div>
+          <div class="bg-surface-container-high rounded-xl border border-surface-variant p-4 opacity-40" id="dd-project-col">
+            <label class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold block mb-3">Project</label>
+            <select id="dd-project-select" class="w-full bg-surface-container border border-surface-variant text-on-surface rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary" onchange="ddSelectProject(this.value)" disabled>
+              <option value="">Select project…</option>
+            </select>
+          </div>
+          <div class="bg-surface-container-high rounded-xl border border-surface-variant p-4 opacity-40" id="dd-song-col">
+            <label class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold block mb-3">Song</label>
+            <select id="dd-song-select" class="w-full bg-surface-container border border-surface-variant text-on-surface rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary" disabled>
+              <option value="">Select song…</option>
+            </select>
           </div>
         </div>
 
-        <div class="chart-row two-col">
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>⚡ Live Catalog Expansion Predictor</h3>
+        <!-- Deep Dive Detail Panel -->
+        <div id="dd-detail-panel" class="space-y-6"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW 10: ML INTELLIGENCE                                             -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-ml" class="view">
+      <div class="mb-8">
+        <h1 class="text-4xl font-black text-on-surface mb-1">Listening Intelligence</h1>
+        <p class="text-on-surface-variant mb-8">Can we predict what happens after a song?</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <!-- Prediction Playground -->
+          <div class="bg-surface-container-high rounded-xl border border-surface-variant p-6">
+            <div class="flex items-center justify-between mb-5">
+              <h2 class="text-xl font-bold text-on-surface">Catalog Expansion Predictor</h2>
+              <span class="flex items-center gap-1.5 text-xs font-semibold text-primary"><span class="w-2 h-2 rounded-full bg-primary animate-pulse inline-block"></span>LIVE MODEL</span>
             </div>
-            <form id="form-ml-predict" class="sim-form" onsubmit="return false;">
-              <div class="form-row">
-                <div class="form-group">
-                  <label>First Time Hearing Artist?</label>
-                  <select id="sim-first-artist" class="select-input">
-                    <option value="1">Yes (Discovery Exposure)</option>
-                    <option value="0">No (Known Artist)</option>
+
+            <div class="space-y-4">
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex flex-col gap-1">
+                  <span class="text-xs text-on-surface-variant">First artist play?</span>
+                  <select id="ml-first-artist" class="bg-surface-container border border-surface-variant text-on-surface rounded-lg px-3 py-2 text-sm">
+                    <option value="1">Yes (First encounter)</option>
+                    <option value="0">No (Known artist)</option>
                   </select>
-                </div>
-                <div class="form-group">
-                  <label>Seconds Played</label>
-                  <input type="number" id="sim-seconds" value="210" class="text-input">
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Skipped?</label>
-                  <select id="sim-skipped" class="select-input">
-                    <option value="0">No (Completed)</option>
+                </label>
+                <label class="flex flex-col gap-1">
+                  <span class="text-xs text-on-surface-variant">Track skipped?</span>
+                  <select id="ml-skipped" class="bg-surface-container border border-surface-variant text-on-surface rounded-lg px-3 py-2 text-sm">
+                    <option value="0">No (Played fully)</option>
                     <option value="1">Yes (Skipped)</option>
                   </select>
-                </div>
-                <div class="form-group">
-                  <label>Local Hour of Day (0–23)</label>
-                  <input type="number" id="sim-hour" value="22" class="text-input">
-                </div>
+                </label>
+                <label class="flex flex-col gap-1">
+                  <span class="text-xs text-on-surface-variant">Seconds played</span>
+                  <input type="number" id="ml-seconds" value="210" min="0" max="600" class="bg-surface-container border border-surface-variant text-on-surface rounded-lg px-3 py-2 text-sm"/>
+                </label>
+                <label class="flex flex-col gap-1">
+                  <span class="text-xs text-on-surface-variant">Artist plays before</span>
+                  <input type="number" id="ml-artist-plays" value="0" min="0" class="bg-surface-container border border-surface-variant text-on-surface rounded-lg px-3 py-2 text-sm"/>
+                </label>
+                <label class="flex flex-col gap-1">
+                  <span class="text-xs text-on-surface-variant">Artist tracks heard</span>
+                  <input type="number" id="ml-artist-tracks" value="0" min="0" class="bg-surface-container border border-surface-variant text-on-surface rounded-lg px-3 py-2 text-sm"/>
+                </label>
+                <label class="flex flex-col gap-1">
+                  <span class="text-xs text-on-surface-variant">Hour of day (0-23)</span>
+                  <input type="number" id="ml-hour" value="21" min="0" max="23" class="bg-surface-container border border-surface-variant text-on-surface rounded-lg px-3 py-2 text-sm"/>
+                </label>
+                <label class="flex flex-col gap-1">
+                  <span class="text-xs text-on-surface-variant">Session position</span>
+                  <input type="number" id="ml-session-pos" value="3" min="1" class="bg-surface-container border border-surface-variant text-on-surface rounded-lg px-3 py-2 text-sm"/>
+                </label>
+                <label class="flex flex-col gap-1">
+                  <span class="text-xs text-on-surface-variant">Shuffle?</span>
+                  <select id="ml-shuffle" class="bg-surface-container border border-surface-variant text-on-surface rounded-lg px-3 py-2 text-sm">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                  </select>
+                </label>
               </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Artist Tracks Heard Before</label>
-                  <input type="number" id="sim-art-tracks" value="0" class="text-input">
-                </div>
-                <div class="form-group">
-                  <label>Artist Plays Before</label>
-                  <input type="number" id="sim-art-plays" value="0" class="text-input">
-                </div>
-              </div>
-              <button type="button" id="btn-run-predict" class="btn-primary" style="margin-top: 10px;">
-                Predict Catalog Expansion
+              <button id="ml-predict-btn" onclick="runPrediction()" class="w-full py-2.5 bg-primary text-black font-bold rounded-full hover:bg-primary-fixed transition-colors text-sm mt-2">
+                Predict Catalog Expansion →
               </button>
-            </form>
+            </div>
 
-            <div class="sim-result-box" id="sim-result-box" style="display: none; margin-top: 18px;">
-              <div class="srb-header">
-                <span class="srb-prob" id="srb-prob">0.0%</span>
-                <span class="srb-badge" id="srb-badge">Prediction</span>
+            <!-- Result -->
+            <div id="ml-result" class="mt-5 hidden">
+              <div class="flex items-baseline justify-between mb-2">
+                <span class="text-xs text-on-surface-variant uppercase tracking-wider">Expansion Probability</span>
+                <span id="ml-confidence-badge" class="badge badge-artist">—</span>
               </div>
-              <div class="srb-explanation" id="srb-explanation"></div>
+              <div class="text-4xl font-black text-primary mb-2" id="ml-prob-display">—%</div>
+              <div class="progress-bar mb-3">
+                <div class="progress-fill" id="ml-prob-bar" style="width:0%"></div>
+              </div>
+              <div id="ml-predicted-outcome" class="text-sm font-semibold mb-3"></div>
+              <div id="ml-explanation" class="space-y-2"></div>
             </div>
           </div>
 
-          <div class="chart-card glass">
-            <div class="card-header">
-              <h3>🛡️ Temporal Leakage Audit Certificate</h3>
+          <!-- Analysis Panel -->
+          <div class="bg-surface-container-high rounded-xl border border-surface-variant p-6">
+            <div class="flex items-center gap-2 mb-5">
+              <span class="material-symbols-outlined text-primary">psychology</span>
+              <h2 class="text-xl font-bold text-on-surface">Analysis</h2>
             </div>
-            <div id="audit-cert-box" style="padding: 14px;"></div>
+            <div id="ml-feature-importance-panel" class="space-y-3">
+              <div class="skeleton h-8 rounded"></div>
+              <div class="skeleton h-8 rounded"></div>
+              <div class="skeleton h-8 rounded"></div>
+              <div class="skeleton h-8 rounded"></div>
+              <div class="skeleton h-8 rounded"></div>
+            </div>
           </div>
         </div>
-      </section>
 
-    </main>
+        <!-- Benchmark Table -->
+        <div class="bg-surface-container-high rounded-xl border border-surface-variant p-6 mb-6">
+          <h3 class="font-bold text-on-surface mb-1">Model Benchmarks</h3>
+          <p class="text-xs text-on-surface-variant mb-4">Comparative performance on held-out 2026 test set (chronological split).</p>
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead><tr>
+                <th>Model</th><th>PR-AUC</th><th>ROC-AUC</th><th>F1 Score</th><th>Precision</th><th>Recall</th><th>Brier</th>
+              </tr></thead>
+              <tbody id="ml-benchmark-table">
+                <tr><td colspan="7" class="text-center py-6 text-on-surface-variant">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Temporal Audit -->
+        <div id="ml-audit-banner" class="bg-surface-container-high rounded-xl border border-surface-variant p-6 flex items-center gap-5">
+          <div class="w-12 h-12 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-primary">verified_user</span>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-bold text-on-surface">Temporal Leakage Audit</h3>
+            <p class="text-sm text-on-surface-variant">Strict forward-chaining — all features computed using only data available strictly prior to timestamp T.</p>
+          </div>
+          <div id="ml-audit-badge" class="px-4 py-2 rounded-full text-sm font-bold">Loading…</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <script src="app.js"></script>
+  <!-- Footer -->
+  <footer class="px-6 py-4 border-t border-surface-container-low text-xs text-on-surface-variant flex flex-col sm:flex-row justify-between gap-2">
+    <span>&copy; 2024 Spotify Personal Intelligence Engine</span>
+    <span class="italic">Independent personal analytics project — not affiliated with, authorized, or endorsed by Spotify.</span>
+  </footer>
+</main>
+
+<!-- Disclaimer Modal -->
+<div id="disclaimer-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-surface-container rounded-2xl border border-surface-variant p-8 max-w-lg w-full">
+    <h2 class="text-xl font-bold text-on-surface mb-3">Disclaimer</h2>
+    <p class="text-sm text-on-surface-variant leading-relaxed mb-5">This is an independent personal analytics project built on the owner's own Spotify Extended Streaming History data. It is not affiliated with, endorsed by, or connected to Spotify AB. All analytical insights are derived from personal listening data only.</p>
+    <button class="w-full bg-primary text-black rounded-full py-2 font-bold text-sm" onclick="document.getElementById('disclaimer-modal').classList.add('hidden')">Close</button>
+  </div>
+</div>
+
+<div id="privacy-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-surface-container rounded-2xl border border-surface-variant p-8 max-w-lg w-full">
+    <h2 class="text-xl font-bold text-on-surface mb-3">Privacy</h2>
+    <p class="text-sm text-on-surface-variant leading-relaxed mb-3">Raw Spotify JSON history files are never exposed through the API or committed to the public repository. The API serves only pre-aggregated analytical summaries and model predictions.</p>
+    <p class="text-sm text-on-surface-variant leading-relaxed mb-5">All IP addresses in the sample dataset have been redacted to 0.0.0.0.</p>
+    <button class="w-full bg-primary text-black rounded-full py-2 font-bold text-sm" onclick="document.getElementById('privacy-modal').classList.add('hidden')">Close</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>

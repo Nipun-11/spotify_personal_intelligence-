@@ -119,6 +119,23 @@ def get_overview_dna():
         "quality_report": quality_report
     }
 
+@router.get("/overview/taste-fingerprint")
+def get_taste_fingerprint():
+    """Taste fingerprint dimensions."""
+    return taste_fingerprint
+
+@router.get("/overview/yearly-evolution")
+def get_yearly_evolution():
+    """Yearly listening breakdown."""
+    return df_canonical[df_canonical["content_type"] == "music"].groupby("year").agg(
+        hours=("minutes_played", lambda m: round(float(m.sum() / 60.0), 2)),
+        listening_hours=("minutes_played", lambda m: round(float(m.sum() / 60.0), 2)),
+        plays=("event_id", "count"),
+        unique_artists=("artist_id", "nunique"),
+        unique_tracks=("track_id", "nunique"),
+        skip_rate=("skipped", lambda s: round(float(s.mean() * 100.0), 1))
+    ).reset_index().to_dict(orient="records")
+
 @router.get("/artists")
 def get_artists(
     search: Optional[str] = Query(None, description="Search artist name"),
@@ -150,6 +167,8 @@ def get_artists(
 def get_artist_lifecycle(artist_name: str):
     """Detailed lifecycle, monthly listening curve, projects, and top tracks for a specific artist."""
     art_row = df_artists[df_artists["artist_name"].str.lower() == artist_name.lower().strip()]
+    if len(art_row) == 0:
+        art_row = df_artists[df_artists["artist_id"] == artist_name]
     if len(art_row) == 0:
         # Fallback substring match
         art_row = df_artists[df_artists["artist_name"].str.contains(artist_name, case=False, na=False)]
@@ -264,10 +283,49 @@ def get_songs(
         "songs": songs_slice
     }
 
+@router.get("/songs/{track_id}")
+def get_song_detail(track_id: str):
+    """Get detail for a single song by track_id."""
+    row = df_songs[df_songs["track_id"] == track_id]
+    if len(row) == 0:
+        raise HTTPException(status_code=404, detail=f"Song '{track_id}' not found")
+    song_info = row.iloc[0].to_dict()
+    # Monthly play history for this song
+    song_events = df_canonical[df_canonical["track_id"] == track_id]
+    monthly = song_events.groupby(song_events["timestamp_local"].dt.strftime("%Y-%m")).agg(
+        plays=("event_id", "count"),
+        minutes=("minutes_played", "sum")
+    ).reset_index().rename(columns={"timestamp_local": "year_month"})
+    monthly["minutes"] = monthly["minutes"].round(1)
+    return {
+        "song": song_info,
+        "monthly_history": monthly.to_dict(orient="records")
+    }
+
+@router.get("/discovery/summary")
+def get_discovery_summary():
+    """Aggregate summary stats for the Discovery Catalysts hero section."""
+    if len(df_catalyst_rankings) == 0:
+        return {"total_catalysts": 0, "artist_discoveries": 0, "project_discoveries": 0,
+                "catalog_deepenings": 0, "reengagements": 0, "total_downstream_hours": 0.0}
+    types = df_catalyst_rankings["discovery_type"].value_counts().to_dict()
+    hrs_col = "future_hours_unlocked" if "future_hours_unlocked" in df_catalyst_rankings.columns else "hours_unlocked"
+    total_hours = round(float(df_catalyst_rankings[hrs_col].sum()), 2) if hrs_col in df_catalyst_rankings.columns else 0.0
+    return {
+        "total_catalysts": len(df_catalyst_rankings),
+        "meaningful_catalysts": int(df_catalyst_rankings["is_meaningful_expansion_7d"].sum()),
+        "artist_discoveries": types.get("Artist Discovery", 0),
+        "project_discoveries": types.get("Project Discovery", 0),
+        "catalog_deepenings": types.get("Catalog Deepening", 0),
+        "reengagements": types.get("Re-engagement", 0),
+        "total_downstream_hours": total_hours
+    }
+
 @router.get("/discovery/catalysts")
 def get_discovery_catalysts(
     discovery_type: Optional[str] = Query(None, description="Filter by discovery type"),
     meaningful_only: Optional[bool] = Query(False, description="Show only meaningful catalog expansion"),
+    search: Optional[str] = Query(None, description="Search by track or artist name"),
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0)
 ):
@@ -277,6 +335,11 @@ def get_discovery_catalysts(
         res_df = res_df[res_df["discovery_type"] == discovery_type]
     if meaningful_only:
         res_df = res_df[res_df["is_meaningful_expansion_7d"]]
+    if search:
+        res_df = res_df[
+            res_df["catalyst_track_name"].str.contains(search, case=False, na=False) |
+            res_df["catalyst_artist_name"].str.contains(search, case=False, na=False)
+        ]
         
     total_count = len(res_df)
     catalysts_slice = res_df.iloc[offset:offset+limit].to_dict(orient="records")
@@ -335,17 +398,43 @@ def get_network(min_weight: int = Query(2, ge=1, le=20)):
     }
 
 @router.get("/sequences/top")
-def get_top_sequences():
+def get_top_sequences(limit: int = Query(20, ge=1, le=100)):
     """Top 2-song transitions and 3-song Markov sequence loops."""
-    top_tracks = df_track_transitions.head(20).to_dict(orient="records")
-    top_artists = df_artist_transitions.head(20).to_dict(orient="records")
-    top_triplets = df_3song_sequences.head(20).to_dict(orient="records")
+    top_tracks = df_track_transitions.head(limit).to_dict(orient="records")
+    top_artists = df_artist_transitions.head(limit).to_dict(orient="records")
+    top_triplets = df_3song_sequences.head(limit).to_dict(orient="records")
     
     return {
+        "transitions": top_tracks,
         "top_track_transitions": top_tracks,
         "top_artist_transitions": top_artists,
         "three_song_sequences": top_triplets
     }
+
+@router.get("/sequences/artists")
+def get_artist_sequences(limit: int = Query(20, ge=1, le=100)):
+    """Top artist-to-artist transitions."""
+    top_artists = df_artist_transitions.head(limit).to_dict(orient="records")
+    return {"transitions": top_artists, "total": len(df_artist_transitions)}
+
+@router.get("/sequences/three-song")
+def get_three_song_sequences(limit: int = Query(20, ge=1, le=100)):
+    """Top 3-song Markov sequence chains."""
+    top_triplets = df_3song_sequences.head(limit).to_dict(orient="records")
+    return {"sequences": top_triplets, "total": len(df_3song_sequences)}
+
+@router.get("/projects/{project_id}/songs")
+def get_project_songs(project_id: str):
+    """Get songs belonging to a project."""
+    songs = df_songs[df_songs["project_id"] == project_id]
+    if len(songs) == 0:
+        # Try finding in canonical playback
+        songs_canon = df_canonical[df_canonical["project_id"] == project_id].groupby(["track_id", "track_name", "artist_name"]).agg(
+            total_plays=("event_id", "count"),
+            total_minutes=("minutes_played", "sum")
+        ).reset_index()
+        return {"project_id": project_id, "songs": songs_canon.to_dict(orient="records")}
+    return {"project_id": project_id, "songs": songs.to_dict(orient="records")}
 
 @router.get("/genres/time-matrix")
 def get_genre_time_matrix():

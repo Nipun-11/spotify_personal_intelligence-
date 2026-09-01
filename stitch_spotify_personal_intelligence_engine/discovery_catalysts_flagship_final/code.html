@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Discovery Catalysts - SPIE</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "outline-variant": "#3d4a3d",
+                "on-background": "#e3e2e2",
+                "surface-container-low": "#1a1c1c",
+                "background": "#121414",
+                "surface-dim": "#121414",
+                "on-surface-variant": "#bccbb9",
+                "on-tertiary-fixed": "#1c1b1b",
+                "outline": "#869585",
+                "on-primary": "#003914",
+                "surface": "#121414",
+                "on-secondary": "#313030",
+                "surface-tint": "#53e076",
+                "on-tertiary-container": "#383838",
+                "surface-container-high": "#292a2a",
+                "error": "#ffb4ab",
+                "surface-container": "#1e2020",
+                "on-error-container": "#ffdad6",
+                "on-tertiary": "#313030",
+                "primary": "#53e076",
+                "inverse-on-surface": "#2f3131",
+                "primary-container": "#1db954",
+                "secondary-container": "#4a4949",
+                "on-secondary-fixed-variant": "#474646",
+                "primary-fixed": "#72fe8f",
+                "on-error": "#690005",
+                "tertiary-container": "#a3a1a0",
+                "on-secondary-container": "#bab8b7",
+                "surface-container-highest": "#343535",
+                "on-tertiary-fixed-variant": "#474746",
+                "tertiary-fixed-dim": "#c8c6c5",
+                "tertiary-fixed": "#e5e2e1",
+                "inverse-primary": "#006e2d",
+                "on-primary-container": "#004118",
+                "surface-bright": "#38393a",
+                "surface-container-lowest": "#0d0e0f",
+                "primary-fixed-dim": "#53e076",
+                "on-primary-fixed": "#002108",
+                "error-container": "#93000a",
+                "surface-variant": "#343535",
+                "secondary-fixed": "#e5e2e1",
+                "on-secondary-fixed": "#1c1b1b",
+                "on-surface": "#e3e2e2",
+                "tertiary": "#c8c6c5",
+                "secondary": "#c8c6c5",
+                "secondary-fixed-dim": "#c8c6c5",
+                "inverse-surface": "#e3e2e2",
+                "on-primary-fixed-variant": "#005320"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "card-gap": "1rem",
+                "sidebar-width": "280px",
+                "section-stack": "3rem",
+                "container-margin": "2rem",
+                "gutter": "1.5rem"
+        },
+        "fontFamily": {
+                "label-sm": [
+                        "Inter"
+                ],
+                "body-md": [
+                        "Inter"
+                ],
+                "headline-lg": [
+                        "Inter"
+                ],
+                "display-hero": [
+                        "Inter"
+                ],
+                "body-lg": [
+                        "Inter"
+                ],
+                "metadata": [
+                        "Inter"
+                ],
+                "headline-md": [
+                        "Inter"
+                ],
+                "headline-lg-mobile": [
+                        "Inter"
+                ]
+        },
+        "fontSize": {
+                "label-sm": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-md": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-lg": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "800"
+                        }
+                ],
+                "display-hero": [
+                        "72px",
+                        {
+                                "lineHeight": "80px",
+                                "letterSpacing": "-0.04em",
+                                "fontWeight": "900"
+                        }
+                ],
+                "body-lg": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "metadata": [
+                        "11px",
+                        {
+                                "lineHeight": "14px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-md": [
+                        "24px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "700"
+                        }
+                ],
+                "headline-lg-mobile": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "800"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+        .timeline-gradient {
+            background: linear-gradient(135deg, #1DB954 0%, rgba(29, 185, 84, 0) 100%);
+        }
+        .table-row-hover:hover .material-symbols-outlined.play-icon {
+            display: inline-block;
+        }
+        .table-row-hover:hover .row-index {
+            display: none;
+        }
+        .play-icon {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-low dark:bg-surface-container-low border-r border-surface-variant fixed left-0 top-0 h-screen w-sidebar-width flex flex-col h-full py-container-margin z-50">
+<div class="mb-8 px-4 flex items-center space-x-3">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center overflow-hidden shrink-0">
+<img alt="Platform Logo" class="w-full h-full object-cover" data-alt="A stylized, high-contrast digital avatar of a person wearing sleek, futuristic headphones. The image uses a dark mode aesthetic with deep black backgrounds and striking neon green accents, typical of modern music streaming platforms. Soft, volumetric lighting highlights the user's features, emphasizing a premium, hi-fi auditory experience." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5oyTMkYnQaedzgrp9URL3K_Tuo73sYGQiu0snjUxf174qsUp44ENy3gU03UHrY6RDgoOdH27W2iXvQyHZFfcU4_njqScmzhU4shbwZK-9KfvXbASaCDdDDXVTh1t8odqj9VdAKTPjPU27-fS_JlVWgzAjkF9VlUXkzJeFibH7zzq-WiL0Ajd0T3Y9HvzA6SFEYohtonYykGdTgL-AdDSstodeQ9NpKsPPdxbR2OM_CUcO3uQBZ9Dd"/>
+</div>
+<div>
+<div class="font-headline-md text-headline-md font-black text-primary">Music DNA</div>
+<div class="font-metadata text-metadata text-on-surface-variant">Intelligence Platform</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto space-y-1">
+<a class="text-on-surface-variant pl-5 py-3 hover:text-on-surface rounded-lg hover:bg-surface-container-highest transition-all duration-200 ease-in-out cursor-pointer active:scale-95 flex items-center space-x-3 mx-2" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">Overview</span>
+</a>
+<a class="text-on-surface border-l-4 border-primary font-bold pl-4 py-3 bg-surface-container-high rounded-r-lg hover:bg-surface-container-highest transition-all duration-200 ease-in-out cursor-pointer active:scale-95 flex items-center space-x-3 mr-2" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
+<span class="font-body-md text-body-md">Discovery</span>
+</a>
+<a class="text-on-surface-variant pl-5 py-3 hover:text-on-surface rounded-lg hover:bg-surface-container-highest transition-all duration-200 ease-in-out cursor-pointer active:scale-95 flex items-center space-x-3 mx-2" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-body-md text-body-md">Artists</span>
+</a>
+<a class="text-on-surface-variant pl-5 py-3 hover:text-on-surface rounded-lg hover:bg-surface-container-highest transition-all duration-200 ease-in-out cursor-pointer active:scale-95 flex items-center space-x-3 mx-2" href="#">
+<span class="material-symbols-outlined">album</span>
+<span class="font-body-md text-body-md">Albums</span>
+</a>
+<a class="text-on-surface-variant pl-5 py-3 hover:text-on-surface rounded-lg hover:bg-surface-container-highest transition-all duration-200 ease-in-out cursor-pointer active:scale-95 flex items-center space-x-3 mx-2" href="#">
+<span class="material-symbols-outlined">music_note</span>
+<span class="font-body-md text-body-md">Songs</span>
+</a>
+<a class="text-on-surface-variant pl-5 py-3 hover:text-on-surface rounded-lg hover:bg-surface-container-highest transition-all duration-200 ease-in-out cursor-pointer active:scale-95 flex items-center space-x-3 mx-2" href="#">
+<span class="material-symbols-outlined">timeline</span>
+<span class="font-body-md text-body-md">Sequences</span>
+</a>
+<a class="text-on-surface-variant pl-5 py-3 hover:text-on-surface rounded-lg hover:bg-surface-container-highest transition-all duration-200 ease-in-out cursor-pointer active:scale-95 flex items-center space-x-3 mx-2" href="#">
+<span class="material-symbols-outlined">hub</span>
+<span class="font-body-md text-body-md">Network</span>
+</a>
+<a class="text-on-surface-variant pl-5 py-3 hover:text-on-surface rounded-lg hover:bg-surface-container-highest transition-all duration-200 ease-in-out cursor-pointer active:scale-95 flex items-center space-x-3 mx-2" href="#">
+<span class="material-symbols-outlined">category</span>
+<span class="font-body-md text-body-md">Genre &amp; Time</span>
+</a>
+<a class="text-on-surface-variant pl-5 py-3 hover:text-on-surface rounded-lg hover:bg-surface-container-highest transition-all duration-200 ease-in-out cursor-pointer active:scale-95 flex items-center space-x-3 mx-2" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-md text-body-md">Deep Dive</span>
+</a>
+<a class="text-on-surface-variant pl-5 py-3 hover:text-on-surface rounded-lg hover:bg-surface-container-highest transition-all duration-200 ease-in-out cursor-pointer active:scale-95 flex items-center space-x-3 mx-2" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span class="font-body-md text-body-md">ML Intelligence</span>
+</a>
+</div>
+<div class="mt-4 pt-4 border-t border-surface-variant space-y-1 mx-2">
+<a class="text-on-surface-variant pl-5 py-3 hover:text-on-surface rounded-lg hover:bg-surface-container-highest transition-all duration-200 ease-in-out cursor-pointer active:scale-95 flex items-center space-x-3" href="#">
+<span class="material-symbols-outlined">info</span>
+<span class="font-body-md text-body-md">Disclaimer</span>
+</a>
+<a class="text-on-surface-variant pl-5 py-3 hover:text-on-surface rounded-lg hover:bg-surface-container-highest transition-all duration-200 ease-in-out cursor-pointer active:scale-95 flex items-center space-x-3" href="#">
+<span class="material-symbols-outlined">security</span>
+<span class="font-body-md text-body-md">Privacy</span>
+</a>
+</div>
+<div class="mt-6 px-4">
+<button class="w-full bg-primary-container text-on-primary-container font-label-sm text-label-sm py-3 px-4 rounded-full hover:bg-primary transition-colors duration-200">
+                Upgrade to Pro
+            </button>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="ml-[sidebar-width] w-[calc(100%-sidebar-width)] min-h-screen flex flex-col relative">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface bg-surface-container-low dark:bg-surface-container-low full-width top-0 sticky z-40 flex justify-between items-center px-gutter py-4 ml-sidebar-width w-[calc(100%-theme(spacing.sidebar-width))]">
+<div class="flex items-center space-x-8">
+<span class="font-headline-md text-headline-md font-black text-on-surface">Discovery Catalysts</span>
+<span class="font-body-md text-body-md text-on-surface-variant ml-4 border-l border-surface-variant pl-4">Songs followed by meaningful expansion into an artist's catalog.</span>
+</div>
+<div class="flex items-center space-x-4 text-primary dark:text-primary">
+<button class="hover:bg-surface-variant transition-colors cursor-pointer active:scale-95 duration-200 rounded-full p-2 flex items-center justify-center"><span class="material-symbols-outlined">notifications</span></button>
+<button class="hover:bg-surface-variant transition-colors cursor-pointer active:scale-95 duration-200 rounded-full p-2 flex items-center justify-center"><span class="material-symbols-outlined">settings</span></button>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 p-container-margin pb-section-stack">
+<!-- Featured Catalyst: Aa Jao -->
+<section class="mb-section-stack">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary">electric_bolt</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Featured Catalyst Journey</h2>
+</div>
+<div class="relative bg-surface-container-high rounded-xl border border-surface-variant p-10 overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
+<!-- Abstract Background Element -->
+<div class="absolute -right-20 -top-20 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+<div class="flex gap-12 relative z-10">
+<!-- Catalyst Track Info -->
+<div class="w-1/3 shrink-0 flex flex-col justify-center">
+<div class="w-64 h-64 rounded-lg shadow-2xl overflow-hidden border border-surface-variant mb-6">
+<img alt="Aa Jao by Panther Album Art" class="w-full h-full object-cover" data-alt="Album cover art featuring a gritty, high-contrast street portrait of a hip-hop artist bathed in neon green and deep shadow. The aesthetic is raw, energetic, and modern, fitting a high-fidelity music streaming platform. Dark background with vibrant #1DB954 accents highlighting the artist's silhouette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-pMylxn6tCoi4oNEDo8uQ-pyf-Yla_ibwNybRqkWJplInjKnQAUClWjHF032QIpDgWMwxSSj1v8PWIVM6g9UVdLoWaGkOJSgQBj-f3lZBx_7nY_MzoScSQjKHnpiSGVnGXhMV7lz4SUN6U-yvYZuW68r_x8HPHMImwTwoyhFZ-UCQ125VaDeB2ZS6-2Mw9Bokixy8hcW6vuOqWwlRmMSi3erQAbesOjPOEBYiKWu-9J6qRFxfO53N"/>
+</div>
+<h1 class="font-display-hero text-5xl font-black text-on-surface mb-1 leading-none">Aa Jao</h1>
+<h2 class="font-headline-lg text-2xl text-primary mb-4">Panther</h2>
+<div class="inline-flex px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-label-sm uppercase tracking-wide w-max">Artist Discovery</div>
+</div>
+<!-- The Journey Timeline -->
+<div class="flex-1 relative py-8">
+<!-- Connecting Line -->
+<div class="absolute left-6 top-16 bottom-8 w-1 bg-surface-variant rounded-full timeline-gradient opacity-50 z-0"></div>
+<div class="space-y-10 relative z-10">
+<!-- Step 1 -->
+<div class="flex gap-6 items-center">
+<div class="w-12 h-12 rounded-full bg-surface border-2 border-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-primary text-xl">music_note</span>
+</div>
+<div class="bg-surface-container rounded-lg p-4 border border-surface-variant flex-1 flex justify-between items-center hover:bg-surface-variant/50 transition-colors">
+<div>
+<div class="text-on-surface font-bold text-lg">19 New Tracks Discovered</div>
+<div class="text-on-surface-variant font-metadata">Initial catalog exploration</div>
+</div>
+<span class="material-symbols-outlined text-surface-variant">arrow_forward</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex gap-6 items-center">
+<div class="w-12 h-12 rounded-full bg-surface border-2 border-primary/70 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary/70 text-xl">timer</span>
+</div>
+<div class="bg-surface-container rounded-lg p-4 border border-surface-variant flex-1 flex justify-between items-center hover:bg-surface-variant/50 transition-colors">
+<div>
+<div class="text-on-surface font-bold text-lg flex items-baseline gap-2">110.34 <span class="text-sm font-normal text-on-surface-variant">min</span></div>
+<div class="text-on-surface-variant font-metadata">First 7 Days</div>
+</div>
+<span class="material-symbols-outlined text-surface-variant">arrow_forward</span>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="flex gap-6 items-center">
+<div class="w-12 h-12 rounded-full bg-surface border-2 border-primary/50 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary/50 text-xl">calendar_month</span>
+</div>
+<div class="bg-surface-container rounded-lg p-4 border border-surface-variant flex-1 flex justify-between items-center hover:bg-surface-variant/50 transition-colors">
+<div>
+<div class="text-on-surface font-bold text-lg flex items-baseline gap-2">217.65 <span class="text-sm font-normal text-on-surface-variant">min</span></div>
+<div class="text-on-surface-variant font-metadata">Over 30 Days</div>
+</div>
+<span class="material-symbols-outlined text-surface-variant">arrow_forward</span>
+</div>
+</div>
+<!-- Final Impact -->
+<div class="flex gap-6 items-center pt-2">
+<div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(83,224,118,0.4)]">
+<span class="material-symbols-outlined text-on-primary text-xl font-bold">all_inclusive</span>
+</div>
+<div class="bg-surface border border-primary/30 rounded-lg p-5 flex-1 relative overflow-hidden group">
+<div class="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors"></div>
+<div class="relative z-10">
+<div class="text-primary font-display-hero text-4xl font-black leading-none mb-1">32.57h</div>
+<div class="text-on-surface-variant font-body-md">Total Downstream Hours Unlocked</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Catalyst Tracklist Table -->
+<section class="mb-section-stack">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant">list</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">All Discovery Catalysts</h2>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1 rounded-full bg-surface border border-surface-variant text-on-surface text-sm hover:bg-surface-variant transition-colors">7D</button>
+<button class="px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-sm font-bold">30D</button>
+<button class="px-3 py-1 rounded-full bg-surface border border-surface-variant text-on-surface text-sm hover:bg-surface-variant transition-colors">All Time</button>
+</div>
+</div>
+<div class="w-full">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-surface-variant/50 text-on-surface-variant text-xs uppercase tracking-wider">
+<th class="p-3 w-12 text-center font-normal">#</th>
+<th class="p-3 font-normal">Song / Artist</th>
+<th class="p-3 font-normal">Discovery Type</th>
+<th class="p-3 font-normal text-right">7D Tracks</th>
+<th class="p-3 font-normal text-right">7D Mins</th>
+<th class="p-3 font-normal text-right">30D Mins</th>
+<th class="p-3 font-normal text-right hidden lg:table-cell">90D Impact</th>
+<th class="p-3 font-normal text-right pr-6">Hours Unlocked</th>
+</tr>
+</thead>
+<tbody class="font-body-md">
+<!-- Track 1 -->
+<tr class="table-row-hover group border-b border-surface-variant/20 hover:bg-surface-variant/30 transition-colors rounded-lg">
+<td class="p-3 text-center text-on-surface-variant">
+<span class="row-index">1</span>
+<span class="material-symbols-outlined text-primary text-lg play-icon cursor-pointer">play_arrow</span>
+</td>
+<td class="p-3">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface overflow-hidden shrink-0">
+<img alt="Aa Jao" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-pMylxn6tCoi4oNEDo8uQ-pyf-Yla_ibwNybRqkWJplInjKnQAUClWjHF032QIpDgWMwxSSj1v8PWIVM6g9UVdLoWaGkOJSgQBj-f3lZBx_7nY_MzoScSQjKHnpiSGVnGXhMV7lz4SUN6U-yvYZuW68r_x8HPHMImwTwoyhFZ-UCQ125VaDeB2ZS6-2Mw9Bokixy8hcW6vuOqWwlRmMSi3erQAbesOjPOEBYiKWu-9J6qRFxfO53N"/>
+</div>
+<div>
+<div class="font-bold text-primary group-hover:underline cursor-pointer">Aa Jao</div>
+<div class="text-on-surface-variant text-xs group-hover:text-on-surface transition-colors cursor-pointer">Panther</div>
+</div>
+</div>
+</td>
+<td class="p-3">
+<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">Artist Discovery</span>
+</td>
+<td class="p-3 text-right text-on-surface-variant">19</td>
+<td class="p-3 text-right text-on-surface-variant">110.3</td>
+<td class="p-3 text-right text-on-surface-variant">217.6</td>
+<td class="p-3 text-right text-on-surface-variant hidden lg:table-cell">High</td>
+<td class="p-3 text-right pr-6 font-bold text-on-surface">32.57h</td>
+</tr>
+<!-- Track 2 -->
+<tr class="table-row-hover group border-b border-surface-variant/20 hover:bg-surface-variant/30 transition-colors">
+<td class="p-3 text-center text-on-surface-variant">
+<span class="row-index">2</span>
+<span class="material-symbols-outlined text-primary text-lg play-icon cursor-pointer">play_arrow</span>
+</td>
+<td class="p-3">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface overflow-hidden shrink-0">
+<img alt="Track 2" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_QbI7fRv7KPXtwf30HLgQTAREGq5akARfeBRPtXUhOQ42XNdbvOe_NA8WJljG2iEgdpQ4Of-o9rlESQ5CHunCit9uJK8NypE28B54ezblTtnuyWoIGsEvK4oZxy0I58aErS-k6nPi66PXVCiTrwV5N3BGtP5qYQtUcZM32IWqoapjFyUeFEXa4jGTagxnWCLohZ-ItASgk8zfuyAuDYlAL7eNlOiTJ_LYRtLVEbDKeNj9ttp5zVuV"/>
+</div>
+<div>
+<div class="font-bold text-on-surface group-hover:underline cursor-pointer">Nightfall</div>
+<div class="text-on-surface-variant text-xs group-hover:text-on-surface transition-colors cursor-pointer">Synthwave Collective</div>
+</div>
+</div>
+</td>
+<td class="p-3">
+<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">Project Discovery</span>
+</td>
+<td class="p-3 text-right text-on-surface-variant">12</td>
+<td class="p-3 text-right text-on-surface-variant">85.4</td>
+<td class="p-3 text-right text-on-surface-variant">150.2</td>
+<td class="p-3 text-right text-on-surface-variant hidden lg:table-cell">Med</td>
+<td class="p-3 text-right pr-6 font-bold text-on-surface">18.20h</td>
+</tr>
+<!-- Track 3 -->
+<tr class="table-row-hover group border-b border-surface-variant/20 hover:bg-surface-variant/30 transition-colors">
+<td class="p-3 text-center text-on-surface-variant">
+<span class="row-index">3</span>
+<span class="material-symbols-outlined text-primary text-lg play-icon cursor-pointer">play_arrow</span>
+</td>
+<td class="p-3">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface overflow-hidden shrink-0">
+<img alt="Track 3" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfVvrhFQT6KopVqjQ88r7G0Wr5BznvD9sWfVqh2hECZJlsZ3Dbrv-EywkGtu7V2IffIKPlv_CaHGgtHlrW6diQG5OUD2ZAX7wg7iioULrZNeEHqmWCbh2uuuEH8cbrAsW9-sEMkAs9sM8SkV4zlZKHFMMOWLf_9ukXv_qKkKgN_DkVQpDd8LhCmf4LEJSQUo59WdYf7OkkJY_PU-Vile95gn_nhBWZeqAZBLMAkuTV8TB1N3rqds4l"/>
+</div>
+<div>
+<div class="font-bold text-on-surface group-hover:underline cursor-pointer">Echoes</div>
+<div class="text-on-surface-variant text-xs group-hover:text-on-surface transition-colors cursor-pointer">The Modernists</div>
+</div>
+</div>
+</td>
+<td class="p-3">
+<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/20">Catalog Deepening</span>
+</td>
+<td class="p-3 text-right text-on-surface-variant">8</td>
+<td class="p-3 text-right text-on-surface-variant">45.0</td>
+<td class="p-3 text-right text-on-surface-variant">92.1</td>
+<td class="p-3 text-right text-on-surface-variant hidden lg:table-cell">Low</td>
+<td class="p-3 text-right pr-6 font-bold text-on-surface">12.80h</td>
+</tr>
+<!-- Track 4 -->
+<tr class="table-row-hover group border-b border-surface-variant/20 hover:bg-surface-variant/30 transition-colors">
+<td class="p-3 text-center text-on-surface-variant">
+<span class="row-index">4</span>
+<span class="material-symbols-outlined text-primary text-lg play-icon cursor-pointer">play_arrow</span>
+</td>
+<td class="p-3">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface overflow-hidden shrink-0 flex items-center justify-center bg-surface-variant">
+<span class="material-symbols-outlined text-on-surface-variant">album</span>
+</div>
+<div>
+<div class="font-bold text-on-surface group-hover:underline cursor-pointer">Ice Cream Frappe</div>
+<div class="text-on-surface-variant text-xs group-hover:text-on-surface transition-colors cursor-pointer">Frappe Ash</div>
+</div>
+</div>
+</td>
+<td class="p-3">
+<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">Re-engagement</span>
+</td>
+<td class="p-3 text-right text-on-surface-variant">14</td>
+<td class="p-3 text-right text-on-surface-variant">78.5</td>
+<td class="p-3 text-right text-on-surface-variant">130.0</td>
+<td class="p-3 text-right text-on-surface-variant hidden lg:table-cell">Med</td>
+<td class="p-3 text-right pr-6 font-bold text-on-surface">8.50h</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Frappe Ash Pathway Section -->
+<section class="mb-section-stack max-w-4xl">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-on-surface-variant">route</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Re-engagement Pathway: Frappe Ash</h2>
+</div>
+<div class="bg-surface-container-high border border-surface-variant rounded-xl p-8 shadow-[0_8px_24px_rgba(0,0,0,0.3)]">
+<div class="flex items-center gap-6 mb-8">
+<div class="w-20 h-20 rounded-full overflow-hidden border-2 border-primary/50 shrink-0">
+<img alt="Frappe Ash Profile" class="w-full h-full object-cover" data-alt="A portrait of a hip-hop artist." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGESgAm-g74GVF4n20IqsY6tejOnOSzyGvz7XtSUr33MywPmeM35pt95U_ZBHAYRjN855WjBvVfx5e7Kvn-p-iDCF4hK7sDUmNDC9lus2VDUvjgZ_QpDcLNqayHUWQjxnsPRBBpvcrVhKwfsS-wbLgFmxoFMGHI5sahZ6Gw_9TQlRblVuY88npJ84AdrrIz_wN7bxp7dkBTP-x4QRd2KJ52hRXT4cueGoBZxNRmnG8cAXsNSmZSP0K"/>
+</div>
+<div>
+<h3 class="font-headline-lg text-2xl font-bold text-on-surface mb-1">Frappe Ash</h3>
+<p class="text-on-surface-variant font-body-md flex items-center gap-4">
+<span><strong class="text-on-surface">14</strong> Tracks Liked</span>
+<span>•</span>
+<span><strong class="text-on-surface">8.5h</strong> Listened</span>
+</p>
+</div>
+<div class="ml-auto">
+<span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">Re-engagement Catalyst</span>
+</div>
+</div>
+<!-- The Pathway Graph (Simplified horizontal flow) -->
+<div class="flex items-center justify-between relative py-4">
+<!-- Connecting Line behind -->
+<div class="absolute top-1/2 left-0 right-0 h-0.5 bg-surface-variant -translate-y-1/2 z-0 border-t border-dashed border-surface-variant"></div>
+<!-- Node 1 -->
+<div class="relative z-10 flex flex-col items-center gap-3 bg-surface-container-high px-2 group cursor-pointer">
+<div class="w-16 h-16 rounded bg-surface border border-surface-variant overflow-hidden group-hover:border-primary transition-colors">
+<!-- Placeholder for Ice Cream Frappe cover -->
+<div class="w-full h-full flex items-center justify-center bg-surface-variant text-on-surface-variant group-hover:text-primary">
+<span class="material-symbols-outlined">album</span>
+</div>
+</div>
+<div class="text-center">
+<div class="text-sm font-bold text-on-surface group-hover:text-primary transition-colors">Ice Cream Frappe</div>
+<div class="text-[10px] text-on-surface-variant uppercase">Initial Catalyst</div>
+</div>
+</div>
+<!-- Arrow -->
+<div class="relative z-10 bg-surface-container-high px-2 text-surface-variant">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+<!-- Node 2 -->
+<div class="relative z-10 flex flex-col items-center gap-3 bg-surface-container-high px-2 group cursor-pointer">
+<div class="w-16 h-16 rounded bg-surface border border-surface-variant overflow-hidden group-hover:border-primary transition-colors">
+<!-- Placeholder for intermediate track -->
+<div class="w-full h-full flex items-center justify-center bg-surface-variant text-on-surface-variant group-hover:text-primary">
+<span class="material-symbols-outlined">music_note</span>
+</div>
+</div>
+<div class="text-center">
+<div class="text-sm font-bold text-on-surface group-hover:text-primary transition-colors">Flex</div>
+<div class="text-[10px] text-on-surface-variant uppercase">Exploration</div>
+</div>
+</div>
+<!-- Arrow -->
+<div class="relative z-10 bg-surface-container-high px-2 text-surface-variant">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+<!-- Node 3 (Deep Dive) -->
+<div class="relative z-10 flex flex-col items-center gap-3 bg-surface-container-high px-2 group cursor-pointer">
+<div class="w-20 h-20 rounded bg-surface border-2 border-primary overflow-hidden shadow-[0_0_15px_rgba(83,224,118,0.2)] group-hover:scale-105 transition-transform">
+<!-- Placeholder for Junkie cover -->
+<div class="w-full h-full flex items-center justify-center bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-3xl">star</span>
+</div>
+</div>
+<div class="text-center">
+<div class="text-sm font-bold text-primary">Junkie</div>
+<div class="text-[10px] text-primary uppercase font-bold">Deep Catalog Hit</div>
+</div>
+</div>
+</div>
+<div class="mt-8 text-sm text-on-surface-variant italic border-l-2 border-surface-variant pl-4 py-1">
+        "Rediscovered Frappe Ash via 'Ice Cream Frappe' playing on the 'Karam' artist radio (seeded by Panther). This single track led to an 8.5 hour deep dive culminating in 'Junkie'."
+    </div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low border-t border-surface-variant flex justify-between items-center px-8 py-4 w-full z-10 flex-col md:flex-row gap-4">
+<div class="font-metadata text-metadata text-secondary text-center md:text-left">
+                © 2024 Spotify Personal Intelligence Engine. <br/><span class="text-on-surface-variant">Note: This is an independent project and is not affiliated with, authorized, or endorsed by Spotify.</span>
+</div>
+<div class="flex space-x-6">
+<a class="font-metadata text-metadata text-on-surface-variant hover:text-on-surface underline transition-all" href="#">Privacy Policy</a>
+<a class="font-metadata text-metadata text-on-surface-variant hover:text-on-surface underline transition-all" href="#">Terms of Service</a>
+<a class="font-metadata text-metadata text-on-surface-variant hover:text-on-surface underline transition-all" href="#">API Status</a>
+</div>
+</footer>
+</div>
+</body></html>
