@@ -182,39 +182,109 @@
     <!-- VIEW 1: YOUR MUSIC DNA                                              -->
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     <div id="view-overview" class="view active">
-      <!-- Hero -->
-      <section class="relative rounded-2xl overflow-hidden p-8 md:p-12 mb-8 bg-gradient-to-br from-surface-container-highest to-background border border-surface-variant">
-        <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(circle at 80% 20%,rgba(29,185,84,0.12) 0%,transparent 55%)"></div>
-        <div class="relative z-10 max-w-2xl">
-          <h1 class="font-black text-display-hero text-on-surface mb-2">Your Music DNA</h1>
-          <p class="text-xl text-on-surface-variant font-normal">How your listening evolved from 2020 to 2026.</p>
+      <!-- ── HERO ──────────────────────────────────────────────── -->
+      <section class="relative rounded-2xl overflow-hidden p-8 md:p-14 mb-10 bg-gradient-to-br from-surface-container-highest to-background border border-surface-variant">
+        <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(circle at 80% 20%,rgba(29,185,84,0.18) 0%,transparent 55%),radial-gradient(circle at 15% 80%,rgba(83,224,118,0.08) 0%,transparent 45%)"></div>
+        <div class="relative z-10">
+          <p class="text-primary font-bold text-sm uppercase tracking-widest mb-2" id="ov-date-range">2020 → 2026</p>
+          <h1 class="font-black text-display-hero text-on-surface mb-3">Your Music DNA</h1>
+          <p class="text-xl text-on-surface-variant font-normal max-w-xl">A complete story of how your listening evolved — from first plays to 908 hours of music.</p>
         </div>
       </section>
 
-      <!-- KPI Row -->
-      <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="kpi-card">
-          <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Listening</span>
-          <span class="text-4xl font-bold text-on-surface tracking-tight"><span id="kpi-hours">—</span> <span class="text-xl font-normal text-on-surface-variant">hrs</span></span>
+      <!-- ── WRAPPED KPIs ──────────────────────────────────────── -->
+      <section class="mb-10" id="ov-wrapped-kpis">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="kpi-card" id="ov-kpi-hours">
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Listening</span>
+            <span class="text-4xl font-black text-on-surface tracking-tight"><span id="kpi-hours">—</span> <span class="text-xl font-normal text-on-surface-variant">hrs</span></span>
+            <span class="text-xs text-on-surface-variant" id="kpi-date-range">Loading…</span>
+          </div>
+          <div class="kpi-card">
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Artists Heard</span>
+            <span class="text-4xl font-black text-on-surface tracking-tight" id="kpi-artists">—</span>
+          </div>
+          <div class="kpi-card">
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Tracks</span>
+            <span class="text-4xl font-black text-on-surface tracking-tight" id="kpi-tracks">—</span>
+          </div>
+          <div class="kpi-card">
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Projects Explored</span>
+            <span class="text-4xl font-black text-primary tracking-tight" id="kpi-projects">—</span>
+            <span class="text-xs text-on-surface-variant">≥3 unique tracks</span>
+          </div>
         </div>
-        <div class="kpi-card">
-          <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Artists</span>
-          <span class="text-4xl font-bold text-on-surface tracking-tight" id="kpi-artists">—</span>
-        </div>
-        <div class="kpi-card">
-          <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Tracks</span>
-          <span class="text-4xl font-bold text-on-surface tracking-tight" id="kpi-tracks">—</span>
-        </div>
-        <div class="kpi-card">
-          <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Explored Projects</span>
-          <span class="text-4xl font-bold text-primary tracking-tight" id="kpi-projects">—</span>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+          <div class="kpi-card">
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Sessions</span>
+            <span class="text-3xl font-black text-on-surface" id="kpi-sessions">—</span>
+          </div>
+          <div class="kpi-card">
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Most Active Year</span>
+            <span class="text-3xl font-black text-primary" id="kpi-active-year">—</span>
+          </div>
+          <div class="kpi-card">
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Peak Month</span>
+            <span class="text-xl font-black text-on-surface" id="kpi-peak-month">—</span>
+            <span class="text-xs text-on-surface-variant" id="kpi-peak-month-hrs"></span>
+          </div>
+          <div class="kpi-card">
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Longest Streak</span>
+            <span class="text-3xl font-black text-on-surface"><span id="kpi-streak">—</span> <span class="text-base font-normal text-on-surface-variant">days</span></span>
+          </div>
         </div>
       </section>
 
-      <!-- Taste Fingerprint + Listening Evolution -->
-      <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- ── YOUR ERA ──────────────────────────────────────────── -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-black text-on-surface mb-1">Your Listening Eras</h2>
+        <p class="text-on-surface-variant text-sm mb-5">Year by year — how much you listened and who dominated.</p>
+        <div id="ov-era-timeline" class="space-y-3">
+          <div class="skeleton h-20 rounded-xl"></div>
+          <div class="skeleton h-20 rounded-xl"></div>
+          <div class="skeleton h-20 rounded-xl"></div>
+        </div>
+      </section>
+
+      <!-- ── TOP ARTISTS ───────────────────────────────────────── -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-black text-on-surface mb-1">Your Top Artists</h2>
+        <p class="text-on-surface-variant text-sm mb-5">The artists you spent the most hours with — all time.</p>
+        <div id="ov-top-artists" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="skeleton h-36 rounded-xl"></div><div class="skeleton h-36 rounded-xl"></div>
+          <div class="skeleton h-36 rounded-xl"></div><div class="skeleton h-36 rounded-xl"></div>
+          <div class="skeleton h-36 rounded-xl"></div>
+        </div>
+      </section>
+
+      <!-- ── TOP SONGS ─────────────────────────────────────────── -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-black text-on-surface mb-1">Your Most-Played Songs</h2>
+        <p class="text-on-surface-variant text-sm mb-5">Ranked by total listening time.</p>
+        <div id="ov-top-songs" class="space-y-2">
+          <div class="skeleton h-14 rounded-xl"></div><div class="skeleton h-14 rounded-xl"></div>
+          <div class="skeleton h-14 rounded-xl"></div><div class="skeleton h-14 rounded-xl"></div>
+          <div class="skeleton h-14 rounded-xl"></div>
+        </div>
+      </section>
+
+      <!-- ── TOP PROJECTS ──────────────────────────────────────── -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-black text-on-surface mb-1">Your Deepest Projects</h2>
+        <p class="text-on-surface-variant text-sm mb-5">Albums & EPs you spent the most time in.</p>
+        <div id="ov-top-projects" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="skeleton h-28 rounded-xl"></div><div class="skeleton h-28 rounded-xl"></div>
+          <div class="skeleton h-28 rounded-xl"></div>
+        </div>
+      </section>
+
+      <!-- ── TASTE FINGERPRINT + EVOLUTION ────────────────────── -->
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
         <div class="bg-surface-container-high rounded-xl p-6 border border-surface-variant flex flex-col gap-4">
-          <h2 class="text-2xl font-bold text-on-surface">Taste Fingerprint</h2>
+          <div>
+            <h2 class="text-2xl font-bold text-on-surface">Your Listening DNA</h2>
+            <p class="text-xs text-on-surface-variant mt-1">Each dimension is a real analytically-computed metric from your streaming history.</p>
+          </div>
           <div id="radar-chart" class="plotly-container" style="min-height:320px"></div>
           <p id="fingerprint-insight" class="text-sm text-on-surface-variant italic text-center">Loading...</p>
         </div>
@@ -224,16 +294,52 @@
         </div>
       </section>
 
-      <!-- Listening Story -->
-      <section class="bg-surface-container-high rounded-xl p-6 border border-surface-variant mb-8">
-        <h2 class="text-xl font-bold text-on-surface mb-3">Your Listening Story</h2>
-        <p id="listening-story" class="text-on-surface-variant leading-relaxed">Loading…</p>
+      <!-- ── BIGGEST DISCOVERY ─────────────────────────────────── -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-black text-on-surface mb-1">Your Biggest Discovery Catalyst</h2>
+        <p class="text-on-surface-variant text-sm mb-5">The single song that unlocked the most listening downstream — ranked #1 by future hours.</p>
+        <div id="ov-top-catalyst" class="skeleton h-48 rounded-xl"></div>
       </section>
 
-      <!-- Recent Catalysts -->
-      <section>
-        <h2 class="text-xl font-bold text-on-surface mb-4">Recent Discovery Catalysts</h2>
-        <div id="recent-catalysts" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      <!-- ── DEEPEST DIVES ──────────────────────────────────────── -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-black text-on-surface mb-1">Artists You Went Deepest Into</h2>
+        <p class="text-on-surface-variant text-sm mb-5">Measured by catalog depth — unique tracks heard per project.</p>
+        <div id="ov-deepest-dives" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="skeleton h-24 rounded-xl"></div><div class="skeleton h-24 rounded-xl"></div>
+          <div class="skeleton h-24 rounded-xl"></div>
+        </div>
+      </section>
+
+      <!-- ── MOST REPEATED ─────────────────────────────────────── -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-black text-on-surface mb-1">Your Most Replayed Songs</h2>
+        <p class="text-on-surface-variant text-sm mb-5">Ranked by total play count — songs you returned to most.</p>
+        <div id="ov-most-replayed" class="space-y-2">
+          <div class="skeleton h-12 rounded-xl"></div><div class="skeleton h-12 rounded-xl"></div>
+          <div class="skeleton h-12 rounded-xl"></div>
+        </div>
+      </section>
+
+      <!-- ── REVIVALS ──────────────────────────────────────────── -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-black text-on-surface mb-1">Your Biggest Revivals</h2>
+        <p class="text-on-surface-variant text-sm mb-5">Artists who returned to your listening after meaningful inactivity.</p>
+        <div id="ov-revivals" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="skeleton h-20 rounded-xl"></div><div class="skeleton h-20 rounded-xl"></div>
+          <div class="skeleton h-20 rounded-xl"></div>
+        </div>
+      </section>
+
+      <!-- ── STORY END ─────────────────────────────────────────── -->
+      <section class="bg-gradient-to-br from-primary/10 to-surface-container-high rounded-2xl border border-primary/20 p-8 mb-6">
+        <h2 class="text-2xl font-black text-on-surface mb-1">Your Listening Story</h2>
+        <p class="text-on-surface-variant text-xs mb-5">Data-backed. No fabrication.</p>
+        <div id="ov-story" class="space-y-3">
+          <div class="skeleton h-6 rounded w-3/4"></div>
+          <div class="skeleton h-6 rounded w-full"></div>
+          <div class="skeleton h-6 rounded w-2/3"></div>
+        </div>
       </section>
     </div>
 
@@ -259,34 +365,19 @@
         <!-- Summary KPIs -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" id="catalyst-summary-kpis"></div>
 
-        <!-- Featured: Panther Pathway -->
+        <!-- Featured: Dynamic #1 Catalyst -->
         <div class="bg-surface-container-high rounded-xl border border-surface-variant overflow-hidden mb-8">
           <div class="p-6 border-b border-surface-variant flex items-center gap-3">
             <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
               <span class="material-symbols-outlined text-primary text-sm">explore</span>
             </div>
-            <div>
-              <h2 class="text-lg font-bold text-on-surface">Panther — Discovery Pathway</h2>
-              <p class="text-xs text-on-surface-variant">Catalog Deepening story from <span class="text-primary font-medium">Aa Jao</span></p>
+            <div id="featured-catalyst-header">
+              <h2 class="text-lg font-bold text-on-surface">#1 Discovery Catalyst</h2>
+              <p class="text-xs text-on-surface-variant">Your highest-impact discovery moment — ranked by hours unlocked</p>
             </div>
           </div>
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-0">
-            <div class="p-6 border-r border-surface-variant">
-              <div class="space-y-4" id="panther-pathway">
-                <div class="skeleton h-16 rounded-xl w-full"></div>
-                <div class="skeleton h-16 rounded-xl w-full"></div>
-                <div class="skeleton h-16 rounded-xl w-full"></div>
-                <div class="skeleton h-16 rounded-xl w-full"></div>
-              </div>
-            </div>
-            <div class="p-6">
-              <h3 class="text-sm font-semibold text-on-surface-variant uppercase tracking-wider mb-4">Frappe Ash — Re-engagement</h3>
-              <div id="frappe-pathway" class="space-y-3">
-                <div class="skeleton h-12 rounded-xl w-full"></div>
-                <div class="skeleton h-12 rounded-xl w-full"></div>
-                <div class="skeleton h-12 rounded-xl w-full"></div>
-              </div>
-            </div>
+          <div id="featured-catalyst-panel" class="p-6">
+            <div class="skeleton h-40 rounded-xl w-full"></div>
           </div>
         </div>
 
@@ -411,17 +502,33 @@
         <!-- KPIs -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" id="album-kpis"></div>
 
-        <!-- Featured Project + Grid -->
+        <!-- Featured Project -->
         <div id="featured-project" class="bg-surface-container-high rounded-xl border border-surface-variant p-6 mb-8">
           <div class="skeleton h-48 rounded-xl w-full"></div>
         </div>
 
-        <h2 class="text-xl font-bold text-on-surface mb-4">Recently Explored <span class="text-on-surface-variant font-normal text-base ml-2">Top by plays</span></h2>
-        <div id="album-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-        <div class="mt-4 flex justify-center gap-3">
-          <button id="album-prev-btn" class="px-4 py-2 text-sm border border-surface-variant rounded-lg text-on-surface-variant hover:bg-surface-container-high" onclick="albumPage(-1)">Previous</button>
-          <span id="album-page-label" class="flex items-center text-sm text-on-surface-variant">Page 1</span>
-          <button id="album-next-btn" class="px-4 py-2 text-sm border border-surface-variant rounded-lg text-on-surface-variant hover:bg-surface-container-high" onclick="albumPage(1)">Next</button>
+        <h2 class="text-xl font-bold text-on-surface mb-4">All Projects <span class="text-on-surface-variant font-normal text-base ml-2">Top by plays — click to explore</span></h2>
+
+        <!-- Two-column: Grid + Detail Panel -->
+        <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+          <!-- Grid -->
+          <div class="xl:col-span-3">
+            <div id="album-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+            <div class="mt-4 flex justify-center gap-3">
+              <button id="album-prev-btn" class="px-4 py-2 text-sm border border-surface-variant rounded-lg text-on-surface-variant hover:bg-surface-container-high" onclick="albumPage(-1)">Previous</button>
+              <span id="album-page-label" class="flex items-center text-sm text-on-surface-variant">Page 1</span>
+              <button id="album-next-btn" class="px-4 py-2 text-sm border border-surface-variant rounded-lg text-on-surface-variant hover:bg-surface-container-high" onclick="albumPage(1)">Next</button>
+            </div>
+          </div>
+          <!-- Detail Panel -->
+          <div class="xl:col-span-2">
+            <div id="album-detail-panel" class="sticky top-20 bg-surface-container-high rounded-xl border border-surface-variant overflow-hidden">
+              <div class="p-5 border-b border-surface-variant">
+                <p class="text-sm text-on-surface-variant">← Click any project to see its full track list</p>
+              </div>
+              <div id="album-detail-content" class="p-5"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -119,6 +119,113 @@ def get_overview_dna():
         "quality_report": quality_report
     }
 
+@router.get("/overview/wrapped")
+def get_overview_wrapped():
+    """Spotify Wrapped-style extended KPIs: most active month, longest streak, per-year era data, top songs, top projects."""
+    music = df_canonical[df_canonical["content_type"] == "music"].copy()
+    music["timestamp_local"] = pd.to_datetime(music["timestamp_local"])
+
+    # Most active month
+    if len(music) > 0:
+        monthly = music.groupby(music["timestamp_local"].dt.to_period("M"))["minutes_played"].sum()
+        peak_period = monthly.idxmax()
+        most_active_month = str(peak_period)
+        most_active_month_hours = round(float(monthly[peak_period] / 60.0), 1)
+        most_active_year = int(music.groupby("year")["minutes_played"].sum().idxmax())
+    else:
+        most_active_month = ""
+        most_active_month_hours = 0.0
+        most_active_year = 0
+
+    # Longest listening streak (consecutive calendar days)
+    unique_dates = sorted(pd.to_datetime(df_canonical["date"].dropna().unique()))
+    max_streak = 1
+    current = 1
+    for i in range(1, len(unique_dates)):
+        if (unique_dates[i] - unique_dates[i-1]).days == 1:
+            current += 1
+            max_streak = max(max_streak, current)
+        else:
+            current = 1
+
+    # Per-year era breakdown (dominant artist, total hours, unique artists, unique tracks)
+    eras = []
+    for yr, grp in music.groupby("year"):
+        top_art = grp.groupby("artist_name")["minutes_played"].sum().sort_values(ascending=False)
+        dominant_artist = top_art.index[0] if len(top_art) > 0 else ""
+        dominant_hours = round(float(top_art.iloc[0] / 60.0), 1) if len(top_art) > 0 else 0.0
+        eras.append({
+            "year": int(yr),
+            "listening_hours": round(float(grp["minutes_played"].sum() / 60.0), 1),
+            "plays": int(len(grp)),
+            "unique_artists": int(grp["artist_id"].nunique()),
+            "unique_tracks": int(grp["track_id"].nunique()),
+            "dominant_artist": dominant_artist,
+            "dominant_artist_hours": dominant_hours,
+        })
+
+    # Top 10 songs by total minutes
+    top_songs = df_songs.sort_values("total_minutes", ascending=False).head(10)[
+        ["track_id", "track_name", "artist_name", "project_name", "total_plays", "total_minutes",
+         "skip_rate", "raw_lifespan_days", "active_lifespan_days", "lifecycle_category"]
+    ].to_dict(orient="records")
+
+    # Top 10 projects (explored, sorted by hours)
+    top_projects = df_projects[df_projects["is_explored"]].sort_values("total_hours", ascending=False).head(10)[
+        ["project_id", "project_name", "artist_id", "artist_name", "tracks_heard",
+         "total_hours", "total_plays", "listening_style", "top_song_name"]
+    ].to_dict(orient="records")
+
+    # Top 10 artists by hours (with key stats)
+    top_artists_wrapped = df_artists.sort_values("total_hours", ascending=False).head(10)[
+        ["artist_id", "artist_name", "total_hours", "total_plays", "unique_tracks",
+         "unique_projects", "lifecycle_stage", "peak_year"]
+    ].to_dict(orient="records")
+
+    # Most replayed songs (by plays) — different metric from top by minutes
+    top_replayed = df_songs.sort_values("total_plays", ascending=False).head(10)[
+        ["track_id", "track_name", "artist_name", "total_plays", "total_minutes",
+         "active_lifespan_days", "lifecycle_category"]
+    ].to_dict(orient="records")
+
+    # Top revival artists (highest revival_count with meaningful listening)
+    revival_artists = df_artists[df_artists["revival_count"] > 0].sort_values(
+        ["revival_count", "total_hours"], ascending=[False, False]
+    ).head(6)[["artist_id", "artist_name", "revival_count", "total_hours",
+               "lifecycle_stage", "first_heard_utc", "last_heard_utc"]].to_dict(orient="records")
+
+    # Data-backed story statements
+    story = []
+    if eras:
+        peak_era = max(eras, key=lambda e: e["listening_hours"])
+        story.append(f"Your biggest listening year was {peak_era['year']} with {peak_era['listening_hours']:.1f} hours — "
+                     f"dominated by {peak_era['dominant_artist']}.")
+    if len(df_projects) > 0:
+        explored_count = int(df_projects["is_explored"].sum())
+        story.append(f"You explored {explored_count} projects deeply enough to qualify as Explored (≥3 unique tracks heard).")
+    if max_streak > 1:
+        story.append(f"Your longest listening streak was {max_streak} consecutive days.")
+    if revival_artists:
+        top_revival = revival_artists[0]
+        story.append(f"{top_revival['artist_name']} returned to your listening {top_revival['revival_count']} times after periods of inactivity.")
+    if top_songs:
+        story.append(f"Your most-played song was '{top_songs[0]['track_name']}' by {top_songs[0]['artist_name']} "
+                     f"({int(top_songs[0]['total_plays'])} plays, {int(top_songs[0]['total_minutes'])} minutes).")
+
+    return {
+        "most_active_month": most_active_month,
+        "most_active_month_hours": most_active_month_hours,
+        "most_active_year": most_active_year,
+        "longest_streak_days": max_streak,
+        "yearly_eras": eras,
+        "top_songs": top_songs,
+        "top_projects": top_projects,
+        "top_artists": top_artists_wrapped,
+        "top_replayed": top_replayed,
+        "revival_artists": revival_artists,
+        "story_statements": story,
+    }
+
 @router.get("/overview/taste-fingerprint")
 def get_taste_fingerprint():
     """Taste fingerprint dimensions."""
@@ -371,6 +478,33 @@ def get_artist_discovery_pathway(artist_name: str):
         "total_catalyst_events": len(pathway_events),
         "pathway": pathway_events
     }
+
+@router.get("/discovery/top-catalyst")
+def get_top_catalyst():
+    """Return the #1 ranked discovery catalyst dynamically from the rankings table."""
+    if len(df_catalyst_rankings) == 0:
+        raise HTTPException(status_code=404, detail="No discovery rankings available")
+    # Sort by rank column if it exists, else by future_hours_unlocked
+    if "rank" in df_catalyst_rankings.columns:
+        top = df_catalyst_rankings.sort_values("rank").iloc[0]
+    else:
+        hrs_col = "future_hours_unlocked" if "future_hours_unlocked" in df_catalyst_rankings.columns else "hours_unlocked"
+        top = df_catalyst_rankings.sort_values(hrs_col, ascending=False).iloc[0]
+    return {"catalyst": top.to_dict()}
+
+@router.get("/discovery/catalyst/{catalyst_index}")
+def get_catalyst_detail(catalyst_index: int):
+    """Return full detail for a specific catalyst by its catalyst_index."""
+    if "catalyst_index" in df_catalyst_rankings.columns:
+        row = df_catalyst_rankings[df_catalyst_rankings["catalyst_index"] == catalyst_index]
+    else:
+        if catalyst_index < 0 or catalyst_index >= len(df_catalyst_rankings):
+            raise HTTPException(status_code=404, detail="Catalyst not found")
+        row = df_catalyst_rankings.iloc[[catalyst_index]]
+    if len(row) == 0:
+        raise HTTPException(status_code=404, detail="Catalyst not found")
+    return {"catalyst": row.iloc[0].to_dict()}
+
 
 @router.get("/network")
 def get_network(min_weight: int = Query(2, ge=1, le=20)):

@@ -146,18 +146,19 @@ function showPrivacy() { document.getElementById('privacy-modal').classList.remo
 ═══════════════════════════════════════════════════════════════════════════ */
 async function loadOverview() {
   try {
-    const [ov, tf, yr, cats] = await Promise.all([
+    const [ov, tf, yr] = await Promise.all([
       apiFetch('/api/overview'),
       apiFetch('/api/overview/taste-fingerprint'),
-      apiFetch('/api/overview/yearly-evolution'),
-      apiFetch('/api/discovery/catalysts?limit=3')
+      apiFetch('/api/overview/yearly-evolution')
     ]);
 
     const kpis = ov.kpis || ov;
-    document.getElementById('kpi-hours').textContent = fmtHrs(kpis.total_hours);
-    document.getElementById('kpi-artists').textContent = fmt(kpis.unique_artists);
-    document.getElementById('kpi-tracks').textContent = fmt(kpis.unique_tracks);
-    document.getElementById('kpi-projects').textContent = fmt(kpis.explored_projects_ge3 || kpis.explored_projects);
+    const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+
+    setEl('kpi-hours', fmtHrs(kpis.total_hours));
+    setEl('kpi-artists', fmt(kpis.unique_artists));
+    setEl('kpi-tracks', fmt(kpis.unique_tracks));
+    setEl('kpi-projects', fmt(kpis.explored_projects_ge3 || kpis.explored_projects));
 
     // Taste Fingerprint Radar
     const fingerprint = tf.fingerprint || tf || ov.taste_fingerprint || {};
@@ -184,10 +185,8 @@ async function loadOverview() {
       }, plotlyConfig);
 
       const topDims = dims.map((d, i) => ({ d, v: vals[i] })).sort((a, b) => b.v - a.v);
-      const high = topDims[0];
-      const low = topDims[topDims.length - 1];
-      document.getElementById('fingerprint-insight').textContent =
-        `Highest affinity: ${high.d} (${high.v}/100). Lowest: ${low.d} (${low.v}/100).`;
+      setEl('fingerprint-insight',
+        `Highest affinity: ${topDims[0].d} (${topDims[0].v}/100). Lowest: ${topDims[topDims.length-1].d} (${topDims[topDims.length-1].v}/100).`);
     }
 
     // Yearly Evolution Bar Chart
@@ -208,37 +207,181 @@ async function loadOverview() {
       bargap: 0.3
     }, plotlyConfig);
 
-    // Listening story
-    const storyEl = document.getElementById('listening-story');
-    if (ov.listening_story) {
-      storyEl.textContent = ov.listening_story;
-    } else if (yrList.length > 0) {
-      const peakYear = yrList.reduce((a, b) => ((a.listening_hours || a.hours || 0) > (b.listening_hours || b.hours || 0) ? a : b), yrList[0]);
-      storyEl.textContent = `Across 6 years of streaming history (2020–2026), your listening peaked in ${peakYear.year} with ${fmtHrs(peakYear.listening_hours || peakYear.hours)} hours. You explored ${fmt(kpis.unique_artists)} unique artists across ${fmt(kpis.unique_tracks)} tracks, deeply diving into ${fmt(kpis.explored_projects_ge3 || kpis.explored_projects)} distinct albums/EPs (>=3 unique tracks heard).`;
-    }
 
-    // Recent Catalysts
-    const recentEl = document.getElementById('recent-catalysts');
-    const topCats = (cats.catalysts || []).slice(0, 3);
-    if (topCats.length === 0) {
-      recentEl.innerHTML = '<p class="text-on-surface-variant text-sm">No discovery catalysts available.</p>';
-    } else {
-      recentEl.innerHTML = topCats.map(c => `
-        <div class="bg-surface-container-high rounded-xl border border-surface-variant p-4 flex items-center gap-4 cursor-pointer hover:border-primary/50 transition-colors" onclick="navigate('discovery')">
-          <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center flex-shrink-0">
-            <span class="material-symbols-outlined text-primary">music_note</span>
-          </div>
+    // Safe: clear the "Loading..." stub under total listening
+    const kpiDateEl = document.getElementById('kpi-date-range');
+    if (kpiDateEl) kpiDateEl.textContent = '';
+
+  } catch (e) {
+    console.error('Error loading overview base:', e);
+  }
+
+  // Wrapped: populate all ov-* sections + lower KPIs from /api/overview/wrapped
+  try {
+    const w = await apiFetch('/api/overview/wrapped');
+    const setEl2 = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+
+    setEl2('kpi-sessions', fmt(w.total_sessions || 0));
+    setEl2('kpi-active-year', w.most_active_year || '—');
+    setEl2('kpi-peak-month', w.most_active_month || '—');
+    setEl2('kpi-peak-month-hrs', w.most_active_month_hours ? `${w.most_active_month_hours}h` : '');
+    setEl2('kpi-streak', fmt(w.longest_streak_days || 0));
+
+    // Era Timeline
+    const eraEl = document.getElementById('ov-era-timeline');
+    if (eraEl && w.yearly_eras && w.yearly_eras.length > 0) {
+      const maxH = Math.max(...w.yearly_eras.map(e => e.listening_hours));
+      eraEl.innerHTML = w.yearly_eras.map(era => `
+        <div class="flex items-center gap-4 p-3 rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors">
+          <div class="w-14 text-right font-bold text-primary text-lg flex-shrink-0">${era.year}</div>
           <div class="flex-1 min-w-0">
-            <p class="font-semibold text-on-surface text-sm truncate">${c.catalyst_track_name}</p>
-            <p class="text-xs text-on-surface-variant truncate">${c.catalyst_artist_name}</p>
+            <div class="h-2 rounded-full bg-primary mb-1" style="width:${Math.max(4, Math.round((era.listening_hours / maxH) * 100))}%"></div>
+            <div class="flex flex-wrap gap-3 text-xs text-on-surface-variant">
+              <span>${fmtHrs(era.listening_hours)} hrs</span>
+              <span>${fmt(era.plays)} plays</span>
+              <span>${fmt(era.unique_artists)} artists</span>
+              ${era.dominant_artist ? `<span class="text-on-surface font-medium">\u2191 ${era.dominant_artist}</span>` : ''}
+            </div>
           </div>
-          ${typeBadge(c.discovery_type)}
+          <div class="text-xs text-on-surface-variant flex-shrink-0">${fmt(era.unique_tracks)} tracks</div>
         </div>`).join('');
     }
+
+    // Top Artists grid
+    const taEl = document.getElementById('ov-top-artists');
+    if (taEl && w.top_artists && w.top_artists.length > 0) {
+      taEl.innerHTML = w.top_artists.slice(0, 10).map((a, i) => `
+        <div class="bg-surface-container rounded-xl p-4 flex flex-col gap-2 hover:bg-surface-container-high transition-colors cursor-pointer" onclick="navigate('artists')">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-primary">#${i + 1}</span>
+            <span class="text-xs text-on-surface-variant">${a.lifecycle_stage || ''}</span>
+          </div>
+          <p class="font-semibold text-on-surface text-sm truncate">${a.artist_name}</p>
+          <div class="flex justify-between text-xs text-on-surface-variant">
+            <span>${fmtHrs(a.total_hours)} hrs</span>
+            <span>${fmt(a.total_plays)} plays</span>
+          </div>
+        </div>`).join('');
+    }
+
+    // Top Songs list
+    const tsEl = document.getElementById('ov-top-songs');
+    if (tsEl && w.top_songs && w.top_songs.length > 0) {
+      tsEl.innerHTML = w.top_songs.slice(0, 10).map((s, i) => `
+        <div class="flex items-center gap-4 p-3 rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors">
+          <span class="text-sm font-bold text-primary w-6 text-right flex-shrink-0">${i + 1}</span>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-on-surface text-sm truncate">${s.track_name}</p>
+            <p class="text-xs text-on-surface-variant truncate">${s.artist_name}${s.project_name ? ' · ' + s.project_name : ''}</p>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <p class="text-sm font-bold text-on-surface">${fmt(s.total_plays)} plays</p>
+            <p class="text-xs text-on-surface-variant">${fmtHrs(s.total_minutes / 60)} hrs</p>
+          </div>
+          ${catBadge(s.lifecycle_category)}
+        </div>`).join('');
+    }
+
+    // Top Projects grid
+    const tpEl = document.getElementById('ov-top-projects');
+    if (tpEl && w.top_projects && w.top_projects.length > 0) {
+      tpEl.innerHTML = w.top_projects.slice(0, 6).map(p => `
+        <div class="bg-surface-container rounded-xl p-4 hover:bg-surface-container-high transition-colors cursor-pointer" onclick="navigate('albums')">
+          <p class="font-semibold text-on-surface text-sm truncate mb-1">${p.project_name}</p>
+          <p class="text-xs text-on-surface-variant truncate mb-3">${p.artist_name}</p>
+          <div class="flex justify-between text-xs">
+            <span class="text-primary font-bold">${fmtHrs(p.total_hours)} hrs</span>
+            <span class="text-on-surface-variant">${fmt(p.tracks_heard)} tracks</span>
+          </div>
+          ${p.top_song_name ? `<p class="text-xs text-on-surface-variant mt-2 truncate">\u2191 ${p.top_song_name}</p>` : ''}
+        </div>`).join('');
+    }
+
+    // Top Catalyst hero card
+    const tcEl = document.getElementById('ov-top-catalyst');
+    if (tcEl) {
+      try {
+        const tc = await apiFetch('/api/discovery/top-catalyst');
+        if (tc && tc.catalyst_artist_name) {
+          tcEl.innerHTML = `
+            <div class="bg-gradient-to-br from-primary/20 to-transparent border border-primary/30 rounded-xl p-6 flex items-start gap-6">
+              <div class="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs uppercase tracking-widest text-primary font-bold mb-1">#1 Discovery Catalyst</p>
+                <p class="text-2xl font-black text-on-surface mb-1">${tc.catalyst_artist_name}</p>
+                <p class="text-sm text-on-surface-variant mb-3">${tc.catalyst_track_name || ''}</p>
+                <div class="flex flex-wrap gap-4 text-xs text-on-surface-variant">
+                  <span>${fmt(tc.tracks_7d || 0)} new tracks in 7 days</span>
+                  <span>${fmt(tc.minutes_30d || 0)} min over 30 days</span>
+                </div>
+              </div>
+            </div>`;
+        }
+      } catch (_) {}
+    }
+
+    // Deepest Dives (artists by hours)
+    const ddEl = document.getElementById('ov-deepest-dives');
+    if (ddEl && w.top_artists && w.top_artists.length > 0) {
+      ddEl.innerHTML = w.top_artists.slice(0, 6).map((a, i) => `
+        <div class="bg-surface-container rounded-xl p-4 hover:bg-surface-container-high transition-colors cursor-pointer" onclick="navigate('artists')">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-primary">#${i + 1}</span>
+            <span class="text-xs text-on-surface-variant">${a.unique_projects || 0} projects</span>
+          </div>
+          <p class="font-semibold text-on-surface text-sm truncate mb-1">${a.artist_name}</p>
+          <div class="flex justify-between text-xs text-on-surface-variant">
+            <span>${fmtHrs(a.total_hours)} hrs</span>
+            <span>${fmt(a.unique_tracks || 0)} tracks</span>
+          </div>
+        </div>`).join('');
+    }
+
+    // Most Replayed songs
+    const mrEl = document.getElementById('ov-most-replayed');
+    if (mrEl && w.top_replayed && w.top_replayed.length > 0) {
+      mrEl.innerHTML = w.top_replayed.slice(0, 8).map((s, i) => `
+        <div class="flex items-center gap-4 p-3 rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors">
+          <span class="text-sm font-bold text-primary w-6 text-right flex-shrink-0">${i + 1}</span>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-on-surface text-sm truncate">${s.track_name}</p>
+            <p class="text-xs text-on-surface-variant truncate">${s.artist_name}</p>
+          </div>
+          <span class="text-sm font-bold text-on-surface flex-shrink-0">${fmt(s.total_plays)}×</span>
+        </div>`).join('');
+    }
+
+    // Revival artists
+    const rvEl = document.getElementById('ov-revivals');
+    if (rvEl && w.revival_artists && w.revival_artists.length > 0) {
+      rvEl.innerHTML = w.revival_artists.map(a => `
+        <div class="bg-surface-container rounded-xl p-4 hover:bg-surface-container-high transition-colors cursor-pointer" onclick="navigate('artists')">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-primary">${fmt(a.revival_count)}× revivals</span>
+            <span class="text-xs text-on-surface-variant">${a.lifecycle_stage || ''}</span>
+          </div>
+          <p class="font-semibold text-on-surface text-sm truncate mb-1">${a.artist_name}</p>
+          <p class="text-xs text-on-surface-variant">${fmtHrs(a.total_hours)} hrs total</p>
+        </div>`).join('');
+    }
+
+    // Listening Story statements
+    const stEl = document.getElementById('ov-story');
+    if (stEl && w.story_statements && w.story_statements.length > 0) {
+      stEl.innerHTML = w.story_statements.map(s => `
+        <div class="flex items-start gap-3 p-4 bg-surface-container rounded-xl">
+          <span class="material-symbols-outlined text-primary flex-shrink-0 mt-0.5">auto_stories</span>
+          <p class="text-sm text-on-surface leading-relaxed">${s}</p>
+        </div>`).join('');
+    }
+
   } catch (e) {
-    console.error('Error loading overview:', e);
+    console.error('Error loading overview wrapped:', e);
   }
 }
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    VIEW 2: DISCOVERY CATALYSTS
@@ -251,16 +394,76 @@ let catalystSearch = '';
 
 async function loadDiscovery() {
   try {
-    const summary = await apiFetch('/api/discovery/summary');
+    const [summary, topCatData] = await Promise.all([
+      apiFetch('/api/discovery/summary'),
+      apiFetch('/api/discovery/top-catalyst').catch(() => null)
+    ]);
+
     const kpisEl = document.getElementById('catalyst-summary-kpis');
     kpisEl.innerHTML = `
       <div class="kpi-card"><span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Total Catalysts</span><span class="text-3xl font-bold text-on-surface">${fmt(summary.meaningful_catalysts || summary.total_catalysts)}</span><span class="text-xs text-on-surface-variant">meaningful expansions</span></div>
       <div class="kpi-card"><span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Artist Discoveries</span><span class="text-3xl font-bold text-primary">${fmt(summary.artist_discoveries)}</span></div>
       <div class="kpi-card"><span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Project Discoveries</span><span class="text-3xl font-bold text-on-surface">${fmt(summary.project_discoveries)}</span></div>
-      <div class="kpi-card"><span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Total Hours Unlocked</span><span class="text-3xl font-bold text-on-surface">${fmt(summary.total_downstream_hours, 1)}<span class="text-base font-normal text-on-surface-variant ml-1">hrs</span></span></div>`;
+      <div class="kpi-card"><span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Hours Unlocked</span><span class="text-3xl font-bold text-on-surface">${fmt(summary.total_downstream_hours, 1)}<span class="text-base font-normal text-on-surface-variant ml-1">hrs</span></span></div>`;
 
-    await loadPantherPathway();
-    await loadFrappePathway();
+    // Dynamic #1 featured catalyst
+    const featuredPanel = document.getElementById('featured-catalyst-panel');
+    const featuredHeader = document.getElementById('featured-catalyst-header');
+    if (topCatData && topCatData.catalyst) {
+      const c = topCatData.catalyst;
+      if (featuredHeader) {
+        featuredHeader.innerHTML = `
+          <h2 class="text-lg font-bold text-on-surface">#1 Discovery Catalyst — ${c.catalyst_artist_name || ''}</h2>
+          <p class="text-xs text-on-surface-variant">Ranked #1 by future hours unlocked • ${typeBadge(c.discovery_type)}</p>`;
+      }
+      if (featuredPanel) {
+        featuredPanel.innerHTML = `
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div class="pathway-step">
+                <div class="pathway-dot"><span class="material-symbols-outlined text-primary text-sm">music_note</span></div>
+                <div class="bg-surface-container rounded-xl p-4 flex-1 border border-surface-variant">
+                  <p class="font-semibold text-on-surface text-sm">${c.catalyst_track_name}</p>
+                  <p class="text-xs text-on-surface-variant">Catalyst song — ${c.catalyst_artist_name}</p>
+                </div>
+              </div>
+              <div class="pathway-step">
+                <div class="pathway-dot"><span class="material-symbols-outlined text-primary text-sm">schedule</span></div>
+                <div class="bg-surface-container rounded-xl p-4 flex-1 border border-surface-variant">
+                  <p class="font-semibold text-on-surface text-sm">${fmt(c.max_tracks_added_7d)} New Tracks in 7 Days</p>
+                  <p class="text-xs text-on-surface-variant">${fmt(c.max_minutes_added_7d, 0)} minutes added</p>
+                </div>
+              </div>
+              <div class="pathway-step">
+                <div class="pathway-dot"><span class="material-symbols-outlined text-primary text-sm">event</span></div>
+                <div class="bg-surface-container rounded-xl p-4 flex-1 border border-surface-variant">
+                  <p class="font-semibold text-on-surface text-sm">${fmt(c.max_minutes_30d, 0)} min over 30 Days</p>
+                  <p class="text-xs text-on-surface-variant">${fmt(c.max_minutes_90d, 0)} min over 90 days</p>
+                </div>
+              </div>
+              <div class="pathway-step">
+                <div class="pathway-dot bg-primary/20 border-2 border-primary"><span class="material-symbols-outlined text-primary text-sm">sync</span></div>
+                <div class="bg-primary/10 rounded-xl p-4 flex-1 border border-primary/30">
+                  <p class="font-black text-primary text-2xl">${fmtHrs(c.future_hours_unlocked)}h</p>
+                  <p class="text-xs text-on-surface-variant">Total Downstream Hours Unlocked</p>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <h3 class="text-sm font-semibold text-on-surface-variant uppercase tracking-wider">Discovery Stats</h3>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="bg-surface-container rounded-xl p-3"><p class="text-xs text-on-surface-variant">Type</p><p class="font-bold text-on-surface text-sm">${c.discovery_type || '—'}</p></div>
+                <div class="bg-surface-container rounded-xl p-3"><p class="text-xs text-on-surface-variant">7D Tracks</p><p class="font-bold text-on-surface text-sm">${fmt(c.max_tracks_added_7d)}</p></div>
+                <div class="bg-surface-container rounded-xl p-3"><p class="text-xs text-on-surface-variant">30D Mins</p><p class="font-bold text-on-surface text-sm">${fmt(c.max_minutes_30d, 0)}</p></div>
+                <div class="bg-surface-container rounded-xl p-3"><p class="text-xs text-on-surface-variant">90D Mins</p><p class="font-bold text-on-surface text-sm">${fmt(c.max_minutes_90d, 0)}</p></div>
+              </div>
+            </div>
+          </div>`;
+      }
+    } else if (featuredPanel) {
+      featuredPanel.innerHTML = '<p class="text-on-surface-variant text-sm">No discovery ranking data available.</p>';
+    }
+
     await fetchCatalysts();
 
     document.querySelectorAll('[data-dfilter]').forEach(btn => {
@@ -293,94 +496,7 @@ async function loadDiscovery() {
   }
 }
 
-async function loadPantherPathway() {
-  const data = await apiFetch('/api/discovery/catalysts?limit=500');
-  const panther = (data.catalysts || []).find(c =>
-    c.catalyst_artist_name?.toLowerCase().includes('panther') &&
-    c.catalyst_track_name?.toLowerCase().includes('aa jao')
-  );
-  const el = document.getElementById('panther-pathway');
-  if (!panther) {
-    el.innerHTML = '<p class="text-on-surface-variant text-sm">Panther pathway data loaded from catalog deepening analysis.</p>';
-    return;
-  }
-
-  el.innerHTML = `
-    <div class="pathway-step">
-      <div class="pathway-dot"><span class="material-symbols-outlined text-primary text-sm">music_note</span></div>
-      <div class="bg-surface-container rounded-xl p-4 flex-1 border border-surface-variant hover:border-primary/40 transition-colors">
-        <div class="flex items-center justify-between">
-          <div><p class="font-semibold text-on-surface text-sm">${fmt(panther.max_tracks_added_7d)} New Tracks Discovered</p><p class="text-xs text-on-surface-variant">Initial catalog exploration</p></div>
-          <span class="material-symbols-outlined text-on-surface-variant text-sm">chevron_right</span>
-        </div>
-      </div>
-    </div>
-    <div class="pathway-step">
-      <div class="pathway-dot"><span class="material-symbols-outlined text-primary text-sm">schedule</span></div>
-      <div class="bg-surface-container rounded-xl p-4 flex-1 border border-surface-variant hover:border-primary/40 transition-colors">
-        <div class="flex items-center justify-between">
-          <div><p class="font-semibold text-on-surface text-sm">${fmt(panther.max_minutes_added_7d, 1)} <span class="text-on-surface-variant font-normal">min</span></p><p class="text-xs text-on-surface-variant">First 7 Days</p></div>
-          <span class="material-symbols-outlined text-on-surface-variant text-sm">chevron_right</span>
-        </div>
-      </div>
-    </div>
-    <div class="pathway-step">
-      <div class="pathway-dot"><span class="material-symbols-outlined text-primary text-sm">event</span></div>
-      <div class="bg-surface-container rounded-xl p-4 flex-1 border border-surface-variant hover:border-primary/40 transition-colors">
-        <div class="flex items-center justify-between">
-          <div><p class="font-semibold text-on-surface text-sm">${fmt(panther.max_minutes_30d, 1)} <span class="text-on-surface-variant font-normal">min</span></p><p class="text-xs text-on-surface-variant">Over 30 Days</p></div>
-          <span class="material-symbols-outlined text-on-surface-variant text-sm">chevron_right</span>
-        </div>
-      </div>
-    </div>
-    <div class="pathway-step">
-      <div class="pathway-dot bg-primary/20 border-2 border-primary"><span class="material-symbols-outlined text-primary text-sm">sync</span></div>
-      <div class="bg-primary/10 rounded-xl p-4 flex-1 border border-primary/30">
-        <div class="flex items-center justify-between">
-          <div><p class="font-black text-primary text-lg">${fmtHrs(panther.future_hours_unlocked)}h</p><p class="text-xs text-on-surface-variant">Total Downstream Hours Unlocked</p></div>
-        </div>
-      </div>
-    </div>`;
-}
-
-async function loadFrappePathway() {
-  const data = await apiFetch('/api/discovery/catalysts?limit=500');
-  const frappeCats = (data.catalysts || []).filter(c =>
-    c.catalyst_artist_name?.toLowerCase().includes('frappe')
-  ).sort((a, b) => (b.future_hours_unlocked || 0) - (a.future_hours_unlocked || 0));
-
-  const el = document.getElementById('frappe-pathway');
-  if (frappeCats.length === 0) {
-    el.innerHTML = '<p class="text-on-surface-variant text-sm">No Frappe Ash data.</p>';
-    return;
-  }
-
-  const top3 = frappeCats.slice(0, 3);
-  el.innerHTML = `
-    <div class="mb-3 flex items-center gap-3">
-      <div class="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center flex-shrink-0">
-        <span class="material-symbols-outlined text-orange-400 text-sm">person</span>
-      </div>
-      <div>
-        <p class="font-bold text-on-surface text-sm">Frappe Ash</p>
-        <div class="flex items-center gap-2 text-xs">
-          <span class="text-on-surface-variant">${frappeCats.length} catalyst events</span>
-          <span class="badge badge-reengagement">Re-engagement</span>
-        </div>
-      </div>
-    </div>
-    ${top3.map(c => `
-    <div class="bg-surface-container rounded-xl p-3 border border-surface-variant flex items-center gap-3">
-      <div class="flex-1 min-w-0">
-        <p class="font-medium text-on-surface text-xs truncate">${c.catalyst_track_name}</p>
-        <p class="text-xs text-on-surface-variant">${c.discovery_type}</p>
-      </div>
-      <div class="text-right">
-        <p class="text-xs font-bold text-primary">${fmtHrs(c.future_hours_unlocked)}h</p>
-        <p class="text-xs text-on-surface-variant">${fmt(c.max_tracks_added_7d, 0)} tracks</p>
-      </div>
-    </div>`).join('')}`;
-}
+// NOTE: loadPantherPathway and loadFrappePathway removed — replaced by dynamic featured catalyst
 
 async function fetchCatalysts() {
   const qs = new URLSearchParams({
@@ -667,7 +783,7 @@ function renderAlbumGrid() {
     const pct = Math.round(p.penetration_pct || 0);
     const style = p.listening_style || (pct >= 90 ? 'Full' : pct >= 50 ? 'Deep' : 'Partial');
     return `
-      <div class="bg-surface-container-high rounded-xl border border-surface-variant p-4 hover:border-primary/40 transition-colors">
+      <div class="bg-surface-container-high rounded-xl border border-surface-variant p-4 hover:border-primary/40 transition-colors cursor-pointer" onclick="openAlbumDetail('${(p.project_id || '').replace(/'/g, '\\\'')}', '${(p.project_name || '').replace(/'/g, '\\\'')}')">
         <div class="flex items-start gap-3 mb-4">
           <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center flex-shrink-0">
             <span class="material-symbols-outlined text-on-surface-variant">album</span>
@@ -695,6 +811,40 @@ function renderAlbumGrid() {
   const pageNum = Math.floor(albumOffset / ALBUM_PAGE_SIZE) + 1;
   const totalPages = Math.max(1, Math.ceil(albumTotal / ALBUM_PAGE_SIZE));
   document.getElementById('album-page-label').textContent = `Page ${pageNum} / ${totalPages}`;
+}
+
+async function openAlbumDetail(projectId, projectName) {
+  const detailContent = document.getElementById('album-detail-content');
+  if (!detailContent) return;
+  const panel = document.getElementById('album-detail-panel');
+  if (panel) {
+    panel.querySelector('.p-5').innerHTML = `<p class="text-sm font-bold text-on-surface">${projectName}</p>`;
+  }
+  detailContent.innerHTML = '<div class="space-y-2"><div class="skeleton h-10 rounded"></div><div class="skeleton h-10 rounded"></div><div class="skeleton h-10 rounded"></div></div>';
+  try {
+    const data = await apiFetch(`/api/projects/${encodeURIComponent(projectId)}/songs`);
+    const songs = data.songs || [];
+    if (songs.length === 0) {
+      detailContent.innerHTML = '<p class="text-on-surface-variant text-sm">No tracks found for this project.</p>';
+      return;
+    }
+    detailContent.innerHTML = `
+      <div class="space-y-1 max-h-[500px] overflow-y-auto pr-1">
+        ${songs.map((s, i) => `
+          <div class="flex items-center gap-3 py-2 border-b border-surface-variant/40 last:border-0 hover:bg-surface-container rounded-lg px-2 transition-colors">
+            <span class="text-xs text-on-surface-variant w-5 text-center flex-shrink-0">${i + 1}</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-on-surface truncate">${s.track_name}</p>
+              <p class="text-xs text-on-surface-variant">${fmt(s.total_plays)} plays • ${fmt(s.total_minutes, 0)} min</p>
+            </div>
+            ${((s.skip_rate || 0) * 100) > 30 ? '<span class="material-symbols-outlined text-yellow-400 text-sm flex-shrink-0" title="High skip rate">skip_next</span>' : ''}
+          </div>`).join('')}
+      </div>
+      <p class="text-xs text-on-surface-variant mt-3">${songs.length} tracks in database</p>`;
+  } catch (e) {
+    detailContent.innerHTML = '<p class="text-red-400 text-sm">Failed to load track list.</p>';
+    console.error('openAlbumDetail failed:', e);
+  }
 }
 
 function albumPage(dir) {
@@ -928,17 +1078,23 @@ function renderSequences() {
         </div>`;
     }).join('');
   } else {
-    el.innerHTML = items.slice(0, 8).map(s => `
+    // FIX: parquet uses prev2_track_name, prev_track_name, track_name
+    el.innerHTML = items.slice(0, 8).map(s => {
+      const song1 = s.prev2_track_name || s.song1_name || '?';
+      const song2 = s.prev_track_name || s.song2_name || '?';
+      const song3 = s.track_name || s.song3_name || '?';
+      return `
       <div class="bg-surface-container-high rounded-xl border border-surface-variant p-4">
         <div class="flex items-center gap-2 text-sm flex-wrap">
-          <span class="font-medium text-on-surface">${s.song1_name || '?'}</span>
+          <span class="font-medium text-on-surface">${song1}</span>
           <span class="material-symbols-outlined text-primary text-sm">arrow_forward</span>
-          <span class="font-medium text-on-surface">${s.song2_name || '?'}</span>
+          <span class="font-medium text-on-surface">${song2}</span>
           <span class="material-symbols-outlined text-primary text-sm">arrow_forward</span>
-          <span class="font-medium text-on-surface">${s.song3_name || '?'}</span>
+          <span class="font-medium text-on-surface">${song3}</span>
         </div>
         <p class="text-xs text-on-surface-variant mt-1">${fmt(s.sequence_count)} occurrences</p>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 }
 
@@ -949,7 +1105,13 @@ function renderSignatureChain(seqs) {
     return;
   }
   const top = seqs[0];
-  el.innerHTML = [top.song1_name, top.song2_name, top.song3_name].filter(Boolean).map((name, i) => `
+  // FIX: use correct parquet column names
+  const names = [
+    top.prev2_track_name || top.song1_name,
+    top.prev_track_name  || top.song2_name,
+    top.track_name       || top.song3_name
+  ].filter(Boolean);
+  el.innerHTML = names.map((name, i) => `
     <div class="flex items-center gap-3 p-2 ${i === 0 ? 'bg-surface-container' : ''} rounded-lg">
       <div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center flex-shrink-0">
         <span class="material-symbols-outlined text-primary text-sm">music_note</span>
@@ -1002,15 +1164,34 @@ async function loadNetwork() {
     networkCanvas = document.getElementById('network-canvas');
     networkCtx = networkCanvas.getContext('2d');
 
-    const resizeCanvas = () => {
+    // FIX: Use ResizeObserver so we get the actual container dimensions after layout,
+    // not the 0×0 dimensions from when the view was still display:none
+    const initNetwork = () => {
       const rect = networkCanvas.parentElement.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) {
+        // Container still has no dimensions — defer one more frame
+        requestAnimationFrame(initNetwork);
+        return;
+      }
       networkCanvas.width = rect.width;
       networkCanvas.height = rect.height;
       buildNetworkLayout();
       drawNetwork();
     };
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+
+    // Defer initialization to ensure the view is visible and has real dimensions
+    requestAnimationFrame(() => requestAnimationFrame(initNetwork));
+
+    const ro = new ResizeObserver(() => {
+      const rect = networkCanvas.parentElement.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        networkCanvas.width = rect.width;
+        networkCanvas.height = rect.height;
+        buildNetworkLayout();
+        drawNetwork();
+      }
+    });
+    ro.observe(networkCanvas.parentElement);
 
     networkCanvas.addEventListener('mousedown', onNetworkMouseDown);
     networkCanvas.addEventListener('mousemove', onNetworkMouseMove);
